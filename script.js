@@ -1,43 +1,14 @@
 // ==========================================
-// 1. BASE DE DATOS LOCAL AUTOMÁTICA
+// 1. CONFIGURACIÓN Y CONEXIÓN CON SUPABASE
 // ==========================================
-let productos = [
-    { 
-        id: 1, 
-        titulo: "Marvel Legends Iron Man (Model 09) Retro", 
-        precio: 35, 
-        categoria: "Figuras", 
-        subcategoria: "Marvel Legends",
-        condicion: "Cerrado / Mint",
-        stock: 1,
-        imagen: "https://unsplash.com", 
-        descripcion: "Figura articulada de la línea retro de Marvel Comics. Blíster cerrado en perfectas condiciones, tarjeta impecable sin dobleces." 
-    },
-    { 
-        id: 2, 
-        titulo: "Hot Wheels Nissan Skyline GT-R (R34) RLC", 
-        precio: 160, 
-        categoria: "Hot Wheels", 
-        subcategoria: "Red Line Club",
-        condicion: "Cerrado / Mint",
-        stock: 1,
-        imagen: "https://unsplash.com", 
-        descripcion: "Edición ultra limitada de Red Line Club. Pintura Spectraflame violeta premium, llantas de goma Real Riders y capó abatible." 
-    },
-    { 
-        id: 3, 
-        titulo: "Star Wars Black Series Darth Vader", 
-        precio: 55, 
-        categoria: "Figuras", 
-        subcategoria: "Star Wars",
-        condicion: "Near Mint",
-        stock: 1,
-        imagen: "https://unsplash.com", 
-        descripcion: "Figura premium escala de 6 pulgadas de Hasbro. Caja original con mínimos detalles por almacenamiento en estantería." 
-    }
-];
+const SUPABASE_URL = "https://supabase.co"; 
+const SUPABASE_KEY = "sb_publishable_noDrdShWvDR8wRsJi0w-nA_q1lB0HLq";
 
-// LISTAS LOCALES CON MEMORIA (localStorage)
+// Conexión segura e inicialización del cliente global
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+// Estados globales de la tienda
+let productos = [];
 let usuariosRegistrados = JSON.parse(localStorage.getItem('zen_usuarios')) || [];
 let usuarioActivo = JSON.parse(localStorage.getItem('zen_sesion')) || null;
 let carrito = [];
@@ -47,26 +18,53 @@ let indiceSlideActual = 0;
 let categoriaActual = 'Todos';
 let subcategoriaActual = 'Todos';
 
-// AL CARGAR LA PÁGINA
-document.addEventListener("DOMContentLoaded", () => {
-    renderizarProductos();
+// ARRANQUE AUTOMÁTICO
+document.addEventListener("DOMContentLoaded", async () => {
+    await traerProductosDesdeNube();
     if (usuarioActivo) {
         aplicarInterfazUsuario();
         cargarDatosPerfilEnFormulario();
     }
-    
-    // Escuchar el formulario de añadir productos
     const formAdmin = document.getElementById('product-form');
-    if (formAdmin) { formAdmin.addEventListener('submit', agregarProductoAdmin); }
+    if (formAdmin) formAdmin.addEventListener('submit', agregarProductoAdmin);
 
-    // Escuchar el formulario del Perfil
     const formPerfil = document.getElementById('perfil-form');
-    if (formPerfil) { formPerfil.addEventListener('submit', guardarDatosPerfil); }
+    if (formPerfil) formPerfil.addEventListener('submit', guardarDatosPerfil);
 });
 
-// ==========================================
-// 2. RENDERIZAR ARTÍCULOS EN LA GRILLA
-// ==========================================
+// DESCARGAR ARTÍCULOS DE LA NUBE
+async function traerProductosDesdeNube() {
+    try {
+        if (!supabase) throw new Error("La librería de Supabase no está cargada correctamente en el HTML.");
+        
+        const { data, error } = await supabase
+            .from('productos')
+            .select('*')
+            .order('id', { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            productos = [
+                { id: 1, titulo: "Marvel Legends Iron Man (Model 09) Retro", precio: 35, categoria: "Figuras", subcategoria: "Marvel Legends", condicion: "Cerrado / Mint", stock: 1, imagen: "https://unsplash.com", descripcion: "Figura articulada de la línea retro de Marvel Comics." },
+                { id: 2, titulo: "Hot Wheels Nissan Skyline GT-R (R34) RLC", precio: 160, categoria: "Hot Wheels", subcategoria: "Red Line Club", condicion: "Cerrado / Mint", stock: 1, imagen: "https://unsplash.com", descripcion: "Edición ultra limitada de Red Line Club con pintura Spectraflame violeta." },
+                { id: 3, titulo: "Star Wars Black Series Darth Vader", precio: 55, categoria: "Figuras", subcategoria: "Star Wars", condicion: "Near Mint", stock: 1, imagen: "https://unsplash.com", descripcion: "Figura premium escala de 6 pulgadas de Hasbro." }
+            ];
+            await supabase.from('productos').insert(productos);
+        } else {
+            productos = data;
+        }
+    } catch (err) {
+        console.error("Usando productos locales de respaldo:", err.message);
+        productos = [
+            { id: 1, titulo: "Marvel Legends Iron Man (Model 09) Retro", precio: 35, categoria: "Figuras", subcategoria: "Marvel Legends", condicion: "Cerrado / Mint", stock: 1, imagen: "https://unsplash.com", descripcion: "Figura de respaldo." },
+            { id: 2, titulo: "Hot Wheels Nissan Skyline GT-R (R34) RLC", precio: 160, categoria: "Hot Wheels", subcategoria: "Red Line Club", condicion: "Cerrado / Mint", stock: 1, imagen: "https://unsplash.com", descripcion: "Auto de respaldo." }
+        ];
+    }
+    renderizarProductos();
+}
+
+// CONSTRUIR LAS TARJETAS VISUALES
 function renderizarProductos() {
     const grid = document.getElementById('products-grid');
     if (!grid) return;
@@ -88,7 +86,7 @@ function renderizarProductos() {
         card.classList.add('product-card');
         card.onclick = () => abrirDetalleProducto(p.id);
 
-        if (p.stock === 0) {
+        if (parseInt(p.stock) === 0) {
             const badge = document.createElement('div');
             badge.classList.add('sold-out-badge');
             badge.textContent = "Vendido";
@@ -110,8 +108,28 @@ function renderizarProductos() {
     });
 }
 
+function filtrarCategoria(cat) {
+    categoriaActual = cat;
+    subcategoriaActual = 'Todos';
+    const titulo = document.getElementById('seccion-titulo');
+    if (titulo) titulo.textContent = cat === 'Todos' ? 'Artículos en Exhibición' : `Catálogo: ${cat}`;
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.includes(cat) || (cat === 'Todos' && btn.textContent === 'Todos'));
+    });
+    mostrarSeccion('tienda');
+    renderizarProductos();
+}
 
-// BUSCADOR EN TIEMPO REAL
+function filtrarSubcategoria(cat, subcat) {
+    categoriaActual = cat;
+    subcategoriaActual = subcat;
+    const titulo = document.getElementById('seccion-titulo');
+    if (titulo) titulo.textContent = `${cat} ‣ ${subcat}`;
+    mostrarSeccion('tienda');
+    renderizarProductos();
+}
+
+// BÚSQUEDA FLUIDA
 const searchInput = document.getElementById('search-input');
 if (searchInput) {
     searchInput.addEventListener('input', (e) => {
@@ -122,51 +140,16 @@ if (searchInput) {
         });
     });
 }
+
 function mostrarSeccion(seccion) {
     document.getElementById('view-inicio').classList.toggle('hidden', seccion !== 'inicio');
     document.getElementById('view-tienda').classList.toggle('hidden', seccion !== 'tienda');
     document.getElementById('view-vender').classList.toggle('hidden', seccion !== 'vender');
     document.getElementById('view-perfil').classList.toggle('hidden', seccion !== 'perfil');
     document.getElementById('view-carrito').classList.toggle('hidden', seccion !== 'carrito');
-    
-    // Si entramos a la sección carrito, forzamos que se redibuje con los valores actuales
-    if (seccion === 'carrito') {
-        actualizarCarritoUI();
-    }
+    if (seccion === 'carrito') actualizarCarritoUI();
 }
 
-function filtrarCategoria(cat) {
-    categoriaActual = cat;
-    subcategoriaActual = 'Todos';
-    
-    // Cambiamos el título dentro de la tienda
-    const tituloSeccion = document.getElementById('seccion-titulo');
-    if (tituloSeccion) {
-        tituloSeccion.textContent = cat === 'Todos' ? 'Artículos en Exhibición' : `Catálogo: ${cat}`;
-    }
-    
-    document.querySelectorAll('.cat-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.textContent.includes(cat) || (cat === 'Todos' && btn.textContent === 'Todos'));
-    });
-    
-    mostrarSeccion('tienda'); // 👈 AHORA SÍ: Te manda directo a la sección de ventas
-    renderizarProductos();
-}
-
-function filtrarSubcategoria(cat, subcat) {
-    categoriaActual = cat;
-    subcategoriaActual = subcat;
-    
-    const tituloSeccion = document.getElementById('seccion-titulo');
-    if (tituloSeccion) {
-        tituloSeccion.textContent = `${cat} ‣ ${subcat}`;
-    }
-    
-    mostrarSeccion('tienda'); // 👈 AHORA SÍ: Te manda directo a la sección de ventas
-    renderizarProductos();
-}
-
-// CONTROL DEL CARRUSEL DE IMÁGENES
 function cambiarSlide(dir) {
     const carousel = document.getElementById('carousel');
     if (!carousel) return;
@@ -176,13 +159,11 @@ function cambiarSlide(dir) {
     carousel.style.transform = `translateX(-${indiceSlideActual * 50}%)`;
 }
 setInterval(() => cambiarSlide(1), 6000);
-
 // ==========================================
 // 3. SISTEMA DE LOGIN, REGISTRO Y PERFIL
 // ==========================================
 function abrirModalAuth() {
     if (usuarioActivo) {
-        // Si ya está logueado, al tocar su nombre va directo a ver/editar su perfil
         mostrarSeccion('perfil');
     } else {
         document.getElementById('modal-auth').classList.add('open');
@@ -208,14 +189,12 @@ document.getElementById('auth-form').addEventListener('submit', function(e) {
             alert("Este correo ya tiene cuenta registrada.");
             return;
         }
-        // Creamos el usuario en la lista con sus campos de datos de envío en blanco
         usuariosRegistrados.push({ email, pass, nombre: "", telefono: "", direccion: "", cp: "" });
         localStorage.setItem('zen_usuarios', JSON.stringify(usuariosRegistrados));
         alert("¡Cuenta creada con éxito! Ya podés ingresar.");
         cambiarAuthTab('login');
     } else {
         const existe = usuariosRegistrados.find(u => u.email === email && u.pass === pass);
-        // Cuenta de administrador maestro o cuenta de usuario válida en el registro
         if ((email === "admin@zen.com" && pass === "1234") || existe) {
             usuarioActivo = { email: email };
             localStorage.setItem('zen_sesion', JSON.stringify(usuarioActivo));
@@ -228,36 +207,31 @@ document.getElementById('auth-form').addEventListener('submit', function(e) {
         }
     }
 });
-function logout() {
-    if (confirm("¿Querés cerrar sesión en Zen & Zen?")) {
-        localStorage.removeItem('zen_sesion');
-        location.reload(); // Recarga la página y vuelve a mostrar "Iniciar Sesión"
-    }
-}
+
 function aplicarInterfazUsuario() {
     const userBtn = document.getElementById('user-status');
-    userBtn.textContent = `👤 Mi Perfil (${usuarioActivo.email.split('@')[0]})`;
-    
+    if (userBtn) {
+        userBtn.textContent = `👤 Mi Perfil (${usuarioActivo.email.split('@')[0]})`;
+    }
     if (usuarioActivo.email === "admin@zen.com") {
-        document.getElementById('nav-vender').classList.remove('hidden');
+        const navVender = document.getElementById('nav-vender');
+        if (navVender) navVender.classList.remove('hidden');
     }
 }
 
-// CARGA LOS DATOS GUARDADOS DE LOCALSTORAGE EN LOS CAMPOS DEL PERFIL
 function cargarDatosPerfilEnFormulario() {
     const displayEmail = document.getElementById('perf-email-display');
     if (displayEmail) displayEmail.textContent = usuarioActivo.email;
     
     const datosUsuario = usuariosRegistrados.find(u => u.email === usuarioActivo.email);
     if (datosUsuario) {
-        document.getElementById('perf-nombre').value = datosUsuario.nombre || "";
-        document.getElementById('perf-telefono').value = datosUsuario.telefono || "";
-        document.getElementById('perf-direccion').value = datosUsuario.direccion || "";
-        document.getElementById('perf-cp').value = datosUsuario.cp || "";
+        if (document.getElementById('perf-nombre')) document.getElementById('perf-nombre').value = datosUsuario.nombre || "";
+        if (document.getElementById('perf-telefono')) document.getElementById('perf-telefono').value = datosUsuario.telefono || "";
+        if (document.getElementById('perf-direccion')) document.getElementById('perf-direccion').value = datosUsuario.direccion || "";
+        if (document.getElementById('perf-cp')) document.getElementById('perf-cp').value = datosUsuario.cp || "";
     }
 }
 
-// ACCIÓN DE GUARDAR LOS DATOS EN LA CUENTA DEL CLIENTE
 function guardarDatosPerfil(e) {
     e.preventDefault();
     if (!usuarioActivo) return;
@@ -288,7 +262,7 @@ function logout() {
 }
 
 // ==========================================
-// 4. MODAL DETALLE Y CARRITO WHATSAPP
+// 4. MODAL DETALLE Y CONTROL DE CARRITO
 // ==========================================
 function abrirDetalleProducto(id) {
     const p = productos.find(item => item.id === id);
@@ -302,7 +276,9 @@ function abrirDetalleProducto(id) {
     document.getElementById('detail-desc').textContent = p.descripcion;
 
     const btn = document.getElementById('btn-detail-add');
-    if (p.stock === 0) {
+    if (!btn) return;
+
+    if (parseInt(p.stock) === 0) {
         btn.textContent = "Agotado";
         btn.disabled = true;
         btn.style.background = "#555";
@@ -316,7 +292,6 @@ function abrirDetalleProducto(id) {
 }
 
 function cerrarModalDetail() { document.getElementById('modal-detail').classList.remove('open'); }
-function toggleCarrito() { document.getElementById('sidebar-cart').classList.toggle('open'); }
 
 function agregarAlCarrito(id) {
     const p = productos.find(item => item.id === id);
@@ -335,31 +310,27 @@ function quitarDelCarrito(index) {
 }
 
 function actualizarCarritoUI() {
-    // Actualizar el número del globito rojo del menú superior
-    document.getElementById('cart-count').textContent = carrito.length;
+    const cartCount = document.getElementById('cart-count');
+    if (cartCount) cartCount.textContent = Math.max(0, carrito.length);
     
     const container = document.getElementById('seccion-carrito-items');
-    const layoutWrapper = document.getElementById('carrito-layout-wrapper');
     if (!container) return;
-    
     container.innerHTML = '';
     let total = 0;
 
-    // Si el carrito está vacío, mostramos un cartel estético ocupando la pantalla
     if (carrito.length === 0) {
         container.innerHTML = `
             <div style="text-align: center; padding: 40px 10px;">
                 <p style="font-size: 48px; margin-bottom: 10px;">🛒</p>
                 <h3 style="color: #fff; margin-bottom: 10px;">Tu carrito de Zen & Zen está vacío</h3>
-                <p style="color: #aaa; margin-bottom: 20px;">No dejes pasar los mejores Hot Wheels y figuras antes de que se agoten.</p>
+                <p style="color: #aaa; margin-bottom: 20px;">No dejes pasar los mejores Hot Wheels antes de que se agoten.</p>
             </div>
         `;
-        document.getElementById('resumen-subtotal').textContent = `$0`;
-        document.getElementById('resumen-total').textContent = `$0`;
+        if(document.getElementById('resumen-subtotal')) document.getElementById('resumen-subtotal').textContent = `$0`;
+        if(document.getElementById('resumen-total')) document.getElementById('resumen-total').textContent = `$0`;
         return;
     }
 
-    // Inyectar cada producto agregado con su respectiva foto y botón de remover
     carrito.forEach((item, index) => {
         total += item.precio;
         container.innerHTML += `
@@ -368,7 +339,7 @@ function actualizarCarritoUI() {
                     <img src="${item.imagen}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 6px; border: 1px solid #3a4454;">
                     <div>
                         <h4 style="color:#fff; font-size:16px; margin-bottom:5px;">${item.titulo}</h4>
-                        <p style="font-size: 13px; color: #aaa; margin-bottom: 4px;">Línea: <span style="color: var(--color-cian);">${item.subcategoria}</span> | Estado: <span style="color:#4caf50;">${item.condicion}</span></p>
+                        <p style="font-size: 13px; color: #aaa;">Línea: <span style="color: var(--color-cian);">${item.subcategoria}</span></p>
                         <h4 style="color: var(--color-oro); font-size:18px;">$${item.precio}</h4>
                     </div>
                 </div>
@@ -379,81 +350,29 @@ function actualizarCarritoUI() {
         `;
     });
 
-    // Actualizar números de resumen
-    document.getElementById('resumen-subtotal').textContent = `$${total}`;
-    document.getElementById('resumen-total').textContent = `$${total}`;
+    if(document.getElementById('resumen-subtotal')) document.getElementById('resumen-subtotal').textContent = `$${total}`;
+    if(document.getElementById('resumen-total')) document.getElementById('resumen-total').textContent = `$${total}`;
 
-    // Dibujar datos del cliente en el mini bloque de envío
     const resumenEnvio = document.getElementById('resumen-datos-envio');
+    if (!resumenEnvio) return;
     if (usuarioActivo) {
         const datosEnvio = usuariosRegistrados.find(u => u.email === usuarioActivo.email) || {};
         if (datosEnvio.nombre) {
-            resumenEnvio.innerHTML = `
-                👤 <strong>Nombre:</strong> ${datosEnvio.nombre}<br>
-                📞 <strong>Teléfono:</strong> ${datosEnvio.telefono}<br>
-                📍 <strong>Dirección:</strong> ${datosEnvio.direccion}<br>
-                📮 <strong>C.P.:</strong> ${datosEnvio.cp}
-            `;
+            resumenEnvio.innerHTML = `👤 <strong>Nombre:</strong> ${datosEnvio.nombre}<br>📍 <strong>Dirección:</strong> ${datosEnvio.direccion}<br>📮 <strong>C.P.:</strong> ${datosEnvio.cp}`;
         } else {
-            resumenEnvio.innerHTML = `⚠️ <span style="color: var(--color-oro);">No cargaste tus datos de envío.</span> Podés procesar la orden igual, o hacer <a href="#" onclick="mostrarSeccion('perfil')" style="color:var(--color-cian); text-decoration:underline;">clic acá para completarlos</a>.`;
+            resumenEnvio.innerHTML = `⚠️ No cargaste tus datos de envío. Podés hacer <a href="#" onclick="mostrarSeccion('perfil')" style="color:var(--color-cian); text-decoration:underline;">clic acá para completarlos</a>.`;
         }
     } else {
-        resumenEnvio.innerHTML = `🔑 <a href="#" onclick="abrirModalAuth()" style="color:var(--color-cian); text-decoration:underline;">Iniciá sesión aquí</a> para adjuntar tu dirección de envío automáticamente.`;
+        resumenEnvio.innerHTML = `🔑 <a href="#" onclick="abrirModalAuth()" style="color:var(--color-cian); text-decoration:underline;">Iniciá sesión</a> para adjuntar tu dirección de envío.`;
     }
 }
-function finalizarOrdenWhatsApp() {
+
+// ==========================================
+// 5. CHECKOUT UNIFICADO EN LA NUBE Y ADMIN
+// ==========================================
+async function finalizarOrdenWhatsApp() {
     if (!usuarioActivo) {
-        alert("Por favor, iniciá sesión para poder confirmar tu reserva de piezas coleccionables.");
-        abrirModalAuth();
-        return;
-    }
-    if (carrito.length === 0) {
-        alert("Tu carrito está vacío.");
-        return;
-    }
-
-    const datosEnvio = usuariosRegistrados.find(u => u.email === usuarioActivo.email) || {};
-    const metodoPago = document.getElementById('checkout-metodo-pago').value;
-
-    let telefonoComercial = "54911XXXXXXXX"; // 👈 ACÁ: Recordá colocar tu número de WhatsApp real con código de país
-    let mensaje = `👑 *¡NUEVA ORDEN DE RESERVA - ZEN & ZEN!* 👑\n\n`;
-    mensaje += `📧 *Comprador:* ${usuarioActivo.email}\n`;
-    
-    if (datosEnvio.nombre) {
-        mensaje += `👤 *Nombre:* ${datosEnvio.nombre}\n📞 *Contacto:* ${datosEnvio.telefono}\n📍 *Destino:* ${datosEnvio.direccion} (CP: ${datosEnvio.cp})\n`;
-    } else {
-        mensaje += `📍 *Envío:* _(Coordinar dirección por chat)_\n`;
-    }
-    
-    mensaje += `💳 *Método de Pago:* ${metodoPago}\n\n`;
-    mensaje += `📦 *Artículos Solicitados (Piezas Únicas):*\n`;
-    
-    let total = 0;
-    carrito.forEach(item => {
-        mensaje += `• ${item.titulo} [${item.condicion}] -> *$${item.precio}*\n`;
-        total += item.precio;
-        
-        // Descontamos stock local
-        let original = productos.find(p => p.id === item.id);
-        if (original) original.stock = 0;
-    });
-
-    mensaje += `\n💰 *VALOR TOTAL:* *$${total}*\n\n🏁 _Quedo a la espera de los datos de pago para confirmar la compra._`;
-    
-    // Abrir la API oficial de WhatsApp en pestaña limpia
-    window.open(`https://whatsapp.com{telefonoComercial}&text=${encodeURIComponent(mensaje)}`, '_blank');
-
-    // Limpiar carrito local
-    carrito = [];
-    actualizarCarritoUI();
-    renderizarProductos();
-    mostrarSeccion('inicio');
-    alert("¡Pedido generado! Te redirigimos a WhatsApp para coordinar el pago.");
-}
-
-function procesarCompraDirecta() {
-    if (!usuarioActivo) {
-        alert("Iniciá sesión para poder reservar las piezas.");
+        alert("Iniciá sesión para poder confirmar tu reserva.");
         abrirModalAuth();
         return;
     }
@@ -462,56 +381,77 @@ function procesarCompraDirecta() {
         return;
     }
 
-    // Buscamos si el usuario guardó datos en su ficha de perfil
-    const datosEnvio = usuariosRegistrados.find(u => u.email === usuarioActivo.email) || {};
-
-    let telefonoComercial = "54911XXXXXXXX"; // 👈 ACÁ: Poné tu celular real con código de país
-    let mensaje = `👋 ¡Hola Zen & Zen! Hay una nueva reserva desde la web:\n`;
-    mensaje += `📧 *Usuario:* ${usuarioActivo.email}\n`;
-    
-    if (datosEnvio.nombre) {
-        mensaje += `👤 *Nombre:* ${datosEnvio.nombre}\n📞 *Teléfono:* ${datosEnvio.telefono}\n📍 *Dirección de Envío:* ${datosEnvio.direccion} (CP: ${datosEnvio.cp})\n`;
-    } else {
-        mensaje += `⚠️ _(El usuario todavía no cargó su dirección en su perfil de la tienda)_\n`;
-    }
-    
-    mensaje += `\n📦 *Piezas Únicas Solicitadas:*\n`;
-    let total = 0;
-
-    carrito.forEach(item => {
-        mensaje += `▪️ ${item.titulo} [${item.condicion}] - $${item.precio}\n`;
-        total += item.precio;
-        let original = productos.find(p => p.id === item.id);
-        if (original) original.stock = 0; // Se marca vendido localmente
-    });
-
-    mensaje += `\n💰 *Total de la orden:* $${total}\n🏁 Quedo a la espera de los datos para realizar la transferencia/pago.`;
-    
-    window.open(`https://whatsapp.com{telefonoComercial}&text=${encodeURIComponent(mensaje)}`, '_blank');
-
-    carrito = [];
-    actualizarCarritoUI();
-    renderizarProductos();
-    toggleCarrito();
+alert("Verificando disponibilidad de las piezas en el servidor...");
+try {
+if (!supabase) throw new Error("Base de datos sin inicializar.");
+const { data: stockReal, error: errorStock } = await supabase
+.from('productos')
+.select('id, titulo, stock');
+if (errorStock) throw errorStock;
+for (let item of carrito) {
+let verificado = stockReal.find(dbProd => dbProd.id === item.id);
+if (verificado && parseInt(verificado.stock) === 0) {
+alert(⚠️ ¡Lo sentimos! La pieza "${item.titulo}" fue reservada por otro coleccionista hace unos instantes. Se removerá de tu carrito.);
+carrito = carrito.filter(c => c.id !== item.id);
+actualizarCarritoUI();
+await traerProductosDesdeNube();
+return;
 }
-
-// PANEL ADMIN: SUBIR PRODUCTOS
-function agregarProductoAdmin(e) {
-    e.preventDefault();
-    const nuevo = {
-        id: productos.length + 1,
-        titulo: document.getElementById('prod-title').value,
-        precio: parseFloat(document.getElementById('prod-price').value),
-        categoria: document.getElementById('prod-category').value,
-        subcategoria: document.getElementById('prod-subcategory').value,
-        condicion: document.getElementById('prod-condition').value,
-        stock: 1,
-        imagen: document.getElementById('prod-img').value,
-        descripcion: document.getElementById('prod-desc').value
-    };
-    productos.push(nuevo);
-    renderizarProductos();
-    document.getElementById('product-form').reset();
-    mostrarSeccion('inicio');
-    alert("¡Rareza añadida con éxito al catálogo!");
+}
+for (let item of carrito) {
+await supabase
+.from('productos')
+.update({ stock: 0 })
+.eq('id', item.id);
+}
+const datosEnvio = usuariosRegistrados.find(u => u.email === usuarioActivo.email) || {};
+const metodoPago = document.getElementById('checkout-metodo-pago').value;
+let telefonoComercial = "54911XXXXXXXX";
+let mensaje = 👑 *¡NUEVA ORDEN DE RESERVA - ZEN & ZEN!* 👑\n\n;
+mensaje += 📧 *Comprador:* ${usuarioActivo.email}\n;
+if (datosEnvio.nombre) {
+mensaje += 👤 *Nombre:* ${datosEnvio.nombre}\n📞 *Contacto:* ${datosEnvio.telefono}\n📍 *Destino:* ${datosEnvio.direccion} (CP: ${datosEnvio.cp})\n;
+}
+mensaje += 💳 *Método de Pago:* ${metodoPago}\n\n;
+mensaje += 📦 *Artículos Asegurados:*\n;
+let total = 0;
+carrito.forEach(item => {
+mensaje += • ${item.titulo} -> *$${item.precio}*\n;
+total += item.precio;
+});
+mensaje += \n💰 *VALOR TOTAL:* *$${total}*\n\n🏁 _Redirigido desde la web. Espero tus datos para abonar la reserva._;
+window.open(https://whatsapp.com{telefonoComercial}&text=${encodeURIComponent(mensaje)}, '_blank');
+carrito = [];
+actualizarCarritoUI();
+await traerProductosDesdeNube();
+mostrarSeccion('inicio');
+alert("¡Artículos reservados con éxito en el servidor global!");
+} catch (err) {
+alert("Ocurrió un error al procesar la transacción: " + err.message);
+}
+}
+async function agregarProductoAdmin(e) {
+e.preventDefault();
+const nuevoProd = {
+id: productos.length + 1,
+titulo: document.getElementById('prod-title').value,
+precio: parseFloat(document.getElementById('prod-price').value),
+categoria: document.getElementById('prod-category').value,
+subcategoria: document.getElementById('prod-subcategory').value,
+condicion: document.getElementById('prod-condition').value,
+stock: 1,
+imagen: document.getElementById('prod-img').value,
+descripcion: document.getElementById('prod-desc').value
+};
+try {
+if (!supabase) throw new Error("Base de datos sin conectar.");
+const { error } = await supabase.from('productos').insert([nuevoProd]);
+if (error) throw error;
+await traerProductosDesdeNube();
+document.getElementById('product-form').reset();
+mostrarSeccion('inicio');
+alert("¡Rareza publicada exitosamente en el servidor global!");
+} catch (err) {
+alert("Error al subir el producto: " + err.message);
+}
 }
