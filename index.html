@@ -147,10 +147,24 @@
                         <option value="Incompleto">Detalles / Suelto</option>
                     </select>
                 </div>
+                <!-- REEMPLAZAR ESTA PARTE EN EL FORMULARIO DE CARGA DEL ADMIN -->
                 <div class="form-group">
-                    <label>URL de la Imagen:</label>
-                    <input type="url" id="prod-img" required>
+                    <label>Escala del Artículo:</label>
+                    <input type="text" id="prod-escala" placeholder="Ej. 1:64, 1:12, 6 pulgadas" required>
                 </div>
+                <div class="form-group">
+                    <label>URL de la Imagen Principal (Frente):</label>
+                    <input type="url" id="prod-img" placeholder="Link de la foto principal" required>
+                </div>
+                <div class="form-group">
+                    <label>URL de la Imagen 2 (Dorso / Caja):</label>
+                    <input type="url" id="prod-img2" placeholder="Link de la foto secundaria (Opcional)">
+                </div>
+                <div class="form-group">
+                    <label>URL de la Imagen 3 (Detalles / Esquinas):</label>
+                    <input type="url" id="prod-img3" placeholder="Link de la foto de detalles (Opcional)">
+                </div>
+
                 <div class="form-group">
                     <label>Detalles / Historia / Certificación:</label>
                     <textarea id="prod-desc" rows="4" placeholder="Describe el estado de la caja, accesorios o procedencia..." required></textarea>
