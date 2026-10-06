@@ -4,8 +4,13 @@
 const SUPABASE_URL = "https://supabase.co"; 
 const SUPABASE_KEY = "sb_publishable_noDrdShWvDR8wRsJi0w-nA_q1lB0HLq";
 
-// Conexión forzada al cliente global
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+// Sistema de triple verificación para capturar el motor de Supabase en internet
+let supabase = null;
+if (window.supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} else if (typeof supabase !== 'undefined' && supabase.createClient) {
+    supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+}
 
 let productos = [];
 let usuariosRegistrados = JSON.parse(localStorage.getItem('zen_usuarios')) || [];
@@ -18,6 +23,11 @@ let categoriaActual = 'Todos';
 let subcategoriaActual = 'Todos';
 
 document.addEventListener("DOMContentLoaded", async () => {
+    // Si la librería tardó en cargar, intentamos reconectarla al arrancar el DOM
+    if (!supabase && window.supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+    
     await traerProductosDesdeNube();
     if (usuarioActivo) aplicarInterfazUsuario();
     
@@ -31,12 +41,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 // DESCARGAR INVENTARIO DE LA NUBE EN TIEMPO REAL
 async function traerProductosDesdeNube() {
     try {
-        if (!supabase) throw new Error("Supabase ausente");
+        if (!supabase) throw new Error("Supabase no conectado");
         const { data, error } = await supabase.from('productos').select('*').order('id', { ascending: true });
         if (error) throw error;
         productos = data || [];
     } catch (err) {
-        console.warn("Error de conexión:", err.message);
+        console.warn("Usando catálogo local vacío por desconexión:", err.message);
         productos = [];
     }
     renderizarProductos();
@@ -124,6 +134,7 @@ function cambiarSlide(dir) {
     carousel.style.transform = `translateX(-${indiceSlideActual * 50}%)`;
 }
 setInterval(() => cambiarSlide(1), 6000);
+
 // ==========================================
 // 2. REGISTRO, LOGIN Y PERFILES (SUPABASE)
 // ==========================================
