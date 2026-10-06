@@ -1,10 +1,9 @@
 // ==========================================
-// 1. CONEXIÓN REAL CON TU PROYECTO DE SUPABASE
+// 1. CONFIGURACIÓN Y CONEXIÓN CON SUPABASE
 // ==========================================
 const SUPABASE_URL = "https://supabase.co"; 
 const SUPABASE_KEY = "sb_publishable_noDrdShWvDR8wRsJi0w-nA_q1lB0HLq";
 
-// Inicialización segura del cliente de base de datos
 const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let productos = [];
@@ -28,21 +27,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (formPerfil) formPerfil.addEventListener('submit', guardarDatosPerfil);
 });
 
-// SINCRO GLOBAL CON TUS TABLAS DE SUPABASE
+// LEER TU INVENTARIO REAL SIN INYECCIONES FORZADAS
 async function traerProductosDesdeNube() {
-    const respaldo = [
-        { id: 1, titulo: "Marvel Legends Iron Man (Model 09) Retro", precio: 35, categoria: "Figuras", subcategoria: "Marvel Legends", escala: "6 pulgadas", condicion: "Cerrado / Mint", stock: 1, imagen: "https://unsplash.com", descripcion: "Edición retro cerrada." },
-        { id: 2, titulo: "Hot Wheels Nissan Skyline GT-R (R34) RLC", precio: 160, categoria: "Hot Wheels", subcategoria: "Red Line Club", escala: "1:64", condicion: "Cerrado / Mint", stock: 1, imagen: "https://unsplash.com", descripcion: "Pintura Spectraflame." }
-    ];
-
     try {
-        if (!supabase) throw new Error("Supabase ausente");
-        const { data, error } = await supabase.from('productos').select('*').order('id', { ascending: true });
+        if (!supabase) throw new Error("Supabase no cargado.");
+        
+        // Hacemos la consulta limpia a tu tabla
+        const { data, error } = await supabase
+            .from('productos')
+            .select('*')
+            .order('id', { ascending: true });
+
         if (error) throw error;
-        productos = (!data || data.length === 0) ? respaldo : data;
+        
+        // Si no hay nada, el catálogo queda vacío esperando tus cargas, sin romperse
+        productos = data || [];
+        
     } catch (err) {
-        console.warn("Usando catálogo de respaldo:", err.message);
-        productos = respaldo;
+        console.error("Error al sincronizar inventario:", err.message);
+        productos = []; // Evita que se congele el script si falla la red
     }
     renderizarProductos();
 }
@@ -52,18 +55,12 @@ function renderizarProductos() {
     if (!grid) return;
     grid.innerHTML = '';
 
-    const filtrados = productos.filter(p => {
-        const cumpleCat = (categoriaActual === 'Todos' || p.categoria === categoriaActual);
-        const cumpleSub = (subcategoriaActual === 'Todos' || p.subcategoria.toLowerCase() === subcategoriaActual.toLowerCase());
-        return cumpleCat && cumpleSub;
-    });
-
-    if (filtrados.length === 0) {
-        grid.innerHTML = '<p style="padding:40px; color:#aaa; grid-column:1/-1; text-align:center;">No hay piezas disponibles en esta sección.</p>';
+    if (productos.length === 0) {
+        grid.innerHTML = '<p style="padding:40px; color:#aaa; grid-column:1/-1; text-align:center;">El catálogo está vacío. ¡Iniciá sesión como administrador para cargar tus primeros Hot Wheels!</p>';
         return;
     }
 
-    filtrados.forEach(p => {
+    productos.forEach(p => {
         const card = document.createElement('div');
         card.classList.add('product-card');
         card.onclick = () => abrirDetalleProducto(p.id);
@@ -133,6 +130,7 @@ function cambiarSlide(dir) {
     carousel.style.transform = `translateX(-${indiceSlideActual * 50}%)`;
 }
 setInterval(() => cambiarSlide(1), 6000);
+
 // ==========================================
 // 3. REGISTRO, LOGIN Y PERFILES (SUPABASE)
 // ==========================================
@@ -161,10 +159,13 @@ document.getElementById('auth-form').addEventListener('submit', async function(e
             usuariosRegistrados.push({ email, pass, nombre: "", telefono: "", direccion: "", cp: "" });
             localStorage.setItem('zen_usuarios', JSON.stringify(usuariosRegistrados));
             
-            if (supabase) await supabase.from('usuarios').insert([{ email, password: pass }]);
+            if (supabase) {
+                const { error } = await supabase.from('usuarios').insert([{ email, password: pass }]);
+                if (error) throw error;
+            }
             alert("¡Cuenta de coleccionista creada! Iniciá sesión.");
             cambiarAuthTab('login');
-        } catch (err) { alert("Error al registrarse: " + err.message); }
+        } catch (err) { alert("Error al registrarse en la nube: " + err.message); }
     } else {
         const existe = usuariosRegistrados.find(u => u.email === email && u.pass === pass);
         if ((email === "admin@zen.com" && pass === "1234") || existe) {
@@ -179,7 +180,7 @@ document.getElementById('auth-form').addEventListener('submit', async function(e
 
 function aplicarInterfazUsuario() {
     const btn = document.getElementById('user-status');
-    if (btn) btn.textContent = `👤 Mi Perfil (${usuarioActivo.email.split('@')})`;
+    if (btn) btn.textContent = `👤 Mi Perfil (${usuarioActivo.email.split('@')[0]})`;
     if (usuarioActivo.email === "admin@zen.com") document.getElementById('nav-vender').classList.remove('hidden');
     cargarDatosPerfilEnFormulario();
 }
@@ -287,7 +288,7 @@ function finalizarOrdenWhatsApp() {
 
     const d = usuariosRegistrados.find(u => u.email === usuarioActivo.email) || {};
     const metodoPago = document.getElementById('checkout-metodo-pago').value;
-    let telefono = "54911XXXXXXXX"; // Poné tu WhatsApp real comercial
+    let telefono = "54911XXXXXXXX"; 
     
     let mensaje = `👑 *ORDEN - ZEN & ZEN* 👑\n\n📧 *Comprador:* ${usuarioActivo.email}\n💳 *Pago:* ${metodoPago}\n`;
     if (d.nombre) mensaje += `👤 *Nombre:* ${d.nombre}\n📍 *Destino:* ${d.direccion}\n`;
@@ -302,6 +303,7 @@ function finalizarOrdenWhatsApp() {
     carrito = []; actualizarCarritoUI(); traerProductosDesdeNube(); mostrarSeccion('inicio');
 }
 
+// 5. CADA NUEVA CARGA INFORMA AL INSTANTE EL ESTADO
 async function agregarProductoAdmin(e) {
     e.preventDefault();
     const nuevo = {
@@ -311,14 +313,29 @@ async function agregarProductoAdmin(e) {
         subcategoria: document.getElementById('prod-subcategory').value,
         escala: document.getElementById('prod-escala').value,
         condicion: document.getElementById('prod-condition').value,
-        stock: 1, imagen: document.getElementById('prod-img').value,
+        stock: 1, 
+        imagen: document.getElementById('prod-img').value,
         imagen_2: document.getElementById('prod-img2').value || "",
         imagen_3: document.getElementById('prod-img3').value || "",
         descripcion: document.getElementById('prod-desc').value
     };
-    if (supabase) await supabase.from('productos').insert([nuevo]);
-    await traerProductosDesdeNube();
-    document.getElementById('product-form').reset();
-    mostrarSeccion('inicio');
-    alert("¡Rareza publicada en la nube!");
+
+    try {
+        if (!supabase) throw new Error("El sistema de Supabase no está inicializado en la web.");
+        
+        // Intentamos guardarlo en internet
+        const { error } = await supabase.from('productos').insert([nuevo]);
+        if (error) throw error;
+
+        // Si se guardó bien, actualiza la grilla, limpia el form y avisa
+        await traerProductosDesdeNube();
+        document.getElementById('product-form').reset();
+        mostrarSeccion('inicio');
+        alert("¡Rareza publicada con éxito en la nube de Supabase!");
+        
+    } catch (err) { 
+        // ¡SUPER IMPORTANTE! Si el servidor de internet falla o rechaza el envío, 
+// este cartel te va a decir exactamente qué columna o permiso falló.
+alert("⚠️ Supabase rechazó la carga: " + err.message + "\n\n(Revisá que los nombres de las columnas en tu Supabase coincidan exactamente con el formulario).");
+}
 }
