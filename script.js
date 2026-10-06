@@ -1,9 +1,10 @@
 // ==========================================
 // 1. CONFIGURACIÓN GLOBALES Y SUPABASE
 // ==========================================
-// ⚠️ REEMPLAZÁ ESTA URL POR LA REAL DE TU DASHBOARD DE SUPABASE
-const SUPABASE_URL = "https://xyfrahshzeeftlnleazd.supabase.co/rest/v1/"; 
-const SUPABASE_KEY = "sb_publishable_noDrdShWvDR8wRsJi0w-nA_q1lB0HLq";
+const SUPABASE_URL = "https://xyfrahshzeeftlnleazd.supabase.co"; 
+
+// ⚠️ ACÁ PEGÁ TU CLAVE ANON/PUBLIC REAL (Buscala en Project Settings -> API)
+const SUPABASE_KEY = "sb_publishable_noDrdShWvDR8wRsJi0w-nA_q1lB0HLq"; 
 
 let productos = [];
 let usuariosRegistrados = JSON.parse(localStorage.getItem('zen_usuarios')) || [];
