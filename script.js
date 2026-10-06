@@ -4,7 +4,7 @@
 const SUPABASE_URL = "https://supabase.co"; 
 const SUPABASE_KEY = "sb_publishable_noDrdShWvDR8wRsJi0w-nA_q1lB0HLq";
 
-// Inicialización segura de la base de datos
+// Inicialización segura del cliente de base de datos
 const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let productos = [];
@@ -36,12 +36,12 @@ async function traerProductosDesdeNube() {
     ];
 
     try {
-        if (!supabase) throw new Error("Supabase bloqueado o sin inyectar");
+        if (!supabase) throw new Error("Supabase ausente");
         const { data, error } = await supabase.from('productos').select('*').order('id', { ascending: true });
         if (error) throw error;
         productos = (!data || data.length === 0) ? respaldo : data;
     } catch (err) {
-        console.warn("Cargando inventario local alternativo:", err.message);
+        console.warn("Usando catálogo de respaldo:", err.message);
         productos = respaldo;
     }
     renderizarProductos();
@@ -133,9 +133,8 @@ function cambiarSlide(dir) {
     carousel.style.transform = `translateX(-${indiceSlideActual * 50}%)`;
 }
 setInterval(() => cambiarSlide(1), 6000);
-
 // ==========================================
-// 3. REGISTRO, LOGIN Y PERFILES
+// 3. REGISTRO, LOGIN Y PERFILES (SUPABASE)
 // ==========================================
 function abrirModalAuth() {
     if (usuarioActivo) mostrarSeccion('perfil');
@@ -157,13 +156,15 @@ document.getElementById('auth-form').addEventListener('submit', async function(e
     const pass = document.getElementById('auth-pass').value;
 
     if (tipoAuthActual === 'register') {
-        if (usuariosRegistrados.some(u => u.email === email)) { alert("Correo ya registrado."); return; }
-        usuariosRegistrados.push({ email, pass, nombre: "", telefono: "", direccion: "", cp: "" });
-        localStorage.setItem('zen_usuarios', JSON.stringify(usuariosRegistrados));
-        
-        if (supabase) await supabase.from('usuarios').insert([{ email, password: pass }]);
-        alert("¡Cuenta de coleccionista creada! Iniciá sesión.");
-        cambiarAuthTab('login');
+        try {
+            if (usuariosRegistrados.some(u => u.email === email)) { alert("Correo ya registrado."); return; }
+            usuariosRegistrados.push({ email, pass, nombre: "", telefono: "", direccion: "", cp: "" });
+            localStorage.setItem('zen_usuarios', JSON.stringify(usuariosRegistrados));
+            
+            if (supabase) await supabase.from('usuarios').insert([{ email, password: pass }]);
+            alert("¡Cuenta de coleccionista creada! Iniciá sesión.");
+            cambiarAuthTab('login');
+        } catch (err) { alert("Error al registrarse: " + err.message); }
     } else {
         const existe = usuariosRegistrados.find(u => u.email === email && u.pass === pass);
         if ((email === "admin@zen.com" && pass === "1234") || existe) {
@@ -178,7 +179,7 @@ document.getElementById('auth-form').addEventListener('submit', async function(e
 
 function aplicarInterfazUsuario() {
     const btn = document.getElementById('user-status');
-    if (btn) btn.textContent = `👤 Mi Perfil (${usuarioActivo.email.split('@')[0]})`;
+    if (btn) btn.textContent = `👤 Mi Perfil (${usuarioActivo.email.split('@')})`;
     if (usuarioActivo.email === "admin@zen.com") document.getElementById('nav-vender').classList.remove('hidden');
     cargarDatosPerfilEnFormulario();
 }
@@ -210,92 +211,114 @@ function guardarDatosPerfil(e) {
 }
 
 function logout() {
-localStorage.removeItem('zen_sesion');
-location.reload();
+    localStorage.removeItem('zen_sesion');
+    location.reload();
 }
+
 // ==========================================
 // 4. DETALLES, CARRITO Y BOTÓN WHATSAPP
 // ==========================================
 function abrirDetalleProducto(id) {
-const p = productos.find(item => item.id === id);
-if (!p) return;
-document.getElementById('detail-img').src = p.imagen;
-document.getElementById('detail-title').textContent = p.titulo;
-document.getElementById('detail-category').textContent = p.subcategoria;
-document.getElementById('detail-condition').textContent = p.condicion;
-document.getElementById('detail-price').textContent = $${p.precio};
-document.getElementById('detail-desc').textContent = p.descripcion;
-const btn = document.getElementById('btn-detail-add');
-if (parseInt(p.stock) === 0) {
-btn.textContent = "Agotado"; btn.disabled = true; btn.style.background = "#555";
-} else {
-btn.textContent = "Añadir a la Orden"; btn.disabled = false; btn.style.background = "var(--color-violeta)";
-btn.onclick = () => agregarAlCarrito(p.id);
+    const p = productos.find(item => item.id === id);
+    if (!p) return;
+
+    document.getElementById('detail-img').src = p.imagen;
+    document.getElementById('detail-title').textContent = p.titulo;
+    document.getElementById('detail-category').textContent = p.subcategoria;
+    document.getElementById('detail-condition').textContent = p.condicion;
+    document.getElementById('detail-price').textContent = `$${p.precio}`;
+    document.getElementById('detail-desc').textContent = p.descripcion;
+
+    const btn = document.getElementById('btn-detail-add');
+    if (parseInt(p.stock) === 0) {
+        btn.textContent = "Agotado"; btn.disabled = true; btn.style.background = "#555";
+    } else {
+        btn.textContent = "Añadir a la Orden"; btn.disabled = false; btn.style.background = "var(--color-violeta)";
+        btn.onclick = () => agregarAlCarrito(p.id);
+    }
+    document.getElementById('modal-detail').classList.add('open');
 }
-document.getElementById('modal-detail').classList.add('open');
-}
+
 function cerrarModalDetail() { document.getElementById('modal-detail').classList.remove('open'); }
 function toggleCarrito() { mostrarSeccion('carrito'); }
+
 function agregarAlCarrito(id) {
-const p = productos.find(item => item.id === id);
-if (carrito.some(item => item.id === id)) { alert("Ya está en tu orden de compra."); return; }
-carrito.push(p);
-cerrarModalDetail();
-actualizarCarritoUI();
+    const p = productos.find(item => item.id === id);
+    if (carrito.some(item => item.id === id)) { alert("Ya está en tu orden de compra."); return; }
+    carrito.push(p);
+    cerrarModalDetail();
+    actualizarCarritoUI();
 }
+
 function quitarDelCarrito(index) { carrito.splice(index, 1); actualizarCarritoUI(); }
+
 function actualizarCarritoUI() {
-document.getElementById('cart-count').textContent = carrito.length;
-const container = document.getElementById('seccion-carrito-items');
-if (!container) return;
-container.innerHTML = '';
-let total = 0;
-if (carrito.length === 0) {
-container.innerHTML = 'Tu carrito de Zen & Zen está vacío';
-document.getElementById('resumen-subtotal').textContent = $0;
-document.getElementById('resumen-total').textContent = $0;
-return;
+    document.getElementById('cart-count').textContent = carrito.length;
+    const container = document.getElementById('seccion-carrito-items');
+    if (!container) return;
+    container.innerHTML = '';
+    let total = 0;
+
+    if (carrito.length === 0) {
+        container.innerHTML = '<h3 style="text-align:center; padding:20px; color:#aaa;">Tu carrito de Zen & Zen está vacío</h3>';
+        document.getElementById('resumen-subtotal').textContent = `$0`;
+        document.getElementById('resumen-total').textContent = `$0`;
+        return;
+    }
+
+    carrito.forEach((item, index) => {
+        total += item.precio;
+        container.innerHTML += `
+            <div class="cart-item" style="display:flex; justify-content:space-between; background:#0b0e14; padding:15px; border-radius:8px; margin-bottom:10px; border:1px solid #2a3447;">
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <img src="${item.imagen}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
+                    <div><h4 style="color:#fff;">${item.titulo}</h4><p style="color:var(--color-oro); font-weight:bold;">$${item.precio}</p></div>
+                </div>
+                <button onclick="quitarDelCarrito(${index})" style="background:#cc0000; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Quitar</button>
+            </div>`;
+    });
+    document.getElementById('resumen-subtotal').textContent = `$${total}`;
+    document.getElementById('resumen-total').textContent = `$${total}`;
 }
-carrito.forEach((item, index) => {
-total += item.precio;
-container.innerHTML +=  <div class="cart-item" style="display:flex; justify-content:space-between; background:#0b0e14; padding:15px; border-radius:8px; margin-bottom:10px; border:1px solid #2a3447;"> <div style="display:flex; gap:15px; align-items:center;"> <img src="${item.imagen}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;"> <div><h4 style="color:#fff;">${item.titulo}</h4><p style="color:var(--color-oro); font-weight:bold;">$${item.precio}</p></div> </div> <button onclick="quitarDelCarrito(${index})" style="background:#cc0000; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Quitar</button> </div>;
-});
-document.getElementById('resumen-subtotal').textContent = $${total};
-document.getElementById('resumen-total').textContent = $${total};
-}
+
 function finalizarOrdenWhatsApp() {
-if (!usuarioActivo) { alert("Iniciá sesión para continuar."); abrirModalAuth(); return; }
-if (carrito.length === 0) return;
-const d = usuariosRegistrados.find(u => u.email === usuarioActivo.email) || {};
-const metodoPago = document.getElementById('checkout-metodo-pago').value;
-let telefono = "54911XXXXXXXX"; // Poné tu WhatsApp real comercial
-let mensaje = 👑 *ORDEN - ZEN & ZEN* 👑\n\n📧 *Comprador:* ${usuarioActivo.email}\n💳 *Pago:* ${metodoPago}\n;
-if (d.nombre) mensaje += 👤 *Nombre:* ${d.nombre}\n📍 *Destino:* ${d.direccion}\n;
-mensaje += \n📦 *Artículos:*\n;
-carrito.forEach(item => {
-mensaje += • ${item.titulo} -> *$${item.precio}*\n;
-if (supabase) supabase.from('productos').update({ stock: 0 }).eq('id', item.id);
-});
-window.open(https://whatsapp.com{telefono}&text=${encodeURIComponent(mensaje)}, '_blank');
-carrito = []; actualizarCarritoUI(); traerProductosDesdeNube(); mostrarSeccion('inicio');
+    if (!usuarioActivo) { alert("Iniciá sesión para continuar."); abrirModalAuth(); return; }
+    if (carrito.length === 0) return;
+
+    const d = usuariosRegistrados.find(u => u.email === usuarioActivo.email) || {};
+    const metodoPago = document.getElementById('checkout-metodo-pago').value;
+    let telefono = "54911XXXXXXXX"; // Poné tu WhatsApp real comercial
+    
+    let mensaje = `👑 *ORDEN - ZEN & ZEN* 👑\n\n📧 *Comprador:* ${usuarioActivo.email}\n💳 *Pago:* ${metodoPago}\n`;
+    if (d.nombre) mensaje += `👤 *Nombre:* ${d.nombre}\n📍 *Destino:* ${d.direccion}\n`;
+    mensaje += `\n📦 *Artículos:*\n`;
+    
+    carrito.forEach(item => {
+        mensaje += `• ${item.titulo} -> *$${item.precio}*\n`;
+        if (supabase) supabase.from('productos').update({ stock: 0 }).eq('id', item.id);
+    });
+
+    window.open(`https://whatsapp.com{telefono}&text=${encodeURIComponent(mensaje)}`, '_blank');
+    carrito = []; actualizarCarritoUI(); traerProductosDesdeNube(); mostrarSeccion('inicio');
 }
+
 async function agregarProductoAdmin(e) {
-e.preventDefault();
-const nuevo = {
-titulo: document.getElementById('prod-title').value,
-precio: parseFloat(document.getElementById('prod-price').value),
-categoria: document.getElementById('prod-category').value,
-subcategoria: document.getElementById('prod-subcategory').value,
-escala: document.getElementById('prod-escala').value,
-condicion: document.getElementById('prod-condition').value,
-stock: 1, imagen: document.getElementById('prod-img').value,
-imagen_2: document.getElementById('prod-img2').value || "",
-imagen_3: document.getElementById('prod-img3').value || "",
-descripcion: document.getElementById('prod-desc').value
-};
-if (supabase) await supabase.from('productos').insert([nuevo]);
-await traerProductosDesdeNube();
-document.getElementById('product-form').reset();
-mostrarSeccion('inicio');
-alert("¡Rareza publicada en la nube!");
+    e.preventDefault();
+    const nuevo = {
+        titulo: document.getElementById('prod-title').value,
+        precio: parseFloat(document.getElementById('prod-price').value),
+        categoria: document.getElementById('prod-category').value,
+        subcategoria: document.getElementById('prod-subcategory').value,
+        escala: document.getElementById('prod-escala').value,
+        condicion: document.getElementById('prod-condition').value,
+        stock: 1, imagen: document.getElementById('prod-img').value,
+        imagen_2: document.getElementById('prod-img2').value || "",
+        imagen_3: document.getElementById('prod-img3').value || "",
+        descripcion: document.getElementById('prod-desc').value
+    };
+    if (supabase) await supabase.from('productos').insert([nuevo]);
+    await traerProductosDesdeNube();
+    document.getElementById('product-form').reset();
+    mostrarSeccion('inicio');
+    alert("¡Rareza publicada en la nube!");
 }
