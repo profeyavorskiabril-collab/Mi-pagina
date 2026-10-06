@@ -15,9 +15,9 @@ let categoriaActual = 'Todos';
 let subcategoriaActual = 'Todos';
 
 // Inicialización del cliente de base de datos (UNA SOLA DECLARACIÓN)
-let supabase = null;
+// CORREGIDO: No usamos "let" ni "const". Asignamos el cliente directo al objeto global existente.
 if (window.supabase && window.supabase.createClient) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 }
 
 // ARRANQUE AUTOMÁTICO DE LA TIENDA
