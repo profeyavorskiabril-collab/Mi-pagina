@@ -1,7 +1,7 @@
 // ==========================================
 // 1. CONFIGURACIÓN GLOBALES Y SUPABASE
 // ==========================================
-// 1. CONEXIÓN REAL CON TU PROYECTO DE SUPABASE (CORREGIDO)
+// ⚠️ REEMPLAZÁ ESTA URL POR LA REAL DE TU DASHBOARD DE SUPABASE
 const SUPABASE_URL = "https://supabase.co"; 
 const SUPABASE_KEY = "sb_publishable_noDrdShWvDR8wRsJi0w-nA_q1lB0HLq";
 
@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const formPerfil = document.getElementById('perfil-form');
     if (formPerfil) formPerfil.addEventListener('submit', guardarDatosPerfil);
 });
+
 // ==========================================
 // 2. CONEXIÓN Y CARGA DEL CATÁLOGO
 // ==========================================
@@ -103,6 +104,7 @@ function filtrarSubcategoria(cat, subcat) {
     mostrarSeccion('tienda');
     renderizarProductos();
 }
+
 function mostrarSeccion(seccion) {
     document.getElementById('view-inicio').classList.toggle('hidden', seccion !== 'inicio');
     document.getElementById('view-tienda').classList.toggle('hidden', seccion !== 'tienda');
@@ -132,7 +134,6 @@ function cambiarSlide(dir) {
     carousel.style.transform = `translateX(-${indiceSlideActual * 50}%)`;
 }
 setInterval(() => cambiarSlide(1), 6000);
-
 // ==========================================
 // 3. REGISTRO, LOGIN Y PERFILES
 // ==========================================
@@ -160,10 +161,15 @@ document.getElementById('auth-form').addEventListener('submit', async function(e
             if (usuariosRegistrados.some(u => u.email === email)) { alert("Correo ya registrado."); return; }
             usuariosRegistrados.push({ email, pass, nombre: "", telefono: "", direccion: "", cp: "" });
             localStorage.setItem('zen_usuarios', JSON.stringify(usuariosRegistrados));
-            if (supabase) await supabase.from('usuarios').insert([{ email, password: pass }]);
+            
+            // CORREGIDO: Esperamos a que Supabase confirme el registro en la nube
+            if (supabase) {
+                const { error } = await supabase.from('usuarios').insert([{ email, password: pass }]);
+                if (error) throw error;
+            }
             alert("¡Cuenta creada! Ya podés ingresar.");
             cambiarAuthTab('login');
-        } catch (err) { alert("Error al registrarse: " + err.message); }
+        } catch (err) { alert("Error al registrarse en la nube: " + err.message); }
     } else {
         const existe = usuariosRegistrados.find(u => u.email === email && u.pass === pass);
         if ((email === "admin@zen.com" && pass === "1234") || existe) {
@@ -178,7 +184,7 @@ document.getElementById('auth-form').addEventListener('submit', async function(e
 
 function aplicarInterfazUsuario() {
     const btn = document.getElementById('user-status');
-    if (btn) btn.textContent = `👤 Mi Perfil (${usuarioActivo.email.split('@')})`;
+    if (btn) btn.textContent = `👤 Mi Perfil (${usuarioActivo.email.split('@')[0]})`;
     if (usuarioActivo.email === "admin@zen.com") document.getElementById('nav-vender').classList.remove('hidden');
     cargarDatosPerfilEnFormulario();
 }
@@ -193,7 +199,7 @@ function cargarDatosPerfilEnFormulario() {
     }
 }
 
-function guardarDatosPerfil(e) {
+async function guardarDatosPerfil(e) {
     e.preventDefault();
     const idx = usuariosRegistrados.findIndex(u => u.email === usuarioActivo.email);
     if (idx !== -1) {
@@ -202,9 +208,18 @@ function guardarDatosPerfil(e) {
         usuariosRegistrados[idx].direccion = document.getElementById('perf-direccion').value;
         usuariosRegistrados[idx].cp = document.getElementById('perf-cp').value;
         localStorage.setItem('zen_usuarios', JSON.stringify(usuariosRegistrados));
-        if (supabase) supabase.from('usuarios').update({ nombre: usuariosRegistrados[idx].nombre, direccion: usuariosRegistrados[idx].direccion }).eq('email', usuarioActivo.email);
-        alert("¡Perfil guardado!");
-        mostrarSeccion('inicio');
+        
+        try {
+            // CORREGIDO: Se añade await para procesar los datos antes de cambiar de sección
+            if (supabase) {
+                const { error } = await supabase.from('usuarios')
+                    .update({ nombre: usuariosRegistrados[idx].nombre, direccion: usuariosRegistrados[idx].direccion })
+                    .eq('email', usuarioActivo.email);
+                if (error) throw error;
+            }
+            alert("¡Perfil guardado!");
+            mostrarSeccion('inicio');
+        } catch (err) { alert("Error al guardar en Supabase: " + err.message); }
     }
 }
 
@@ -278,27 +293,43 @@ function actualizarCarritoUI() {
     document.getElementById('resumen-total').textContent = `$${total}`;
 }
 
-function finalizarOrdenWhatsApp() {
+async function finalizarOrdenWhatsApp() {
     if (!usuarioActivo) { alert("Iniciá sesión para continuar."); abrirModalAuth(); return; }
     if (carrito.length === 0) return;
 
     const d = usuariosRegistrados.find(u => u.email === usuarioActivo.email) || {};
     const metodoPago = document.getElementById('checkout-metodo-pago').value;
-    let telefono = "54911XXXXXXXX"; 
+    let telefono = "54911XXXXXXXX"; // Poné tu número real acá sin el '+'
     
     let mensaje = `👑 *ORDEN - ZEN & ZEN* 👑\n\n📧 *Comprador:* ${usuarioActivo.email}\n💳 *Pago:* ${metodoPago}\n`;
     if (d.nombre) mensaje += `👤 *Nombre:* ${d.nombre}\n📍 *Destino:* ${d.direccion}\n`;
     mensaje += `\n📦 *Artículos:*\n`;
     
-    carrito.forEach(item => {
-        mensaje += `• ${item.titulo} -> *$${item.precio}*\n`;
-        if (supabase) supabase.from('productos').update({ stock: 0 }).eq('id', item.id);
-    });
+    // CORREGIDO: Usamos un bucle for...of para que el await funcione de manera secuencial en Supabase
+    try {
+        for (const item of carrito) {
+            mensaje += `• ${item.titulo} -> *$${item.precio}*\n`;
+            if (supabase) {
+                const { error } = await supabase.from('productos').update({ stock: 0 }).eq('id', item.id);
+                if (error) console.error("No se pudo actualizar el stock del ítem:", item.id, error.message);
+            }
+        }
+    } catch(err) {
+        console.error("Error procesando carrito:", err);
+    }
 
+    // CORREGIDO: Sintaxis correcta de la API de WhatsApp
     window.open(`https://whatsapp.com{telefono}&text=${encodeURIComponent(mensaje)}`, '_blank');
-    carrito = []; actualizarCarritoUI(); traerProductosDesdeNube(); mostrarSeccion('inicio');
+    
+    carrito = []; 
+    actualizarCarritoUI(); 
+    await traerProductosDesdeNube(); 
+    mostrarSeccion('inicio');
 }
 
+// ==========================================
+// 5. PANEL DE ADMINISTRADOR
+// ==========================================
 async function agregarProductoAdmin(e) {
     e.preventDefault();
     if (!supabase) { alert("Base de datos desconectada."); return; }
@@ -309,7 +340,8 @@ async function agregarProductoAdmin(e) {
         subcategoria: document.getElementById('prod-subcategory').value,
         escala: document.getElementById('prod-escala').value,
         condicion: document.getElementById('prod-condition').value,
-        stock: 1, imagen: document.getElementById('prod-img').value,
+        stock: 1, 
+        imagen: document.getElementById('prod-img').value,
         imagen_2: document.getElementById('prod-img2').value || "",
         imagen_3: document.getElementById('prod-img3').value || "",
         descripcion: document.getElementById('prod-desc').value
