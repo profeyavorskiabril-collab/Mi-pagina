@@ -2,7 +2,7 @@
 // 1. CONFIGURACIÓN GLOBALES Y SUPABASE
 // ==========================================
 // ⚠️ REEMPLAZÁ ESTA URL POR LA REAL DE TU DASHBOARD DE SUPABASE
-const SUPABASE_URL = "https://supabase.co"; 
+const SUPABASE_URL = "https://xyfrahshzeeftlnleazd.supabase.co/rest/v1/"; 
 const SUPABASE_KEY = "sb_publishable_noDrdShWvDR8wRsJi0w-nA_q1lB0HLq";
 
 let productos = [];
