@@ -2,8 +2,6 @@
 // 1. CONFIGURACIÓN GLOBALES Y SUPABASE
 // ==========================================
 const SUPABASE_URL = "https://xyfrahshzeeftlnleazd.supabase.co"; 
-
-// ⚠️ ACÁ PEGÁ TU CLAVE ANON/PUBLIC REAL (Buscala en Project Settings -> API)
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5ZnJhaHNoemVlZnRsbmxlYXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNDA0MDAsImV4cCI6MjEwNjgxNjQwMH0.ihFCqFpASz9hV7knqMt_87OR59KGJqkH4AoQB88Y8JM"; 
 
 let productos = [];
@@ -16,7 +14,7 @@ let indiceSlideActual = 0;
 let categoriaActual = 'Todos';
 let subcategoriaActual = 'Todos';
 
-// Inicialización del cliente de base de datos
+// Inicialización del cliente de base de datos (UNA SOLA DECLARACIÓN)
 let supabase = null;
 if (window.supabase && window.supabase.createClient) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -36,6 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const formPerfil = document.getElementById('perfil-form');
     if (formPerfil) formPerfil.addEventListener('submit', guardarDatosPerfil);
 });
+
 
 // ==========================================
 // 2. CONEXIÓN Y CARGA DEL CATÁLOGO
