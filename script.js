@@ -1,12 +1,11 @@
 // ==========================================
-// 1. CONEXIÓN DIRECTA CON TU SUPABASE
+// 1. CONEXIÓN REAL CON TU PROYECTO DE SUPABASE
 // ==========================================
 const SUPABASE_URL = "https://supabase.co"; 
 const SUPABASE_KEY = "sb_publishable_noDrdShWvDR8wRsJi0w-nA_q1lB0HLq";
 
-// Forzamos al script a buscar la librería global de cualquier forma posible
-const supabaseClient = window.supabase || (window.default ? window.supabase : null);
-const supabase = supabaseClient ? supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+// Conexión forzada al cliente global
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let productos = [];
 let usuariosRegistrados = JSON.parse(localStorage.getItem('zen_usuarios')) || [];
@@ -29,7 +28,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (formPerfil) formPerfil.addEventListener('submit', guardarDatosPerfil);
 });
 
-// DESCARGAR INVENTARIO DE LA NUBE
+// DESCARGAR INVENTARIO DE LA NUBE EN TIEMPO REAL
 async function traerProductosDesdeNube() {
     try {
         if (!supabase) throw new Error("Supabase ausente");
@@ -37,7 +36,7 @@ async function traerProductosDesdeNube() {
         if (error) throw error;
         productos = data || [];
     } catch (err) {
-        console.warn("Error de conexión, usando catálogo vacío:", err.message);
+        console.warn("Error de conexión:", err.message);
         productos = [];
     }
     renderizarProductos();
@@ -116,6 +115,18 @@ if (searchInput) {
     });
 }
 
+function cambiarSlide(dir) {
+    const carousel = document.getElementById('carousel');
+    if (!carousel) return;
+    indiceSlideActual += dir;
+    if (indiceSlideActual >= carousel.children.length) indiceSlideActual = 0;
+    if (indiceSlideActual < 0) indiceSlideActual = carousel.children.length - 1;
+    carousel.style.transform = `translateX(-${indiceSlideActual * 50}%)`;
+}
+setInterval(() => cambiarSlide(1), 6000);
+// ==========================================
+// 2. REGISTRO, LOGIN Y PERFILES (SUPABASE)
+// ==========================================
 function abrirModalAuth() {
     if (usuarioActivo) mostrarSeccion('perfil');
     else document.getElementById('modal-auth').classList.add('open');
@@ -136,12 +147,15 @@ document.getElementById('auth-form').addEventListener('submit', async function(e
     const pass = document.getElementById('auth-pass').value;
 
     if (tipoAuthActual === 'register') {
-        if (usuariosRegistrados.some(u => u.email === email)) { alert("Correo ya registrado."); return; }
-        usuariosRegistrados.push({ email, pass, nombre: "", telefono: "", direccion: "", cp: "" });
-        localStorage.setItem('zen_usuarios', JSON.stringify(usuariosRegistrados));
-        if (supabase) await supabase.from('usuarios').insert([{ email, password: pass }]);
-        alert("¡Cuenta creada! Ya podés ingresar.");
-        cambiarAuthTab('login');
+        try {
+            if (usuariosRegistrados.some(u => u.email === email)) { alert("Correo ya registrado."); return; }
+            usuariosRegistrados.push({ email, pass, nombre: "", telefono: "", direccion: "", cp: "" });
+            localStorage.setItem('zen_usuarios', JSON.stringify(usuariosRegistrados));
+            
+            if (supabase) await supabase.from('usuarios').insert([{ email, password: pass }]);
+            alert("¡Cuenta creada! Ya podés ingresar.");
+            cambiarAuthTab('login');
+        } catch (err) { alert("Error al registrarse: " + err.message); }
     } else {
         const existe = usuariosRegistrados.find(u => u.email === email && u.pass === pass);
         if ((email === "admin@zen.com" && pass === "1234") || existe) {
@@ -180,6 +194,7 @@ function guardarDatosPerfil(e) {
         usuariosRegistrados[idx].direccion = document.getElementById('perf-direccion').value;
         usuariosRegistrados[idx].cp = document.getElementById('perf-cp').value;
         localStorage.setItem('zen_usuarios', JSON.stringify(usuariosRegistrados));
+        
         if (supabase) supabase.from('usuarios').update({ nombre: usuariosRegistrados[idx].nombre, direccion: usuariosRegistrados[idx].direccion }).eq('email', usuarioActivo.email);
         alert("¡Perfil guardado!");
         mostrarSeccion('inicio');
@@ -191,6 +206,9 @@ function logout() {
     location.reload();
 }
 
+// ==========================================
+// 3. CARRITO Y PASARELA WHATSAPP
+// ==========================================
 function abrirDetalleProducto(id) {
     const p = productos.find(item => item.id === id);
     if (!p) return;
@@ -218,71 +236,90 @@ function toggleCarrito() { mostrarSeccion('carrito'); }
 function agregarAlCarrito(id) {
     const p = productos.find(item => item.id === id);
     if (carrito.some(item => item.id === id)) { alert("Ya está en tu orden de compra."); return; }
-carrito.push(p);
-cerrarModalDetail();
-actualizarCarritoUI();
+    carrito.push(p);
+    cerrarModalDetail();
+    actualizarCarritoUI();
 }
+
 function quitarDelCarrito(index) { carrito.splice(index, 1); actualizarCarritoUI(); }
+
 function actualizarCarritoUI() {
-document.getElementById('cart-count').textContent = carrito.length;
-const container = document.getElementById('seccion-carrito-items');
-if (!container) return;
-container.innerHTML = '';
-let total = 0;
-if (carrito.length === 0) {
-container.innerHTML = 'Tu carrito de Zen & Zen está vacío';
-document.getElementById('resumen-subtotal').textContent = $0;
-document.getElementById('resumen-total').textContent = $0;
-return;
+    document.getElementById('cart-count').textContent = carrito.length;
+    const container = document.getElementById('seccion-carrito-items');
+    if (!container) return;
+    container.innerHTML = '';
+    let total = 0;
+
+    if (carrito.length === 0) {
+        container.innerHTML = '<h3 style="text-align:center; padding:20px; color:#aaa;">Tu carrito de Zen & Zen está vacío</h3>';
+        document.getElementById('resumen-subtotal').textContent = `$0`;
+        document.getElementById('resumen-total').textContent = `$0`;
+        return;
+    }
+
+    carrito.forEach((item, index) => {
+        total += item.precio;
+        container.innerHTML += `
+            <div class="cart-item" style="display:flex; justify-content:space-between; background:#0b0e14; padding:15px; border-radius:8px; margin-bottom:10px; border:1px solid #2a3447;">
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <img src="${item.imagen}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
+                    <div><h4 style="color:#fff;">${item.titulo}</h4><p style="color:var(--color-oro); font-weight:bold;">$${item.precio}</p></div>
+                </div>
+                <button onclick="quitarDelCarrito(${index})" style="background:#cc0000; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Quitar</button>
+            </div>`;
+    });
+    document.getElementById('resumen-subtotal').textContent = `$${total}`;
+    document.getElementById('resumen-total').textContent = `$${total}`;
 }
-carrito.forEach((item, index) => {
-total += item.precio;
-container.innerHTML +=  <div class="cart-item" style="display:flex; justify-content:space-between; background:#0b0e14; padding:15px; border-radius:8px; margin-bottom:10px; border:1px solid #2a3447;"> <div style="display:flex; gap:15px; align-items:center;"> <img src="${item.imagen}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;"> <div><h4 style="color:#fff;">${item.titulo}</h4><p style="color:var(--color-oro); font-weight:bold;">$${item.precio}</p></div> </div> <button onclick="quitarDelCarrito(${index})" style="background:#cc0000; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Quitar</button> </div>;
-});
-document.getElementById('resumen-subtotal').textContent = $${total};
-document.getElementById('resumen-total').textContent = $${total};
-}
+
 function finalizarOrdenWhatsApp() {
-if (!usuarioActivo) { alert("Iniciá sesión para continuar."); abrirModalAuth(); return; }
-if (carrito.length === 0) return;
-const d = usuariosRegistrados.find(u => u.email === usuarioActivo.email) || {};
-const metodoPago = document.getElementById('checkout-metodo-pago').value;
-let telefono = "54911XXXXXXXX";
-let mensaje = 👑 *ORDEN - ZEN & ZEN* 👑\n\n📧 *Comprador:* ${usuarioActivo.email}\n💳 *Pago:* ${metodoPago}\n;
-if (d.nombre) mensaje += 👤 *Nombre:* ${d.nombre}\n📍 *Destino:* ${d.direccion}\n;
-mensaje += \n📦 *Artículos:*\n;
-carrito.forEach(item => {
-mensaje += • ${item.titulo} -> *$${item.precio}*\n;
-if (supabase) supabase.from('productos').update({ stock: 0 }).eq('id', item.id);
-});
-window.open(https://whatsapp.com{telefono}&text=${encodeURIComponent(mensaje)}, '_blank');
-carrito = []; actualizarCarritoUI(); traerProductosDesdeNube(); mostrarSeccion('inicio');
+    if (!usuarioActivo) { alert("Iniciá sesión para continuar."); abrirModalAuth(); return; }
+    if (carrito.length === 0) return;
+
+    const d = usuariosRegistrados.find(u => u.email === usuarioActivo.email) || {};
+    const metodoPago = document.getElementById('checkout-metodo-pago').value;
+    let telefono = "54911XXXXXXXX"; 
+    
+    let mensaje = `👑 *ORDEN - ZEN & ZEN* 👑\n\n📧 *Comprador:* ${usuarioActivo.email}\n💳 *Pago:* ${metodoPago}\n`;
+    if (d.nombre) mensaje += `👤 *Nombre:* ${d.nombre}\n📍 *Destino:* ${d.direccion}\n`;
+    mensaje += `\n📦 *Artículos:*\n`;
+    
+    carrito.forEach(item => {
+        mensaje += `• ${item.titulo} -> *$${item.precio}*\n`;
+        if (supabase) supabase.from('productos').update({ stock: 0 }).eq('id', item.id);
+    });
+
+    window.open(`https://whatsapp.com{telefono}&text=${encodeURIComponent(mensaje)}`, '_blank');
+    carrito = []; actualizarCarritoUI(); traerProductosDesdeNube(); mostrarSeccion('inicio');
 }
+
+// ==========================================
+// 4. AGREGAR PRODUCTO ADMIN (SUPABASE)
+// ==========================================
 async function agregarProductoAdmin(e) {
-e.preventDefault();
-if (!supabase) {
-alert("⚠️ Error crítico: La web no puede comunicarse con la base de datos de internet porque la librería externa sigue bloqueada en tu navegador.");
-return;
-}
-const nuevo = {
-titulo: document.getElementById('prod-title').value,
-precio: parseFloat(document.getElementById('prod-price').value),
-categoria: document.getElementById('prod-category').value,
-subcategoria: document.getElementById('prod-subcategory').value,
-escala: document.getElementById('prod-escala').value,
-condicion: document.getElementById('prod-condition').value,
-stock: 1,
-imagen: document.getElementById('prod-img').value,
-imagen_2: document.getElementById('prod-img2').value || "",
-imagen_3: document.getElementById('prod-img3').value || "",
-descripcion: document.getElementById('prod-desc').value
-};
-try {
-const { error } = await supabase.from('productos').insert([nuevo]);
-if (error) throw error;
-await traerProductosDesdeNube();
-document.getElementById('product-form').reset();
-mostrarSeccion('inicio');
-alert("¡Rareza publicada con éxito!");
-} catch (err) { alert("Supabase rechazó la carga: " + err.message); }
+    e.preventDefault();
+    const nuevo = {
+        titulo: document.getElementById('prod-title').value,
+        precio: parseFloat(document.getElementById('prod-price').value),
+        categoria: document.getElementById('prod-category').value,
+        subcategoria: document.getElementById('prod-subcategory').value,
+        escala: document.getElementById('prod-escala').value,
+        condicion: document.getElementById('prod-condition').value,
+        stock: 1, 
+        imagen: document.getElementById('prod-img').value,
+        imagen_2: document.getElementById('prod-img2').value || "",
+        imagen_3: document.getElementById('prod-img3').value || "",
+        descripcion: document.getElementById('prod-desc').value
+    };
+
+    try {
+        if (!supabase) throw new Error("Base de datos sin conectar.");
+        const { error } = await supabase.from('productos').insert([nuevo]);
+        if (error) throw error;
+
+        await traerProductosDesdeNube();
+        document.getElementById('product-form').reset();
+        mostrarSeccion('inicio');
+        alert("¡Rareza publicada con éxito en la nube!");
+    } catch (err) { alert("Supabase rechazó la carga: " + err.message); }
 }
