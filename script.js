@@ -1,5 +1,5 @@
 // ==========================================
-// 1. DECLARACIÓN DE VARIABLES GLOBALES
+// 1. CONFIGURACIÓN GLOBALES Y SUPABASE
 // ==========================================
 const SUPABASE_URL = "https://supabase.co"; 
 const SUPABASE_KEY = "sb_publishable_noDrdShWvDR8wRsJi0w-nA_q1lB0HLq";
@@ -14,19 +14,17 @@ let indiceSlideActual = 0;
 let categoriaActual = 'Todos';
 let subcategoriaActual = 'Todos';
 
-// Inicialización limpia de Supabase
+// Inicialización del cliente de base de datos
 let supabase = null;
 if (window.supabase && window.supabase.createClient) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 }
 
-// ARRANQUE DE LA APLICACIÓN
+// ARRANQUE AUTOMÁTICO DE LA TIENDA
 document.addEventListener("DOMContentLoaded", async () => {
-    // Intento de reconexión por si la red tardó en cargar la librería
     if (!supabase && window.supabase && window.supabase.createClient) {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
-    
     await traerProductosDesdeNube();
     if (usuarioActivo) aplicarInterfazUsuario();
     
@@ -36,7 +34,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const formPerfil = document.getElementById('perfil-form');
     if (formPerfil) formPerfil.addEventListener('submit', guardarDatosPerfil);
 });
-
 // ==========================================
 // 2. CONEXIÓN Y CARGA DEL CATÁLOGO
 // ==========================================
@@ -47,7 +44,7 @@ async function traerProductosDesdeNube() {
         if (error) throw error;
         productos = data || [];
     } catch (err) {
-        console.warn("Error de conexión:", err.message);
+        console.warn("Error de conexión, usando catálogo vacío:", err.message);
         productos = [];
     }
     renderizarProductos();
@@ -105,7 +102,6 @@ function filtrarSubcategoria(cat, subcat) {
     mostrarSeccion('tienda');
     renderizarProductos();
 }
-
 function mostrarSeccion(seccion) {
     document.getElementById('view-inicio').classList.toggle('hidden', seccion !== 'inicio');
     document.getElementById('view-tienda').classList.toggle('hidden', seccion !== 'tienda');
@@ -215,95 +211,115 @@ function logout() {
     localStorage.removeItem('zen_sesion');
     location.reload();
 }
-
 // ==========================================
 // 4. DETALLES, CARRITO Y PASARELA WHATSAPP
 // ==========================================
 function abrirDetalleProducto(id) {
     const p = productos.find(item => item.id === id);
-if (!p) return;
-document.getElementById('detail-img').src = p.imagen;
-document.getElementById('detail-title').textContent = p.titulo;
-document.getElementById('detail-category').textContent = p.subcategoria;
-document.getElementById('detail-condition').textContent = p.condicion;
-document.getElementById('detail-price').textContent = $${p.precio};
-document.getElementById('detail-desc').textContent = p.descripcion;
-const btn = document.getElementById('btn-detail-add');
-if (parseInt(p.stock) === 0) {
-btn.textContent = "Agotado"; btn.disabled = true; btn.style.background = "#555";
-} else {
-btn.textContent = "Añadir a la Orden"; btn.disabled = false; btn.style.background = "var(--color-violeta)";
-btn.onclick = () => agregarAlCarrito(p.id);
+    if (!p) return;
+
+    document.getElementById('detail-img').src = p.imagen;
+    document.getElementById('detail-title').textContent = p.titulo;
+    document.getElementById('detail-category').textContent = p.subcategoria;
+    document.getElementById('detail-condition').textContent = p.condicion;
+    document.getElementById('detail-price').textContent = `$${p.precio}`;
+    document.getElementById('detail-desc').textContent = p.descripcion;
+
+    const btn = document.getElementById('btn-detail-add');
+    if (parseInt(p.stock) === 0) {
+        btn.textContent = "Agotado"; btn.disabled = true; btn.style.background = "#555";
+    } else {
+        btn.textContent = "Añadir a la Orden"; btn.disabled = false; btn.style.background = "var(--color-violeta)";
+        btn.onclick = () => agregarAlCarrito(p.id);
+    }
+    document.getElementById('modal-detail').classList.add('open');
 }
-document.getElementById('modal-detail').classList.add('open');
-}
+
 function cerrarModalDetail() { document.getElementById('modal-detail').classList.remove('open'); }
 function toggleCarrito() { mostrarSeccion('carrito'); }
+
 function agregarAlCarrito(id) {
-const p = productos.find(item => item.id === id);
-if (carrito.some(item => item.id === id)) { alert("Ya está en tu orden de compra."); return; }
-carrito.push(p);
-cerrarModalDetail();
-actualizarCarritoUI();
+    const p = productos.find(item => item.id === id);
+    if (carrito.some(item => item.id === id)) { alert("Ya está en tu orden de compra."); return; }
+    carrito.push(p);
+    cerrarModalDetail();
+    actualizarCarritoUI();
 }
+
 function quitarDelCarrito(index) { carrito.splice(index, 1); actualizarCarritoUI(); }
+
 function actualizarCarritoUI() {
-document.getElementById('cart-count').textContent = carrito.length;
-const container = document.getElementById('seccion-carrito-items');
-if (!container) return;
-container.innerHTML = '';
-let total = 0;
-if (carrito.length === 0) {
-container.innerHTML = 'Tu carrito de Zen & Zen está vacío';
-document.getElementById('resumen-subtotal').textContent = $0;
-document.getElementById('resumen-total').textContent = $0;
-return;
+    document.getElementById('cart-count').textContent = carrito.length;
+    const container = document.getElementById('seccion-carrito-items');
+    if (!container) return;
+    container.innerHTML = '';
+    let total = 0;
+
+    if (carrito.length === 0) {
+        container.innerHTML = '<h3 style="text-align:center; padding:20px; color:#aaa;">Tu carrito de Zen & Zen está vacío</h3>';
+        document.getElementById('resumen-subtotal').textContent = `$0`;
+        document.getElementById('resumen-total').textContent = `$0`;
+        return;
+    }
+
+    carrito.forEach((item, index) => {
+        total += item.precio;
+        container.innerHTML += `
+            <div class="cart-item" style="display:flex; justify-content:space-between; background:#0b0e14; padding:15px; border-radius:8px; margin-bottom:10px; border:1px solid #2a3447;">
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <img src="${item.imagen}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
+                    <div><h4 style="color:#fff;">${item.titulo}</h4><p style="color:var(--color-oro); font-weight:bold;">$${item.precio}</p></div>
+                </div>
+                <button onclick="quitarDelCarrito(${index})" style="background:#cc0000; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Quitar</button>
+            </div>`;
+    });
+    document.getElementById('resumen-subtotal').textContent = `$${total}`;
+    document.getElementById('resumen-total').textContent = `$${total}`;
 }
-carrito.forEach((item, index) => {
-total += item.precio;
-container.innerHTML +=  <div class="cart-item" style="display:flex; justify-content:space-between; background:#0b0e14; padding:15px; border-radius:8px; margin-bottom:10px; border:1px solid #2a3447;"> <div style="display:flex; gap:15px; align-items:center;"> <img src="${item.imagen}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;"> <div><h4 style="color:#fff;">${item.titulo}</h4><p style="color:var(--color-oro); font-weight:bold;">$${item.precio}</p></div> </div> <button onclick="quitarDelCarrito(${index})" style="background:#cc0000; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Quitar</button> </div>;
-});
-document.getElementById('resumen-subtotal').textContent = $${total};
-document.getElementById('resumen-total').textContent = $${total};
-}
+
 function finalizarOrdenWhatsApp() {
-if (!usuarioActivo) { alert("Iniciá sesión para continuar."); abrirModalAuth(); return; }
-if (carrito.length === 0) return;
-const d = usuariosRegistrados.find(u => u.email === usuarioActivo.email) || {};
-const metodoPago = document.getElementById('checkout-metodo-pago').value;
-let telefono = "54911XXXXXXXX";
-let mensaje = 👑 *ORDEN - ZEN & ZEN* 👑\n\n📧 *Comprador:* ${usuarioActivo.email}\n💳 *Pago:* ${metodoPago}\n;
-if (d.nombre) mensaje += 👤 *Nombre:* ${d.nombre}\n📍 *Destino:* ${d.direccion}\n;
-mensaje += \n📦 *Artículos:*\n;
-carrito.forEach(item => {
-mensaje += • ${item.titulo} -> *$${item.precio}*\n;
-if (supabase) supabase.from('productos').update({ stock: 0 }).eq('id', item.id);
-});
-window.open(https://whatsapp.com{telefono}&text=${encodeURIComponent(mensaje)}, '_blank');
-carrito = []; actualizarCarritoUI(); traerProductosDesdeNube(); mostrarSeccion('inicio');
+    if (!usuarioActivo) { alert("Iniciá sesión para continuar."); abrirModalAuth(); return; }
+    if (carrito.length === 0) return;
+
+    const d = usuariosRegistrados.find(u => u.email === usuarioActivo.email) || {};
+    const metodoPago = document.getElementById('checkout-metodo-pago').value;
+    let telefono = "54911XXXXXXXX"; 
+    
+    let mensaje = `👑 *ORDEN - ZEN & ZEN* 👑\n\n📧 *Comprador:* ${usuarioActivo.email}\n💳 *Pago:* ${metodoPago}\n`;
+    if (d.nombre) mensaje += `👤 *Nombre:* ${d.nombre}\n📍 *Destino:* ${d.direccion}\n`;
+    mensaje += `\n📦 *Artículos:*\n`;
+    
+    carrito.forEach(item => {
+        mensaje += `• ${item.titulo} -> *$${item.precio}*\n`;
+        if (supabase) supabase.from('productos').update({ stock: 0 }).eq('id', item.id);
+    });
+
+    window.open(`https://whatsapp.com{telefono}&text=${encodeURIComponent(mensaje)}`, '_blank');
+    carrito = []; actualizarCarritoUI(); traerProductosDesdeNube(); mostrarSeccion('inicio');
 }
+
 async function agregarProductoAdmin(e) {
-e.preventDefault();
-if (!supabase) { alert("Base de datos desconectada."); return; }
-const nuevo = {
-titulo: document.getElementById('prod-title').value,
-precio: parseFloat(document.getElementById('prod-price').value),
-categoria: document.getElementById('prod-category').value,
-subcategoria: document.getElementById('prod-subcategory').value,
-escala: document.getElementById('prod-escala').value,
-condicion: document.getElementById('prod-condition').value,
-stock: 1,
-imagen: document.getElementById('prod-img').value,
-imagen_2: document.getElementById('prod-img2').value || "",
-imagen_3: document.getElementById('prod-img3').value || "",
-descripcion: document.getElementById('prod-desc').value
-};
-try {
-const { error } = await supabase.from('productos').insert([nuevo]);
-if (error) throw error;
-await traerProductosDesdeNube();
-document.getElementById('product-form').reset();
-mostrarSeccion('inicio');
-alert("¡Rareza publicada con éxito en la nube!");
-} catch (err) { alert("Supabase rechazó la carga: " + err.message); }
+    e.preventDefault();
+    if (!supabase) { alert("Base de datos desconectada."); return; }
+    const nuevo = {
+        titulo: document.getElementById('prod-title').value,
+        precio: parseFloat(document.getElementById('prod-price').value),
+        categoria: document.getElementById('prod-category').value,
+        subcategoria: document.getElementById('prod-subcategory').value,
+        escala: document.getElementById('prod-escala').value,
+        condicion: document.getElementById('prod-condition').value,
+        stock: 1, imagen: document.getElementById('prod-img').value,
+        imagen_2: document.getElementById('prod-img2').value || "",
+        imagen_3: document.getElementById('prod-img3').value || "",
+        descripcion: document.getElementById('prod-desc').value
+    };
+
+    try {
+        const { error } = await supabase.from('productos').insert([nuevo]);
+        if (error) throw error;
+        await traerProductosDesdeNube();
+        document.getElementById('product-form').reset();
+        mostrarSeccion('inicio');
+        alert("¡Rareza publicada con éxito en la nube!");
+    } catch (err) { alert("Supabase rechazó la carga: " + err.message); }
 }
