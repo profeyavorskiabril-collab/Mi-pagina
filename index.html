@@ -157,16 +157,18 @@
                     <input type="text" id="prod-escala" placeholder="Ej. 1:64, 1:12, 6 pulgadas" required>
                 </div>
                 <div class="form-group">
-                    <label>URL de la Imagen Principal (Frente):</label>
-                    <input type="url" id="prod-img" placeholder="Link de la foto principal" required>
+
+                    <!-- Buscá el campo 'prod-img' y cambialo por este de tipo file -->
+                    <label for="prod-img">Foto del Producto:</label>
+                    <input type="file" id="prod-img" accept="image/*" required>
                 </div>
                 <div class="form-group">
-                    <label>URL de la Imagen 2 (Dorso / Caja):</label>
-                    <input type="url" id="prod-img2" placeholder="Link de la foto secundaria (Opcional)">
+                    <label for="prod-img2">Foto Secundaria 1 (Opcional):</label>
+                    <input type="file" id="prod-img2" accept="image/*">
                 </div>
                 <div class="form-group">
-                    <label>URL de la Imagen 3 (Detalles / Esquinas):</label>
-                    <input type="url" id="prod-img3" placeholder="Link de la foto de detalles (Opcional)">
+                    <label for="prod-img3">Foto Secundaria 2 (Opcional):</label>
+                    <input type="file" id="prod-img3" accept="image/*">
                 </div>
 
                 <div class="form-group">
@@ -257,7 +259,7 @@
                 </div>
 
                 <button class="btn-submit" style="background: var(--color-cian); color: #111; font-size: 16px; padding: 15px;" onclick="finalizarOrdenWhatsApp()">
-                    🚀 Enviar Pedido a WhatsApp
+                 Enviar Pedido a WhatsApp
                 </button>
             </section>
 
@@ -297,45 +299,90 @@
     </div>
 
 
-    <!-- MODAL DE DETALLE DE PRODUCTO -->
-    <div id="modal-detail" class="modal">
-        <div class="modal-content detail-content">
-            <span class="close-modal" onclick="cerrarModalDetail()">&times;</span>
-            <div class="detail-layout">
-                <img id="detail-img" src="" alt="">
-                <div class="detail-info">
-                    <h2 id="detail-title"></h2>
-                    <div style="display:flex; gap:10px;">
-                        <span id="detail-category" class="tag-category"></span>
-                        <span id="detail-condition" class="tag-condition"></span>
-                    </div>
-                    <p id="detail-price" class="detail-price"></p>
-                    <p id="detail-desc" class="detail-text"></p>
-                    <div class="detail-actions">
-                        <button id="btn-detail-add" class="btn-submit">Añadir a la Orden</button>
-                        <button id="btn-detail-buy-now" class="btn-buy-now" onclick="procesarCompraDirecta()">Adquirir Ya</button>
-                    </div>
-                </div>
+<!-- SECCIÓN DE DETALLE DE PRODUCTO (PANTALLA COMPLETA INTEGRADA) -->
+<div id="view-detalle" class="hidden" style="padding: 20px; max-width: 1200px; margin: 0 auto;">
+    
+    <!-- Botón prolijo para regresar a la tienda -->
+    <button onclick="mostrarSeccion('tienda')" style="background: none; border: 1px solid #2a3447; color: #aaa; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-weight: bold; transition: 0.2s;">
+        ⏪ Volver al Catálogo
+    </button>
+    
+    <!-- CONTENEDOR PADRE PRINCIPAL -->
+    <div class="detail-layout">
+        
+        <!-- COLUMNA IZQUIERDA: GALERÍA DE IMÁGENES -->
+        <div class="detail-media-side">
+            <div class="main-image-container">
+                <img id="detail-img" src="" alt="Foto principal">
+                
+                <button id="btn-detail-fav" class="btn-favorito">
+                    <svg class="icono-corazon" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>        
+            </div>
+            <!-- Miniaturas interactivas -->
+            <div id="detail-thumbnails" class="detail-thumbnails"></div>
+        </div> <!-- Aquí terminaba la columna izquierda -->
+
+        <!-- COLUMNA DERECHA: INFORMACIÓN DETALLADA -->
+        <div class="detail-info-side">
+            <h2 id="detail-title" style="font-size: 2rem; color: #fff; margin-bottom: 10px;"></h2>
+            
+            <div class="detail-tags-group" style="display: flex; gap: 8px; margin-bottom: 15px;">
+                <span id="detail-category" class="tag-category"></span>
+                <span id="detail-condition" class="tag-condition"></span>
+                <span id="detail-escala" class="tag-escala"></span>
+            </div>
+
+            <p id="detail-price" class="detail-price" style="font-size: 1.8rem; color: var(--color-oro); font-weight: bold; margin-bottom: 20px;"></p>
+            
+            <!-- FICHA TÉCNICA -->
+            <div class="ficha-tecnica">
+                <h3>Ficha de Colección</h3>
+                <div class="ficha-row"><strong>Disponibilidad:</strong> <span id="detail-stock"></span></div>
+                <div class="ficha-row"><strong>Autenticidad:</strong> Verificado por Zen & Zen</div>
+            </div>
+
+            <!-- DESCRIPCIÓN E HISTORIA -->
+            <div class="detail-description-block">
+                <h3> Detalles</h3>
+                <p id="detail-desc" class="detail-text" style="line-height: 1.6; color: #ccc;"></p>
+            </div>
+
+            <!-- CONTENEDOR DE VIDEO PREPARADO -->
+            <div id="detail-video-container" style="display: none; margin-top: 25px;">
+                <h3>🎥 Video Review</h3>
+                <div id="detail-video-content"></div>
+            </div>
+
+            <!-- ACCIONES -->
+            <div class="detail-actions" style="margin-top: 30px;">
+                <button id="btn-detail-add" class="btn-submit" style="width: 100%; padding: 15px; font-size: 1.1rem; font-weight: bold;">Añadir al carrito</button>
+            </div>
+        </div> <!-- Aquí termina la columna derecha -->
+
+    </div> <!-- MUDAMOS ESTE CIERRE AQUÍ: Ahora sí envuelve ambas columnas -->
+</div>
+
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h4 style="color:#00ced1; cursor:pointer;" onclick="mostrarSeccion('inicio')">Zen & Zen</h4>
+                <p>La zona definitiva para coleccionistas de Hot Wheels y figuras.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Nuestras Redes</h4>
+                <ul>
+                    <li><a href="#">📸 Instagram</a></li>
+                    <li><a href="#">👥 Facebook</a></li>
+                    <li><a href="#">💬 Comunidad WhatsApp</a></li>
+                </ul>
             </div>
         </div>
-    </div>
-    <footer>
-    <div class="footer-container">
-        <div class="footer-section">
-            <h4 style="color:#00ced1; cursor:pointer;" onclick="mostrarSeccion('inicio')">Zen & Zen</h4>
-            <p>La zona definitiva para coleccionistas de Hot Wheels y figuras.</p>
-        </div>
-        <div class="footer-section">
-            <h4>Nuestras Redes</h4>
-            <ul>
-                <li><a href="#">📸 Instagram</a></li>
-                <li><a href="#">👥 Facebook</a></li>
-                <li><a href="#">💬 Comunidad WhatsApp</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer-bottom">&copy; 2026 Zen & Zen - Todos los derechos reservados.</div>
-</footer>
+        <div class="footer-bottom">&copy; 2026 Zen & Zen - Todos los derechos reservados.</div>
+    </footer>
     
 </body>
 </html>
