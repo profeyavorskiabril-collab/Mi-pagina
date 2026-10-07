@@ -7,15 +7,12 @@
     <link rel="stylesheet" href="style.css">
     <!-- CONEXIÓN REAL A SUPABASE DESDE EL NAVEGADOR -->
     <!-- Reemplazo para evitar el bloqueo de red y cargar Supabase con éxito -->
-    <script src="script.js" defer></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
     <!-- Tu archivo de lógica con el atributo defer -->
-<script>
-    // Creamos una etiqueta script dinámicamente usando la fecha/hora actual en milisegundos
-    const script = document.createElement('script');
-    script.src = 'script.js?v=' + Date.now();
-    document.body.appendChild(script);
-</script>
+    <script src="script.js" defer></script>
+
+
 
 </head>
 <body>
