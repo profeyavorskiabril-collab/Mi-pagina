@@ -435,3 +435,30 @@ gap: 25px;
 grid-template-columns: 1fr;
 }
 }
+
+
+/* Estilos para las opciones de envío */
+.shipping-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #0b0e14;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #2a3447;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+.shipping-label:hover {
+    border-color: var(--color-violeta);
+}
+.shipping-label input[type="radio"] {
+    accent-color: var(--color-cian); /* Pinta el puntito del radio de color cian */
+    width: auto; /* Evita que se estire al 100% por reglas generales */
+    margin: 0;
+}
+.shipping-text {
+    font-size: 13px;
+    color: #fff;
+    font-weight: 500;
+}

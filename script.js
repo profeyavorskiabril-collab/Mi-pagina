@@ -501,6 +501,7 @@ function agregarAlCarrito(id) {
     }
     
     alert(`¡${p.titulo} añadido a la orden con éxito!`);
+    calcularTotalPedido();
 }
 
 
@@ -540,37 +541,157 @@ function actualizarCarritoUI() {
     document.getElementById('resumen-subtotal').textContent = `$${total}`;
     document.getElementById('resumen-total').textContent = `$${total}`;
     localStorage.setItem('zen_carrito', JSON.stringify(carrito));
+    calcularTotalPedido();
 }
+
+
+// ==========================================================
+// CÁLCULO AUTOMÁTICO SEGÚN EL CÓDIGO POSTAL (CP) DEL USUARIO
+// ==========================================================
+function calcularTotalPedido() {
+    // 1. Calcular subtotal de los Funkos
+    let subtotal = 0;
+    carrito.forEach(producto => {
+        let precioLimpio = parseFloat(producto.precio || producto.price || 0);
+        subtotal += precioLimpio;
+    });
+
+    const selector = document.getElementById('metodo-entrega-select');
+    const infoTexto = document.getElementById('shipping-info-text');
+    let costoEnvio = 0;
+    let mensajeEnvio = "";
+
+    if (selector && selector.value === 'envio') {
+        // Mostramos el cartel de información
+        if (infoTexto) infoTexto.style.display = "block";
+
+        // Validamos si el usuario inició sesión y tiene un código postal guardado
+        if (!usuarioActivo || !usuarioActivo.cp) {
+            mensajeEnvio = "⚠️ Completa tu Código Postal en tu Perfil para calcular.";
+            costoEnvio = 4500; // Costo base/promedio si no hay CP ingresado
+        } else {
+            // Convertimos el CP a número entero para la validación
+            const cp = parseInt(usuarioActivo.cp);
+
+            // CLASIFICACIÓN DE TARIFAS DE CORREO ARGENTINO POR RANGOS DE CP (Ajusta los precios a tu gusto)
+            if (cp >= 1000 && cp <= 1499) {
+                costoEnvio = 3200; // Capital Federal (CABA)
+                mensajeEnvio = `📍 Envío Local detectado (CABA - CP: ${cp}).`;
+            } else if (cp >= 1600 && cp <= 1999) {
+                costoEnvio = 3900; // GBA / Provincia de Buenos Aires cercana
+                mensajeEnvio = `📍 Envío Regional detectado (Buenos Aires - CP: ${cp}).`;
+            } else if ((cp >= 2000 && cp <= 3999) || (cp >= 5000 && cp <= 8999)) {
+                costoEnvio = 5800; // Provincias del Interior (Córdoba, Santa Fe, Mendoza, etc.)
+                mensajeEnvio = `📍 Envío Nacional Interior detectado (CP: ${cp}).`;
+            } else if (cp >= 9000 && cp <= 9999) {
+                costoEnvio = 7200; // Patagonia / Zonas Extremas (Tierra del Fuego, Santa Cruz)
+                mensajeEnvio = `📍 Envío Nacional Zona Extrema detectado (Patagonia - CP: ${cp}).`;
+            } else {
+                costoEnvio = 5000; // Tarifa plana de respaldo por si escribe un CP raro
+                mensajeEnvio = `📍 Envío calculado para CP: ${cp}.`;
+            }
+        }
+    }else {
+    // Si el valor es cualquiera de los retiros de Garín, el costo de envío es 0
+        costoEnvio = 0;
+        if (infoTexto) infoTexto.style.display = "none";
+        }
+
+    // 3. Monto final
+    let totalFinal = subtotal + costoEnvio;
+
+    // 4. Inyectar textos en el HTML
+    if (infoTexto) infoTexto.textContent = mensajeEnvio;
+    if (document.getElementById('cart-subtotal')) document.getElementById('cart-subtotal').textContent = `$${subtotal}`;
+    if (document.getElementById('cart-shipping-cost')) document.getElementById('cart-shipping-cost').textContent = costoEnvio === 0 ? "Gratis" : `$${costoEnvio}`;
+    if (document.getElementById('cart-total-final')) document.getElementById('cart-total-final').textContent = `$${totalFinal}`;
+}
+
+
 async function finalizarOrdenWhatsApp() {
     if (!usuarioActivo) { alert("Iniciá sesión para continuar."); abrirModalAuth(); return; }
     if (carrito.length === 0) { alert("Tu carrito está vacío."); return; }
 
+    const selectorEntrega = document.getElementById('metodo-entrega-select');
+    const valorEntrega = selectorEntrega ? selectorEntrega.value : "retiro_estacion";
+    
+    // Conseguimos el texto exacto del punto de encuentro elegido (ej: "🏃‍♂️ Retiro: Estación de Garín (Gratis)")
+    const puntoEncuentroElegido = selectorEntrega ? selectorEntrega.options[selectorEntrega.selectedIndex].text : "Punto a coordinar";
+
+    // ==========================================================
+    // VALIDACIÓN DE SEGURIDAD: SOLO SI ELIGE ENVÍO POR CORREO
+    // ==========================================================
+    if (valorEntrega === 'envio') {
+        let camposFaltantes = [];
+        
+        if (!usuarioActivo.nombre || usuarioActivo.nombre.trim() === "") camposFaltantes.push("Nombre");
+        if (!usuarioActivo.direccion || usuarioActivo.direccion.trim() === "") camposFaltantes.push("Dirección de entrega");
+        if (!usuarioActivo.cp || usuarioActivo.cp.trim() === "") camposFaltantes.push("Código Postal");
+        if (!usuarioActivo.telefono || usuarioActivo.telefono.trim() === "") camposFaltantes.push("Teléfono de contacto");
+
+        if (camposFaltantes.length > 0) {
+            alert(`⚠️ Para procesar el envío por Correo Argentino, necesitas completar los siguientes datos en tu perfil:\n\n• ${camposFaltantes.join('\n• ')}`);
+            mostrarSeccion('perfil'); 
+            return; 
+        }
+    }
+
+    // ==========================================================
+    // PROCESAMIENTO DE LA ORDEN
+    // ==========================================================
     const metodoPago = document.getElementById('checkout-metodo-pago')?.value || "A coordinar";
     const miNumeroReal = "5491125417546"; 
-    
+    const infoTexto = document.getElementById('shipping-info-text')?.textContent || "";
+
+    // Estructuramos el método de entrega de forma inteligente para el mensaje
+    let metodoEntregaFinal = "";
+    if (valorEntrega === 'envio') {
+        metodoEntregaFinal = `🚚 Correo Argentino (${infoTexto.replace('📍 ', '')})`;
+    } else {
+        // Si eligió un punto en Garín, limpia los emojis del texto para el reporte
+        metodoEntregaFinal = `🤝 Punto de Encuentro: ${puntoEncuentroElegido.replace('🏃‍♂️ ', '')} *(A coordinar día y horario por privado)*`;
+    }
+
+    const subtotalTexto = document.getElementById('cart-subtotal')?.textContent || "\$0";
+    const envioTexto = document.getElementById('cart-shipping-cost')?.textContent || "\$0";
+    const totalFinalTexto = document.getElementById('cart-total-final')?.textContent || subtotalTexto;
+
+    // Armado del cuerpo del mensaje de WhatsApp
     let mensaje = `👑 *ORDEN - ZEN & ZEN* 👑\n\n`;
     mensaje += `📧 *Comprador:* ${usuarioActivo.email}\n`;
     mensaje += `💳 *Pago:* ${metodoPago}\n`;
+    mensaje += `📦 *Entrega:* ${metodoEntregaFinal}\n`;
     
     if (usuarioActivo.nombre) mensaje += `👤 *Nombre:* ${usuarioActivo.nombre}\n`;
-    if (usuarioActivo.direccion) mensaje += `📍 *Destino:* ${usuarioActivo.direccion}\n`;
+    if (usuarioActivo.telefono) mensaje += `📞 *Teléfono:* ${usuarioActivo.telefono}\n`;
+    
+    // Solo si es envío por correo sumamos los datos postales detallados al texto
+    if (valorEntrega === 'envio') {
+        mensaje += `📍 *Dirección de Envío:* ${usuarioActivo.direccion}\n`;
+        mensaje += `📮 *Código Postal:* ${usuarioActivo.cp}\n`;
+    }
     
     mensaje += `\n📦 *Artículos solicitados:*\n`;
     
-    // CORREGIDO: Solo armamos el texto para el mensaje, ya no tocamos Supabase aquí
     for (const item of carrito) {
         mensaje += `• ${item.titulo} -> *$${item.precio}*\n`;
     }
 
-    const linkFinal = "https://wa.me/" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
-    console.log("LINK GENERADO:", linkFinal);
+    mensaje += `\n-------------------------\n`;
+    mensaje += `💰 *Subtotal:* ${subtotalTexto}\n`;
+    mensaje += `🚚 *Costo Envío:* ${envioTexto}\n`;
+    mensaje += `💵 *TOTAL NETO:* *${totalFinalTexto}*\n`;
+
+    const linkFinal = "https://wa.me" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
     window.open(linkFinal, '_blank');
     
-    // Limpieza de la interfaz local
     carrito = []; 
+    localStorage.removeItem('zen_carrito'); 
+    
     if (typeof actualizarCarritoUI === 'function') actualizarCarritoUI(); 
     mostrarSeccion('inicio');
 }
+
 
 // ==========================================
 // 5. PANEL DE ADMINISTRADOR
@@ -599,9 +720,12 @@ async function subirFotoAStorage(inputId) {
     return urlData.publicUrl;
 }
 
-// FUNCIÓN PRINCIPAL DE ADMINISTRACIÓN (ACTUALIZADA PARA 3 IMÁGENES)
 async function agregarProductoAdmin(e) {
     e.preventDefault();
+    if (!usuarioActivo || usuarioActivo.rol !== 'admin') {
+        alert("Acceso denegado.");
+        return;
+    }
     if (!window.supabase || typeof window.supabase.from !== 'function') { alert("Base de datos desconectada."); return; }
 
     try {
@@ -609,8 +733,9 @@ async function agregarProductoAdmin(e) {
         const urlFoto1 = await subirFotoAStorage('prod-img');
         const urlFoto2 = await subirFotoAStorage('prod-img2');
         const urlFoto3 = await subirFotoAStorage('prod-img3');
-const archivo = input.files[0];
-const extension = archivo.name.split('.').pop(); // ❌ Si pones archivo[0].name aquí da error
+
+        // CORRECCIÓN: Eliminamos las líneas sobrantes de 'input.files[0]' que causaban el ReferenceError
+        // ya que tu función 'subirFotoAStorage' se encarga de subir las imágenes directamente.
 
         // La primera foto siempre es obligatoria para la miniatura
         if (!urlFoto1) { alert("Por favor, selecciona al menos la foto principal."); return; }
@@ -625,8 +750,8 @@ const extension = archivo.name.split('.').pop(); // ❌ Si pones archivo[0].name
             condicion: document.getElementById('prod-condition').value,
             stock: 1, 
             imagen: urlFoto1,      // Guardamos la foto principal
-            imagen_2: urlFoto2,    // Guardamos la segunda (o queda "" si el usuario no eligió ninguna)
-            imagen_3: urlFoto3,    // Guardamos la tercera (o queda "" si el usuario no eligió ninguna)
+            imagen_2: urlFoto2,    // Guardamos la segunda
+            imagen_3: urlFoto3,    // Guardamos la tercera
             descripcion: document.getElementById('prod-desc').value
         };
 
@@ -638,7 +763,7 @@ const extension = archivo.name.split('.').pop(); // ❌ Si pones archivo[0].name
         await traerProductosDesdeNube();
         document.getElementById('product-form').reset();
         mostrarSeccion('inicio');
-        alert("¡Rareza publicada con todas sus imágenes con éxito!");
+        alert("¡Rareza publicada con todas sus imágenes con éxito! 🎉");
 
     } catch (err) { 
         alert("Supabase rechazó la carga: " + err.message); 

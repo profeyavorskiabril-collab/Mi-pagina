@@ -10,9 +10,12 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
     <!-- Tu archivo de lógica con el atributo defer -->
-    <script src="script.js" defer></script>
-
-
+<script>
+    // Creamos una etiqueta script dinámicamente usando la fecha/hora actual en milisegundos
+    const script = document.createElement('script');
+    script.src = 'script.js?v=' + Date.now();
+    document.body.appendChild(script);
+</script>
 
 </head>
 <body>
@@ -239,14 +242,46 @@
                     <p style="display:flex; justify-content:space-between; margin-bottom:10px; color:#ccc;">Envío: <span style="color: var(--color-cian); font-weight:600;">A Coordinar</span></p>
                     <h3 style="display:flex; justify-content:space-between; border-top:1px solid #2a3447; padding-top:15px; color: var(--color-oro);">Total: <span id="resumen-total">$0</span></h3>
                 </div>
+                <!-- SECCIÓN DE ENTREGA AUTOMÁTICA -->
+                <div class="shipping-section" style="margin-bottom: 15px; padding-top: 10px; border-top: 1px solid #2a3447;">
+                    <h4 style="font-size: 14px; color: var(--color-cian); margin-bottom: 10px; text-transform: uppercase;">Entrega</h4>
+                    
+                    <!-- El selector ahora es simple: Retiro o Envío -->
+                <select id="metodo-entrega-select" onchange="calcularTotalPedido()" style="width: 100%; padding: 10px; border: 1px solid #2a3447; background: #0b0e14; color: white; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                    <!-- PUNTOS DE ENCUENTRO EN GARÍN -->
+                    <option value="retiro_estacion">🏃‍♂️ Punto de Retiro:  Estación de Garín (Gratis)</option>
+                    <option value="retiro_puente">🏃‍♂️ Punto de Retiro:  Puente Garin (Gratis)</option>
+                    <!-- ENVÍO POR CORREO -->
+                    <option value="envio">🚚Envío a Domicilio: Correo Argentino (Calculado por CP)</option>
+                </select>
+
+
+                    <!-- Cartel dinámico que le avisa al usuario a dónde se enviará -->
+                    <p id="shipping-info-text" style="font-size: 11px; color: #aaa; margin-top: 8px; display: none;"></p>
+
+                    <!-- Desglose de totales (Se mantiene) -->
+                    <div class="cart-totals-summary" style="margin-top: 15px; font-size: 14px; display: flex; flex-direction: column; gap: 6px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Subtotal:</span>
+                            <span id="cart-subtotal">$0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; color: #aaa;">
+                            <span>Costo de Envío:</span>
+                            <span id="cart-shipping-cost">$0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; color: var(--color-oro); border-top: 1px dashed #2a3447; padding-top: 6px; margin-top: 4px;">
+                            <span>Total Final:</span>
+                            <span id="cart-total-final">$0</span>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- SELECTOR DE MÉTODO DE PAGO -->
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label style="color: var(--color-cian);">Método de Pago Preferido:</label>
                     <select id="checkout-metodo-pago">
-                        <option value="Transferencia Bancaria">Transferencia Bancaria (-10% OFF)</option>
-                        <option value="Efectivo / Rapipago">Efectivo / Rapipago / Pago Fácil</option>
-                        <option value="Mercado Pago (Sujeto a recargo)">Mercado Pago / Tarjeta</option>
+                        <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                        <option value="Efectivo / Rapipago">Efectivo (contra entrega)</option>
                     </select>
                 </div>
 
@@ -304,7 +339,7 @@
     
     <!-- Botón prolijo para regresar a la tienda -->
     <button onclick="mostrarSeccion('tienda')" style="background: none; border: 1px solid #2a3447; color: #aaa; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-weight: bold; transition: 0.2s;">
-        ⏪ Volver al Catálogo
+        ⏪ Volver
     </button>
     
     <!-- CONTENEDOR PADRE PRINCIPAL -->
