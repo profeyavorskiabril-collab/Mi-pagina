@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collector Zone - Compra y Venta</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- CONEXIÓN REAL A SUPABASE DESDE EL NAVEGADOR -->
+    <!-- Reemplazo para evitar el bloqueo de red y cargar Supabase con éxito -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <!-- Tu archivo de lógica con el atributo defer -->
+    <script src="script.js" defer></script>
+
+
+
+</head>
+<body>
+
+    <!-- BARRA DE NAVEGACIÓN -->
+    <!-- BARRA DE NAVEGACIÓN Y MENÚS ESTILO VADER TOYS -->
+    <header>
+        <div class="header-container">
+           
+                        <!-- EL LOGO AHORA TE LLEVA DIRECTO AL INICIO CON EL CARRUSEL -->
+            <h1 class="logo" onclick="mostrarSeccion('inicio')">
+                <img src="logo.png" alt="ZEN & ZEN" width="180" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <span style="display:none; color:#00ced1; cursor:pointer;">ZEN & ZEN</span>
+            </h1>
+
+            <nav class="header-nav">
+                <ul class="nav-links">
+                    <li id="nav-vender" class="hidden"><a href="#" onclick="mostrarSeccion('vender')">Panel Admin</a></li>
+                </ul>
+            </nav>
+            <!-- REEMPLAZAR ESTE PEDACITO EN TU HEADER -->
+            <div class="auth-cart-zone">
+                <span id="user-status" onclick="abrirModalAuth()">Iniciar Sesión</span>
+                <div class="cart-icon" onclick="mostrarSeccion('carrito')">
+                    🛒 <span id="cart-count">0</span>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- MENÚ DE CATEGORÍAS ENLAZADO A LA TIENDA -->
+        <nav class="main-nav">
+            <ul class="nav-menu">
+                <!-- Ver Todo ahora asegura que te muestra la tienda principal -->
+                <li><a href="#" onclick="filtrarCategoria('Todos')">Ver Todo</a></li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropbtn" onclick="filtrarCategoria('Hot Wheels')">Hot Wheels ▾</a>
+                    <ul class="dropdown-content">
+                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Mainline')">Mainline</a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Treasure Hunt')">Treasure Hunt (T-Hunt)</a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Premium')">Premium / Pop Culture</a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Red Line Club')">RLC (Red Line Club)</a></li>
+                    </ul>
+                </li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropbtn" onclick="filtrarCategoria('Figuras')">Figuras de Acción ▾</a>
+                    <ul class="dropdown-content">
+                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Marvel Legends')">Marvel Legends</a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Star Wars')">Star Wars Black Series</a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Anime')">Anime / Figma</a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Funko Pop')">Funko Pop</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+
+    </header>
+
+
+    <!-- VISTA 1: PÁGINA DE INICIO (PROMOS Y BIENVENIDA) -->
+    <main id="view-inicio" class="main-container">
+        <!-- CARRUSEL DE PROMO -->
+        <section class="carousel-container">
+            <div class="carousel-slide" id="carousel">
+                <img src="fondo.jpg" alt="Promo Hot Wheels" onerror="this.src='https://unsplash.com'">
+                <img src="fondo.jpg" alt="Promo Figuras" onerror="this.src='https://unsplash.com'">
+            </div>
+            <button class="carousel-btn prev" onclick="cambiarSlide(-1)">❮</button>
+            <button class="carousel-btn next" onclick="cambiarSlide(1)">❯</button>
+        </section>
+
+        <!-- BANNER DE BIENVENIDA -->
+        <section class="form-section" style="text-align: center; margin-top: 30px;">
+            <h2 style="color: var(--color-cian); margin-bottom: 10px;">¡Bienvenidos a Zen & Zen!</h2>
+            <p style="color: #ccc;">Explorá nuestro menú superior para descubrir las mejores rarezas en Hot Wheels RLC y figuras coleccionables premium.</p>
+            <button class="btn-submit" style="max-width: 250px; margin-top: 20px;" onclick="filtrarCategoria('Todos')">Ir a la Tienda Completa 🛒</button>
+        </section>
+    </main>
+
+    <!-- VISTA 2: LA SECCIÓN DE COMPRAS (TIENDA Y CATÁLOGO) -->
+    <main id="view-tienda" class="main-container hidden">
+        <!-- BARRA DE BÚSQUEDA -->
+        <section class="search-container" style="margin-top: 0; padding: 0;">
+            <input type="text" id="search-input" placeholder="Buscar en Zen & Zen... (Ej: Nissan, Iron Man, RLC)">
+        </section>
+
+        <!-- FILTROS RÁPIDOS -->
+        <section class="categories-container" style="padding: 0; margin: 20px 0;">
+            <button class="cat-btn active" onclick="filtrarCategoria('Todos')">Todos</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Hot Wheels')">Hot Wheels</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Figuras')">Figuras de Acción</button>
+        </section>
+
+        <!-- GRILLA DE PRODUCTOS -->
+        <section class="products-section">
+            <h2 id="seccion-titulo" style="color: #fff; margin-bottom: 20px;">Artículos en Exhibición</h2>
+            <div class="products-grid" id="products-grid"></div>
+        </section>
+    </main>
+
+
+    <!-- VISTA ADMINISTRADOR (AGREGAR PRODUCTOS) -->
+    <main id="view-vender" class="main-container hidden">
+        <section class="form-section">
+            <h2>Panel de Administrador - Añadir Rareza al Catálogo</h2>
+            <form id="product-form">
+                <div class="form-group">
+                    <label>Nombre del Artículo:</label>
+                    <input type="text" id="prod-title" placeholder="Ej. Funko Pop Iron Man #580 Signed" required>
+                </div>
+                <div class="form-group">
+                    <label>Precio ($):</label>
+                    <input type="number" id="prod-price" required>
+                </div>
+                <div class="form-group">
+                    <label>Categoría:</label>
+                    <select id="prod-category">
+                        <option value="Figuras">Figuras de Acción</option>
+                        <option value="T内部G / Cartas">Cartas Coleccionables</option>
+                        <option value="Cómics">Cómics / Mangas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subcategoría / Etiqueta:</label>
+                    <input type="text" id="prod-subcategory" placeholder="Ej. Marvel, Ivrea, DC Comics" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Condición de Conservación:</label>
+                    <select id="prod-condition">
+                        <option value="Cerrado / Mint">Cerrado de Fábrica (Mint)</option>
+                        <option value="Near Mint">Como Nuevo (Near Mint)</option>
+                        <option value="Usado Completo">Usado (Excelente Estado)</option>
+                        <option value="Incompleto">Detalles / Suelto</option>
+                    </select>
+                </div>
+                <!-- REEMPLAZAR ESTA PARTE EN EL FORMULARIO DE CARGA DEL ADMIN -->
+                <div class="form-group">
+                    <label>Escala del Artículo:</label>
+                    <input type="text" id="prod-escala" placeholder="Ej. 1:64, 1:12, 6 pulgadas" required>
+                </div>
+                <div class="form-group">
+
+                    <!-- Buscá el campo 'prod-img' y cambialo por este de tipo file -->
+                    <label for="prod-img">Foto del Producto:</label>
+                    <input type="file" id="prod-img" accept="image/*" required>
+                </div>
+                <div class="form-group">
+                    <label for="prod-img2">Foto Secundaria 1 (Opcional):</label>
+                    <input type="file" id="prod-img2" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label for="prod-img3">Foto Secundaria 2 (Opcional):</label>
+                    <input type="file" id="prod-img3" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <label>Detalles / Historia / Certificación:</label>
+                    <textarea id="prod-desc" rows="4" placeholder="Describe el estado de la caja, accesorios o procedencia..." required></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Publicar en Galería</button>
+            </form>
+        </section>
+
+    </main>
+    <!-- VISTA PERFIL DE USUARIO (NUEVA SECCIÓN) -->
+    <main id="view-perfil" class="main-container hidden">
+        <section class="form-section">
+            <h2>Mi Perfil de Coleccionista</h2>
+            <div style="margin-bottom: 25px; padding: 15px; background: #0b0e14; border-radius: 6px; border: 1px solid var(--color-violeta);">
+                <p><strong>Correo Electrónico:</strong> <span id="perf-email-display">-</span></p>
+            </div>
+            <form id="perfil-form">
+                <div class="form-group">
+                    <label>Nombre Completo:</label>
+                    <input type="text" id="perf-nombre" placeholder="Ej. Juan Pérez">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono de Contacto:</label>
+                    <input type="tel" id="perf-telefono" placeholder="Ej. +54 9 11 1234-5678">
+                </div>
+                <div class="form-group">
+                    <label>Dirección de Envío:</label>
+                    <input type="text" id="perf-direccion" placeholder="Calle, Número, Piso, Localidad, Provincia">
+                </div>
+                <div class="form-group">
+                    <label>Código Postal:</label>
+                    <input type="text" id="perf-cp" placeholder="Ej. 1619">
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap: wrap; margin-top: 20px;">
+                    <button type="submit" class="btn-submit" style="flex: 1;">Guardar Datos de Envío</button>
+                    <button type="button" class="btn-buy-now" style="background:#444; flex: 1;" onclick="mostrarSeccion('inicio')">Volver a la Tienda</button>
+                    <!-- NUEVO BOTÓN DE CERRAR SESIÓN -->
+                    <button type="button" class="btn-buy-now" style="background:#cc0000; flex: 1;" onclick="logout()">Cerrar Sesión</button>
+                </div>
+
+            </form>
+        </section>
+    </main>
+    <!-- VISTA 4: LA SECCIÓN COMPLETA DE CARRITO (NUEVA PÁGINA) -->
+    <main id="view-carrito" class="main-container hidden">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; flex-wrap: wrap;" id="carrito-layout-wrapper">
+            
+            <!-- LISTADO DE PIEZAS RESERVADAS -->
+            <section class="form-section">
+                <h2 style="color: var(--color-cian); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Tu Orden de Compra</span>
+                    <span style="font-size: 14px; color: #aaa;">Las piezas son únicas</span>
+                </h2>
+                <div id="seccion-carrito-items">
+                    <!-- Los productos del carrito se inyectan acá con JavaScript -->
+                </div>
+                <button class="btn-buy-now" style="background: #444; max-width: 200px; margin-top: 15px;" onclick="mostrarSeccion('tienda')">⏪ Seguir Buscando</button>
+            </section>
+
+            <!-- RESUMEN DE PAGO Y ENVÍO -->
+            <section class="form-section" style="border-color: var(--color-violeta); height: fit-content;">
+                <h3 style="color: #fff; margin-bottom: 15px; border-bottom: 1px solid #2a3447; padding-bottom: 10px;">Resumen del Pedido</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <p style="display:flex; justify-content:space-between; margin-bottom:10px; color:#ccc;">Subtotal: <span id="resumen-subtotal">$0</span></p>
+                    <p style="display:flex; justify-content:space-between; margin-bottom:10px; color:#ccc;">Envío: <span style="color: var(--color-cian); font-weight:600;">A Coordinar</span></p>
+                    <h3 style="display:flex; justify-content:space-between; border-top:1px solid #2a3447; padding-top:15px; color: var(--color-oro);">Total: <span id="resumen-total">$0</span></h3>
+                </div>
+
+                <!-- SELECTOR DE MÉTODO DE PAGO -->
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="color: var(--color-cian);">Método de Pago Preferido:</label>
+                    <select id="checkout-metodo-pago">
+                        <option value="Transferencia Bancaria">Transferencia Bancaria (-10% OFF)</option>
+                        <option value="Efectivo / Rapipago">Efectivo / Rapipago / Pago Fácil</option>
+                        <option value="Mercado Pago (Sujeto a recargo)">Mercado Pago / Tarjeta</option>
+                    </select>
+                </div>
+
+                <!-- REVISIÓN DE DATOS DE ENVÍO -->
+                <div style="background: #0b0e14; padding: 12px; border-radius: 6px; border: 1px solid #2a3447; margin-bottom: 20px; font-size: 13px;">
+                    <h4 style="color:#fff; margin-bottom: 5px;">📍 Datos de Despacho:</h4>
+                    <div id="resumen-datos-envio" style="color: #aaa; line-height: 1.4;">
+                        Iniciá sesión y completá tu perfil para adjuntar tu dirección automáticamente.
+                    </div>
+                </div>
+
+                <button class="btn-submit" style="background: var(--color-cian); color: #111; font-size: 16px; padding: 15px;" onclick="finalizarOrdenWhatsApp()">
+                 Enviar Pedido a WhatsApp
+                </button>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- PANEL LATERAL DE CARRITO DESPLEGABLE -->
+    <div id="sidebar-cart" class="cart-sidebar">
+        <div class="cart-header">
+            <h3>Tu Orden de Compra</h3>
+            <button class="close-cart" onclick="toggleCarrito()">&times;</button>
+        </div>
+        <div id="cart-items-container" class="cart-items-list"></div>
+        <div class="cart-footer">
+            <h4>Subtotal: $<span id="cart-total">0</span></h4>
+            <button class="btn-checkout" onclick="procesarCompraDirecta()">Reservar Piezas</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE AUTENTICACIÓN CORREGIDO -->
+    <div id="modal-auth" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="cerrarModalAuth()">&times;</span>
+            <div class="auth-tabs">
+                <!-- LE AGREGAMOS LOS ID CORRECTOS AQUÍ -->
+                <button id="tab-login" class="tab-link active" onclick="cambiarAuthTab('login')">Ingresar</button>
+                <button id="tab-register" class="tab-link" onclick="cambiarAuthTab('register')">Registrarse</button>
+            </div>
+            
+            <form id="auth-form" class="auth-form">
+                <h3 id="auth-title">Identificación</h3>
+                <input type="email" id="auth-email" placeholder="Correo electrónico" required>
+                <input type="password" id="auth-pass" placeholder="Contraseña" required>
+                <button type="submit" class="btn-submit" id="btn-auth-submit">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+
+<!-- SECCIÓN DE DETALLE DE PRODUCTO (PANTALLA COMPLETA INTEGRADA) -->
+<div id="view-detalle" class="hidden" style="padding: 20px; max-width: 1200px; margin: 0 auto;">
+    
+    <!-- Botón prolijo para regresar a la tienda -->
+    <button onclick="mostrarSeccion('tienda')" style="background: none; border: 1px solid #2a3447; color: #aaa; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-weight: bold; transition: 0.2s;">
+        ⏪ Volver al Catálogo
+    </button>
+    
+    <!-- CONTENEDOR PADRE PRINCIPAL -->
+    <div class="detail-layout">
+        
+        <!-- COLUMNA IZQUIERDA: GALERÍA DE IMÁGENES -->
+        <div class="detail-media-side">
+            <div class="main-image-container">
+                <img id="detail-img" src="" alt="Foto principal">
+                
+                <button id="btn-detail-fav" class="btn-favorito">
+                    <svg class="icono-corazon" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>        
+            </div>
+            <!-- Miniaturas interactivas -->
+            <div id="detail-thumbnails" class="detail-thumbnails"></div>
+        </div> <!-- Aquí terminaba la columna izquierda -->
+
+        <!-- COLUMNA DERECHA: INFORMACIÓN DETALLADA -->
+        <div class="detail-info-side">
+            <h2 id="detail-title" style="font-size: 2rem; color: #fff; margin-bottom: 10px;"></h2>
+            
+            <div class="detail-tags-group" style="display: flex; gap: 8px; margin-bottom: 15px;">
+                <span id="detail-category" class="tag-category"></span>
+                <span id="detail-condition" class="tag-condition"></span>
+                <span id="detail-escala" class="tag-escala"></span>
+            </div>
+
+            <p id="detail-price" class="detail-price" style="font-size: 1.8rem; color: var(--color-oro); font-weight: bold; margin-bottom: 20px;"></p>
+            
+            <!-- FICHA TÉCNICA -->
+            <div class="ficha-tecnica">
+                <h3>Ficha de Colección</h3>
+                <div class="ficha-row"><strong>Disponibilidad:</strong> <span id="detail-stock"></span></div>
+                <div class="ficha-row"><strong>Autenticidad:</strong> Verificado por Zen & Zen</div>
+            </div>
+
+            <!-- DESCRIPCIÓN E HISTORIA -->
+            <div class="detail-description-block">
+                <h3> Detalles</h3>
+                <p id="detail-desc" class="detail-text" style="line-height: 1.6; color: #ccc;"></p>
+            </div>
+
+            <!-- CONTENEDOR DE VIDEO PREPARADO -->
+            <div id="detail-video-container" style="display: none; margin-top: 25px;">
+                <h3>🎥 Video Review</h3>
+                <div id="detail-video-content"></div>
+            </div>
+
+            <!-- ACCIONES -->
+            <div class="detail-actions" style="margin-top: 30px;">
+                <button id="btn-detail-add" class="btn-submit" style="width: 100%; padding: 15px; font-size: 1.1rem; font-weight: bold;">Añadir al carrito</button>
+            </div>
+        </div> <!-- Aquí termina la columna derecha -->
+
+    </div> <!-- MUDAMOS ESTE CIERRE AQUÍ: Ahora sí envuelve ambas columnas -->
+</div>
+
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h4 style="color:#00ced1; cursor:pointer;" onclick="mostrarSeccion('inicio')">Zen & Zen</h4>
+                <p>La zona definitiva para coleccionistas de Hot Wheels y figuras.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Nuestras Redes</h4>
+                <ul>
+                    <li><a href="#">📸 Instagram</a></li>
+                    <li><a href="#">👥 Facebook</a></li>
+                    <li><a href="#">💬 Comunidad WhatsApp</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">&copy; 2026 Zen & Zen - Todos los derechos reservados.</div>
+    </footer>
+    
+</body>
+</html>
