@@ -297,10 +297,87 @@ SISTEMAS EXTERNOS (CARRITO LATERAL, FORMULARIOS Y FOOTER)
 .cart-header { padding: 20px; background: #11151d; border-bottom: 1px solid #2a3447; color: white; display: flex; justify-content: space-between; align-items: center; }
 .close-cart { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
 .cart-items-list { padding: 20px; flex-grow: 1; overflow-y: auto; }
-.cart-item { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid #2a3447; padding-bottom: 10px; }
-.cart-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
-.cart-item-info { flex-grow: 1; }
-.btn-remove-item { background: none; border: none; color: #ff3333; cursor: pointer; font-size: 14px; }
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #0e131f;        /* Fondo oscuro elegante */
+    border: 1px solid #2a3447;  
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.cart-item:hover {
+    border-color: rgba(125, 38, 205, 0.4); 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.cart-item-media {
+    width: 60px;
+    height: 60px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #11151d;
+    border: 1px solid #2a3447;
+    flex-shrink: 0;            
+}
+.cart-item-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;          
+}
+.cart-item-details {
+    flex-grow: 1;              /* Empuja el tacho a la derecha de forma fluida */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;   /* Centra verticalmente los textos respecto a la foto */
+    gap: 6px;                  /* Más separación entre el nombre y el precio */
+    padding-left: 5px;         /* Despega un poco los textos de la imagen */
+}
+.cart-item-title {
+    font-size: 1.1rem;         /* ¡Más grande! Pasó de 0.95rem a 1.1rem */
+    font-weight: 700;          /* Más grueso y firme (Estilo Negrita Pro) */
+    color: #ffffff;            /* Blanco puro brillante para máxima lectura */
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: 0.3px;     /* Estiliza la tipografía de colección */
+}
+
+.cart-item-price {
+    font-size: 1.2rem;         /* ¡Más imponente! Pasó de 1.1rem a 1.2rem */
+    font-weight: 800;          /* Super grueso para destacar el valor de la pieza */
+    color: var(--color-oro);   /* Tu variable oro característica de Zen & Zen */
+    margin: 0;
+    text-shadow: 0 0 8px rgba(243, 156, 18, 0.2); /* Sutil destello neón dorado de fondo */
+}
+
+.btn-remove-item {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+.icon-trash {
+    width: 20px;
+    height: 20px;
+    fill: #7a8aa3;              /* Color gris azulado apagado */
+    transition: fill 0.2s ease, transform 0.2s ease;
+}
+.btn-remove-item:hover {
+    background: rgba(236, 28, 36, 0.1); 
+}
+.btn-remove-item:hover .icon-trash {
+    fill: #ff3333;              /* Se ilumina en rojo vivo al pasar el mouse */
+    transform: scale(1.1);       
+}
+
 .cart-footer { padding: 20px; background: #11151d; border-top: 1px solid #2a3447; }
 .btn-checkout { background: var(--color-cian); color: #111; border: none; width: 100%; padding: 12px; margin-top: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 .btn-checkout:hover { background: #00b5b8; }
@@ -412,12 +489,7 @@ max-height: 350px;
 .detail-layout img, .detail-info {
 width: 100%;
 }
-/* Los productos horizontales de la sección carrito se adaptan */
-.cart-item {
-flex-direction: column;
-align-items: flex-start !important;
-gap: 15px;
-}
+
 .cart-item button {
 width: 100%;
 text-align: center;

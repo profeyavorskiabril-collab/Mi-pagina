@@ -511,7 +511,14 @@ function cerrarModalDetail() {
 }
 
 
-function quitarDelCarrito(index) { carrito.splice(index, 1); actualizarCarritoUI(); }
+// ==========================================================
+// CONTROL INTERACTIVO DEL CARRITO DE COMPRAS
+// ==========================================================
+
+function quitarDelCarrito(index) { 
+    carrito.splice(index, 1); 
+    actualizarCarritoUI(); 
+}
 
 function actualizarCarritoUI() {
     document.getElementById('cart-count').textContent = carrito.length;
@@ -527,22 +534,41 @@ function actualizarCarritoUI() {
         return;
     }
 
+    // Recorremos el carrito inyectando la nueva estructura profesional y limpia
     carrito.forEach((item, index) => {
         total += item.precio;
         container.innerHTML += `
-            <div class="cart-item" style="display:flex; justify-content:space-between; background:#0b0e14; padding:15px; border-radius:8px; margin-bottom:10px; border:1px solid #2a3447;">
-                <div style="display:flex; gap:15px; align-items:center;">
-                    <img src="${item.imagen}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
-                    <div><h4 style="color:#fff;">${item.titulo}</h4><p style="color:var(--color-oro); font-weight:bold;">$${item.precio}</p></div>
+            <div class="cart-item">
+                <!-- 1. Foto del Artículo -->
+                <div class="cart-item-media">
+                    <img src="${item.imagen}" alt="${item.titulo}">
                 </div>
-                <button onclick="quitarDelCarrito(${index})" style="background:#cc0000; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Quitar</button>
+                
+                <!-- 2. Información del Artículo -->
+                <div class="cart-item-details">
+                    <h4 class="cart-item-title">${item.titulo}</h4>
+                    <p class="cart-item-price">$${item.precio}</p>
+                </div>
+                
+                <!-- 3. Botón de Eliminar (Tacho de Basura SVG) -->
+                <button type="button" class="btn-remove-item" onclick="quitarDelCarrito(${index})" title="Eliminar de la orden">
+                    <svg class="icon-trash" viewBox="0 0 24 24">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                </button>
             </div>`;
     });
+
     document.getElementById('resumen-subtotal').textContent = `$${total}`;
     document.getElementById('resumen-total').textContent = `$${total}`;
+    
+    // Guardamos de forma persistente para que no se borre al recargar en GitHub Pages
     localStorage.setItem('zen_carrito', JSON.stringify(carrito));
+    
+    // Ejecutamos tu función de cálculos automáticos por Código Postal (CP)
     calcularTotalPedido();
 }
+
 
 
 // ==========================================================
