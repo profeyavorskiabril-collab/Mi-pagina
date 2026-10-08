@@ -4,20 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Collector Zone - Compra y Venta</title>
-    <link rel="stylesheet" href="style.css?v=1.0.2">
-    <!-- CONEXIÓN REAL A SUPABASE DESDE EL NAVEGADOR -->
-    <!-- Reemplazo para evitar el bloqueo de red y cargar Supabase con éxito -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
-    <!-- Tu archivo de lógica con el atributo defer -->
-    <script src="script.js?v=1.0.2" defer></script>
+    <!-- CONEXIÓN REAL A SUPABASE DESDE EL NAVEGADOR -->
+    <script src="https://unpkg.com"></script>
 
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+    <!-- TRUCO PARA TELÉFONOS: Inyectamos los archivos con la hora exacta para romper la caché del celular -->
+    <script>
+        const versionUnica = Date.now(); // Genera un número único basado en el milisegundo actual
 
-</head>
-<body>
+        // 1. Inyectamos el CSS de forma dinámica
+        const linkCss = document.createElement('link');
+        linkCss.rel = 'stylesheet';
+        linkCss.href = 'style.css?v=' + versionUnica;
+        document.head.appendChild(linkCss);
+
+        // 2. Inyectamos tu script de JavaScript de forma dinámica (reemplaza el defer)
+        const scriptJs = document.createElement('script');
+        scriptJs.src = 'script.js?v=' + versionUnica;
+        scriptJs.defer = true;
+        document.head.appendChild(scriptJs);
+    </script>
+
+    <!-- Etiquetas de respaldo -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head><body>
 
     <!-- BARRA DE NAVEGACIÓN -->
     <!-- BARRA DE NAVEGACIÓN Y MENÚS ESTILO VADER TOYS -->
