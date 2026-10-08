@@ -462,3 +462,140 @@ grid-template-columns: 1fr;
     color: #fff;
     font-weight: 500;
 }
+/* ==========================================================
+   💥 BOTÓN "SEGUIR BUSCANDO" ESTILIZADO (VISTA DETALLE/CARRITO)
+   ========================================================== */
+.btn-seguir-buscando {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;                  /* Espacio entre la flecha y el texto */
+    
+    background: transparent;
+    color: #aaa;                /* Color gris elegante por defecto */
+    border: 1px solid #2a3447;  /* Borde sutil a tono con tus tarjetas */
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    
+    max-width: 220px;
+    margin-top: 15px;
+}
+
+/* El icono de la flecha heredará las transiciones */
+.icono-flecha {
+    width: 18px;
+    height: 18px;
+    fill: #aaa;
+    transition: transform 0.25s ease, fill 0.25s ease;
+}
+
+/* ==========================================================
+   ✨ EFECTOS HOVER (AL PASAR EL MOUSE O CLICK)
+   ========================================================== */
+.btn-seguir-buscando:hover {
+    color: var(--color-cian, #00ced1);      /* Ilumina el texto a cian */
+    border-color: var(--color-cian, #00ced1); /* Ilumina el borde */
+    background: rgba(0, 206, 209, 0.05);    /* Un fondo sutil transparente */
+    box-shadow: 0 4px 15px rgba(0, 206, 209, 0.15); /* Efecto neón suave */
+}
+
+/* Efecto magnético: la flecha se mueve un poquito a la izquierda al hacer hover */
+.btn-seguir-buscando:hover .icono-flecha {
+    transform: translateX(-4px);
+    fill: var(--color-cian, #00ced1);
+}
+
+/* Efecto al presionarlo con el dedo o clic */
+.btn-seguir-buscando:active {
+    transform: scale(0.98);
+}
+/* ==========================================================
+   🎛️ PANEL DE ACCIONES DEL PERFIL (REDISENO DE BOTONES)
+   ========================================================== */
+
+/* Contenedor padre con Flexbox responsivo */
+.profile-actions-container {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap; 
+    margin-top: 25px;
+    width: 100%;
+}
+
+/* Base unificada para todos los botones del perfil */
+.btn-profile {
+    flex: 1;
+    min-width: 180px; /* Evita que se achiquen de más en pantallas medianas */
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* 🟢 1. BOTÓN GUARDAR (Identidad de marca - Violeta) */
+.btn-profile.btn-guardar {
+    background: var(--color-violeta);
+    color: #fff;
+    border: 1px solid var(--color-violeta);
+}
+.btn-profile.btn-guardar:hover {
+    background: #661da9;
+    box-shadow: 0 4px 15px rgba(125, 38, 205, 0.4);
+    transform: translateY(-2px);
+}
+
+/* 🔵 2. BOTÓN VOLVER (Elegante - Fondo transparente con contorno cian) */
+.btn-profile.btn-volver {
+    background: transparent;
+    color: #aaa;
+    border: 1px solid #2a3447;
+}
+.btn-profile.btn-volver:hover {
+    color: var(--color-cian);
+    border-color: var(--color-cian);
+    background: rgba(0, 206, 209, 0.05);
+    box-shadow: 0 4px 15px rgba(0, 206, 209, 0.15);
+    transform: translateY(-2px);
+}
+
+/* 🔴 3. BOTÓN CERRAR SESIÓN (Alerta sutil - Estilo cyberpunk oscuro) */
+.btn-profile.btn-logout {
+    background: rgba(204, 0, 0, 0.1); /* Rojo sutil de fondo */
+    color: #ff4d4d;
+    border: 1px solid rgba(204, 0, 0, 0.4);
+}
+.btn-profile.btn-logout:hover {
+    background: #cc0000;
+    color: #fff;
+    border-color: #cc0000;
+    box-shadow: 0 4px 15px rgba(204, 0, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Efecto al presionar cualquier botón con el dedo o clic */
+.btn-profile:active {
+    transform: scale(0.98) translateY(0) !important;
+}
+
+/* ==========================================================
+   📱 ADAPTACIÓN PARA CELULARES CHICOS (MENOS DE 600PX)
+   ========================================================== */
+@media (max-width: 600px) {
+    .profile-actions-container {
+        flex-direction: column; /* Se apilan verticalmente de a uno por fila */
+        gap: 12px;
+    }
+    .btn-profile {
+        width: 100%; /* Ocupan todo el ancho disponible del formulario */
+    }
+}

@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Collector Zone - Compra y Venta</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.0.2">
     <!-- CONEXIÓN REAL A SUPABASE DESDE EL NAVEGADOR -->
     <!-- Reemplazo para evitar el bloqueo de red y cargar Supabase con éxito -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
     <!-- Tu archivo de lógica con el atributo defer -->
-    <script src="script.js" defer></script>
+    <script src="script.js?v=1.0.2" defer></script>
 
-
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 
 </head>
 <body>
@@ -60,9 +62,9 @@
                 </li>
                 
                 <li class="dropdown">
-                    <a href="#" class="dropbtn" onclick="filtrarCategoria('Figuras')">Figuras de Acción ▾</a>
+                    <a href="#" class="dropbtn" onclick="filtrarCategoria('Figuras')">Figuras ▾</a>
                     <ul class="dropdown-content">
-                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Marvel Legends')">Marvel Legends</a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Marvel')">Marvel </a></li>
                         <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Star Wars')">Star Wars Black Series</a></li>
                         <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Anime')">Anime / Figma</a></li>
                         <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Funko Pop')">Funko Pop</a></li>
@@ -105,7 +107,7 @@
         <section class="categories-container" style="padding: 0; margin: 20px 0;">
             <button class="cat-btn active" onclick="filtrarCategoria('Todos')">Todos</button>
             <button class="cat-btn" onclick="filtrarCategoria('Hot Wheels')">Hot Wheels</button>
-            <button class="cat-btn" onclick="filtrarCategoria('Figuras')">Figuras de Acción</button>
+            <button class="cat-btn" onclick="filtrarCategoria('Figuras')">Figuras</button>
         </section>
 
         <!-- GRILLA DE PRODUCTOS -->
@@ -204,12 +206,23 @@
                     <label>Código Postal:</label>
                     <input type="text" id="perf-cp" placeholder="Ej. 1619">
                 </div>
-                <div style="display:flex; gap:10px; flex-wrap: wrap; margin-top: 20px;">
-                    <button type="submit" class="btn-submit" style="flex: 1;">Guardar Datos de Envío</button>
-                    <button type="button" class="btn-buy-now" style="background:#444; flex: 1;" onclick="mostrarSeccion('inicio')">Volver a la Tienda</button>
-                    <!-- NUEVO BOTÓN DE CERRAR SESIÓN -->
-                    <button type="button" class="btn-buy-now" style="background:#cc0000; flex: 1;" onclick="logout()">Cerrar Sesión</button>
+                <div class="profile-actions-container">
+                    <!-- 1. Guardar Datos (Principal - Violeta) -->
+                    <button type="submit" class="btn-profile btn-guardar">
+                        💾 Guardar Datos de Envío
+                    </button>
+                    
+                    <!-- 2. Volver a la Tienda (Secundario - Borde Cian) -->
+                    <button type="button" class="btn-profile btn-volver" onclick="mostrarSeccion('inicio')">
+                        🛒 Volver a la Tienda
+                    </button>
+                    
+                    <!-- 3. Cerrar Sesión (Alerta - Rojo Destructivo) -->
+                    <button type="button" class="btn-profile btn-logout" onclick="logout()">
+                        🚪 Cerrar Sesión
+                    </button>
                 </div>
+
 
             </form>
         </section>
@@ -227,7 +240,12 @@
                 <div id="seccion-carrito-items">
                     <!-- Los productos del carrito se inyectan acá con JavaScript -->
                 </div>
-                <button class="btn-buy-now" style="background: #444; max-width: 200px; margin-top: 15px;" onclick="mostrarSeccion('tienda')">⏪ Seguir Buscando</button>
+                <button class="btn-seguir-buscando" onclick="mostrarSeccion('tienda')">
+                    <svg class="icono-flecha" viewBox="0 0 24 24">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                    </svg>
+                    Seguir Buscando
+                </button>
             </section>
 
             <!-- RESUMEN DE PAGO Y ENVÍO -->
@@ -335,9 +353,13 @@
 <div id="view-detalle" class="hidden" style="padding: 20px; max-width: 1200px; margin: 0 auto;">
     
     <!-- Botón prolijo para regresar a la tienda -->
-    <button onclick="mostrarSeccion('tienda')" style="background: none; border: 1px solid #2a3447; color: #aaa; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-weight: bold; transition: 0.2s;">
-        ⏪ Volver
+    <button class="btn-seguir-buscando" onclick="mostrarSeccion('tienda')">
+        <svg class="icono-flecha" viewBox="0 0 24 24">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Seguir Buscando
     </button>
+
     
     <!-- CONTENEDOR PADRE PRINCIPAL -->
     <div class="detail-layout">
