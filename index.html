@@ -6,9 +6,10 @@
     <title>Collector Zone - Compra y Venta</title>
     
     <!-- CONEXIÓN REAL A SUPABASE DESDE EL NAVEGADOR -->
-    <script src="https://unpkg.com"></script>
-
-    <!-- TRUCO PARA TELÉFONOS: Inyectamos los archivos con la hora exacta para romper la caché del celular -->
+    <!-- Reemplazo para evitar el bloqueo de red y cargar Supabase con éxito -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <!-- Tu archivo de lógica con el atributo defer -->
     <script>
         const versionUnica = Date.now(); // Genera un número único basado en el milisegundo actual
 
@@ -25,11 +26,13 @@
         document.head.appendChild(scriptJs);
     </script>
 
-    <!-- Etiquetas de respaldo -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-</head><body>
+
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+</head>
+<body>
 
     <!-- BARRA DE NAVEGACIÓN -->
     <!-- BARRA DE NAVEGACIÓN Y MENÚS ESTILO VADER TOYS -->
