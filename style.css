@@ -671,3 +671,80 @@ grid-template-columns: 1fr;
         width: 100%; /* Ocupan todo el ancho disponible del formulario */
     }
 }
+
+/* Asegura que el contenedor donde se inyectan los productos no los corte */
+#seccion-carrito-items {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-sizing: border-box;
+}
+
+/* 
+   Busca en tu JavaScript cómo se llama la clase del div que contiene cada producto. 
+   Suele ser algo como .cart-item o .producto-carrito. 
+   Reemplaza ".nombre-de-tu-clase-item" por esa clase si es necesario.
+*/
+#seccion-carrito-items > div, .cart-item {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between; /* Empuja el tacho al extremo derecho */
+    width: 100% !important;
+    box-sizing: border-box;
+    padding: 12px;
+    gap: 15px; /* Espacio de seguridad entre imagen/texto y el tacho */
+}
+
+/* Asegura que el tacho de basura no se achique ni se salga */
+#seccion-carrito-items button, #seccion-carrito-items .fa-trash, #seccion-carrito-items img[src*="trash"] {
+    flex-shrink: 0; /* Evita que el botón se aplaste */
+    margin-left: auto; /* Refuerza que se vaya a la derecha */
+}
+
+@media (max-width: 768px) {
+    /* Transformamos el menú en una barra deslizante de izquierda a derecha */
+    .nav-menu {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important; /* Activa el scroll horizontal */
+        white-space: nowrap !important; /* Evita que los botones salten de línea */
+        justify-content: flex-start !important;
+        padding: 10px 15px !important;
+        gap: 12px !important;
+        scrollbar-width: none; /* Oculta scrollbar en Firefox */
+        -webkit-overflow-scrolling: touch; /* Scroll ultra suave en iPhones */
+    }
+
+    /* Oculta la barra de scroll visual en Chrome/Safari para mantenerlo limpio */
+    .nav-menu::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    /* Estilizamos los botones principales del menú */
+    .nav-menu > li {
+        display: inline-block !important;
+        flex-shrink: 0; /* Evita que los botones se achiquen */
+    }
+
+    .nav-menu > li > a {
+        display: block;
+        padding: 8px 16px !important;
+        background: rgba(255, 255, 255, 0.05) !important; /* Fondo sutil moderno */
+        border: 1px solid rgba(0, 206, 209, 0.3) !important; /* Borde cian sutil a juego con tu marca */
+        border-radius: 20px !important; /* Forma de píldora */
+        font-size: 14px !important;
+        color: #fff !important;
+        text-decoration: none;
+    }
+
+    /* Desactivamos los menús desplegables (dropdowns) pesados en móvil para que no floten raros */
+    .dropdown-content {
+        display: none !important; /* En celular es mejor que toquen la categoría principal */
+    }
+    
+    /* Quitamos la flechita del texto original si te molesta, o la dejamos como indicador */
+    .dropbtn {
+        pointer-events: auto;
+    }
+}

@@ -587,19 +587,20 @@ function calcularTotalPedido() {
     let costoEnvio = 0;
     let mensajeEnvio = "";
 
-    if (selector && selector.value === 'envio') {
-        // Mostramos el cartel de información
+if (selector && (selector.value === 'envio' || selector.value === 'moto')) {
+    // 1. Validamos si el usuario inició sesión y tiene un código postal guardado
+    if (!usuarioActivo || !usuarioActivo.cp) {
         if (infoTexto) infoTexto.style.display = "block";
+        mensajeEnvio = "⚠️ Completa tu Código Postal en tu Perfil para calcular.";
+        costoEnvio = 4500; // Costo base/promedio si no hay CP ingresado
+    } else {
+        // Convertimos el CP a número entero una sola vez para usarlo en ambos métodos
+        const cp = parseInt(usuarioActivo.cp);
 
-        // Validamos si el usuario inició sesión y tiene un código postal guardado
-        if (!usuarioActivo || !usuarioActivo.cp) {
-            mensajeEnvio = "⚠️ Completa tu Código Postal en tu Perfil para calcular.";
-            costoEnvio = 4500; // Costo base/promedio si no hay CP ingresado
-        } else {
-            // Convertimos el CP a número entero para la validación
-            const cp = parseInt(usuarioActivo.cp);
+        // 2. Evaluamos si eligió ENVÍO (Correo Argentino)
+        if (selector.value === 'envio') {
+            if (infoTexto) infoTexto.style.display = "block";
 
-            // CLASIFICACIÓN DE TARIFAS DE CORREO ARGENTINO POR RANGOS DE CP (Ajusta los precios a tu gusto)
             if (cp >= 1000 && cp <= 1499) {
                 costoEnvio = 3200; // Capital Federal (CABA)
                 mensajeEnvio = `📍 Envío Local detectado (CABA - CP: ${cp}).`;
@@ -607,21 +608,35 @@ function calcularTotalPedido() {
                 costoEnvio = 3900; // GBA / Provincia de Buenos Aires cercana
                 mensajeEnvio = `📍 Envío Regional detectado (Buenos Aires - CP: ${cp}).`;
             } else if ((cp >= 2000 && cp <= 3999) || (cp >= 5000 && cp <= 8999)) {
-                costoEnvio = 5800; // Provincias del Interior (Córdoba, Santa Fe, Mendoza, etc.)
+                costoEnvio = 5800; // Provincias del Interior
                 mensajeEnvio = `📍 Envío Nacional Interior detectado (CP: ${cp}).`;
             } else if (cp >= 9000 && cp <= 9999) {
-                costoEnvio = 7200; // Patagonia / Zonas Extremas (Tierra del Fuego, Santa Cruz)
+                costoEnvio = 7200; // Patagonia / Zonas Extremas
                 mensajeEnvio = `📍 Envío Nacional Zona Extrema detectado (Patagonia - CP: ${cp}).`;
             } else {
-                costoEnvio = 5000; // Tarifa plana de respaldo por si escribe un CP raro
+                costoEnvio = 5000; // Tarifa plana de respaldo
                 mensajeEnvio = `📍 Envío calculado para CP: ${cp}.`;
             }
+        } 
+        // 3. Evaluamos si eligió MOTO
+        else if (selector.value === 'moto') {
+            // Nota: El rango 1601 a 1675 corresponde a Zona Norte de GBA (no CABA)
+            if (cp >= 1601 && cp <= 1675) {
+                costoEnvio = 2500; 
+                
+                if (infoTexto) infoTexto.style.display = "none"; // O "block" si querés mostrar el mensajeEnvio
+            } else {
+                costoEnvio = 5000; 
+                mensajeEnvio = ` ⚠️ No hay motomensajería en tu zona (CP: ${cp}).`;
+                if (infoTexto) infoTexto.style.display = "block"; // Activamos cartel para mostrar el error de zona
+            }
         }
-    }else {
+    }
+} else {
     // Si el valor es cualquiera de los retiros de Garín, el costo de envío es 0
-        costoEnvio = 0;
-        if (infoTexto) infoTexto.style.display = "none";
-        }
+    costoEnvio = 0;
+    if (infoTexto) infoTexto.style.display = "none";
+}
 
     // 3. Monto final
     let totalFinal = subtotal + costoEnvio;
