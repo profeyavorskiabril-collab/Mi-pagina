@@ -19,6 +19,15 @@ let subcategoriaActual = 'Todos';
 if (window.supabase && window.supabase.createClient) {
     window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 }
+function renderizarTienda() {
+    // Al principio o al final de tu lógica que dibuja los productos en #products-grid:
+    const spinnerTienda = document.getElementById('tienda-cargando');
+    if (spinnerTienda) {
+        spinnerTienda.style.display = 'none'; // Se apaga cuando los productos ya están listos
+    }
+    
+    // ... Tu forEach actual de productos ...
+}
 
 // ARRANQUE AUTOMÁTICO DE LA TIENDA (ORDEN SEGURO DE FORMULARIOS)
 document.addEventListener("DOMContentLoaded", async () => {
@@ -84,7 +93,13 @@ function renderizarProductos() {
         return cumpleCat && cumpleSub;
     });
 
+    // Capturamos el elemento del spinner para poder apagarlo
+    const spinnerTienda = document.getElementById('tienda-cargando');
+
     if (filtrados.length === 0) {
+        // 🌟 APAGAR SPINNER AQUÍ (Si el catálogo está vacío)
+        if (spinnerTienda) spinnerTienda.style.display = 'none';
+
         grid.innerHTML = '<p style="padding:40px; color:#aaa; grid-column:1/-1; text-align:center;">El catálogo está vacío o las piezas se encuentran reservadas.</p>';
         return;
     }
@@ -95,11 +110,9 @@ function renderizarProductos() {
         card.onclick = () => abrirDetalleProducto(p.id);
         
         // 🟡 CARTEL DE RESERVADO EN LA TARJETA
-// BUSCÁ ESTO EN RENDERIZARPRODUCTOS Y REEMPLAZALO POR:
-if (parseInt(p.stock) === 0) {
-    card.innerHTML += `<div class="reservado-badge">🔒 Reservado</div>`;
-}
-
+        if (parseInt(p.stock) === 0) {
+            card.innerHTML += `<div class="reservado-badge">🔒 Reservado</div>`;
+        }
 
         card.innerHTML += `
             <img src="${p.imagen}">
@@ -114,6 +127,11 @@ if (parseInt(p.stock) === 0) {
             </div>`;
         grid.appendChild(card);
     });
+
+    // 🌟 APAGAR SPINNER AQUÍ (Cuando ya terminó de dibujar todas las tarjetas)
+    if (spinnerTienda) {
+        spinnerTienda.style.display = 'none';
+    }
 }
 
 
@@ -139,24 +157,15 @@ function mostrarSeccion(seccion) {
     document.getElementById('view-vender').classList.toggle('hidden', seccion !== 'vender');
     document.getElementById('view-perfil').classList.toggle('hidden', seccion !== 'perfil');
     document.getElementById('view-carrito').classList.toggle('hidden', seccion !== 'carrito');
-    
-    // NUEVO: Agregamos el control de la pantalla de detalles completos
+    document.getElementById('view-favoritos').classList.toggle('hidden', seccion !== 'favoritos');
     document.getElementById('view-detalle').classList.toggle('hidden', seccion !== 'detalle');
+    
+    // 🌟 NUEVO: Controlamos de forma limpia la pantalla de éxito al comprar
+    document.getElementById('view-exito-compra').classList.toggle('hidden', seccion !== 'exito-compra');
     
     if (seccion === 'carrito') actualizarCarritoUI();
 }
 
-
-const searchInput = document.getElementById('search-input');
-if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-        const texto = e.target.value.toLowerCase();
-        document.querySelectorAll('.product-card').forEach(tarjeta => {
-            const titulo = tarjeta.querySelector('.product-title').textContent.toLowerCase();
-            tarjeta.style.display = titulo.includes(texto) ? "flex" : "none";
-        });
-    });
-}
 
 function cambiarSlide(dir) {
     const carousel = document.getElementById('carousel');
@@ -286,15 +295,37 @@ function aplicarInterfazUsuario() {
 }
 
 function cargarDatosPerfilEnFormulario() {
-    // Si no hay un usuario con sesión activa, no hacemos nada
     if (!usuarioActivo) return;
 
-    // Llenamos los casilleros directamente con los datos reales que vinieron de la nube
+    // 🌟 TRUCO RESOLUTIVO: Buscamos cualquier etiqueta que contenga la palabra "Correo Electrónico"
+    let emailContenedor = document.getElementById('user-profile-email');
+    
+    // Si el ID no existía, lo buscamos recorriendo los elementos de texto del perfil
+    if (!emailContenedor) {
+        const etiquetas = document.querySelectorAll('.form-section p, .form-section span, .form-section div, .form-section label');
+        for (let el of etiquetas) {
+            if (el.innerText.includes('Correo Electrónico:')) {
+                emailContenedor = el;
+                break;
+            }
+        }
+    }
+
+    // Si logramos encontrar la etiqueta (ya sea por ID o por el texto)
+    if (emailContenedor) {
+        const emailReal = usuarioActivo.email || usuarioActivo.correo || (usuarioActivo.user ? usuarioActivo.user.email : '');
+        
+        // Sobreescribimos el texto completo con el email del usuario activo
+        emailContenedor.innerHTML = `<strong>Correo Electrónico:</strong> ${emailReal ? emailReal : "No especificado"}`;
+    }
+
+    // Llenamos los casilleros de los formularios (esto ya te funcionaba perfecto)
     if(document.getElementById('perf-nombre')) document.getElementById('perf-nombre').value = usuarioActivo.nombre || "";
     if(document.getElementById('perf-telefono')) document.getElementById('perf-telefono').value = usuarioActivo.telefono || "";
     if(document.getElementById('perf-direccion')) document.getElementById('perf-direccion').value = usuarioActivo.direccion || "";
     if(document.getElementById('perf-cp')) document.getElementById('perf-cp').value = usuarioActivo.cp || "";
 }
+
 
 async function guardarDatosPerfil(e) {
     e.preventDefault();
@@ -346,6 +377,9 @@ function logout() {
 // ==========================================
 // 4. DETALLES, CARRITO Y PASARELA WHATSAPP
 function abrirDetalleProducto(id) {
+    if (document.getElementById('view-favoritos')) {
+        document.getElementById('view-favoritos').classList.add('hidden');
+    }
     const p = productos.find(item => item.id === id);
     if (!p) return;
 
@@ -455,7 +489,7 @@ function abrirDetalleProducto(id) {
             btnCompra.disabled = true; 
             btnCompra.style.background = "#555";
         } else {
-            btnCompra.textContent = "Añadir a la Orden 🛒"; 
+            btnCompra.textContent = "Añadir al carrito"; 
             btnCompra.disabled = false; 
             btnCompra.style.background = "var(--color-violeta)";
             
@@ -500,7 +534,7 @@ function agregarAlCarrito(id) {
         actualizarCarritoVisual();
     }
     
-    alert(`¡${p.titulo} añadido a la orden con éxito!`);
+
     calcularTotalPedido();
 }
 
@@ -647,8 +681,6 @@ if (selector && (selector.value === 'envio' || selector.value === 'moto')) {
     if (document.getElementById('cart-shipping-cost')) document.getElementById('cart-shipping-cost').textContent = costoEnvio === 0 ? "Gratis" : `$${costoEnvio}`;
     if (document.getElementById('cart-total-final')) document.getElementById('cart-total-final').textContent = `$${totalFinal}`;
 }
-
-
 async function finalizarOrdenWhatsApp() {
     if (!usuarioActivo) { alert("Iniciá sesión para continuar."); abrirModalAuth(); return; }
     if (carrito.length === 0) { alert("Tu carrito está vacío."); return; }
@@ -723,15 +755,32 @@ async function finalizarOrdenWhatsApp() {
     mensaje += `🚚 *Costo Envío:* ${envioTexto}\n`;
     mensaje += `💵 *TOTAL NETO:* *${totalFinalTexto}*\n`;
 
-    const linkFinal = "https://wa.me" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
-    window.open(linkFinal, '_blank');
-    
-    carrito = []; 
-    localStorage.removeItem('zen_carrito'); 
-    
-    if (typeof actualizarCarritoUI === 'function') actualizarCarritoUI(); 
-    mostrarSeccion('inicio');
+    // 🌟 NUEVO: Cartel de confirmación Sí / No antes de disparar el proceso
+    const quiereComprar = confirm("¿Querés enviar la orden de compra definitiva por WhatsApp?");
+
+    if (quieresComprar) {
+        // SI ELIGE SÍ: Abrimos WhatsApp en una pestaña nueva
+        const linkFinal = "https://wa.me/" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
+        window.open(linkFinal, '_blank');
+        
+        // Vaciamos el carrito local y en almacenamiento
+        carrito = []; 
+        localStorage.removeItem('zen_carrito'); 
+        
+        // Actualizamos los contadores e interfaces visuales
+        if (typeof actualizarCarritoUI === 'function') actualizarCarritoUI(); 
+        
+        const cartCount = document.getElementById('cart-count');
+        if (cartCount) cartCount.innerText = '0';
+
+        // Activamos tu nueva pantalla premium de éxito
+        mostrarSeccion('exito-compra');
+    } else {
+        // SI ELIGE NO: El cartel se cierra y el usuario se queda en el carrito intacto
+        console.log("El coleccionista canceló el envío del pedido.");
+    }
 }
+
 
 
 // ==========================================
@@ -813,11 +862,38 @@ async function agregarProductoAdmin(e) {
 
 //FAVORITOS-------------------
 
+//FAVORITOS-------------------
+
 function alternarFavorito(elementoBoton, idProducto) {
     elementoBoton.classList.toggle('activo');
     const estaActivo = elementoBoton.classList.contains('activo');
 
-    // En lugar de localStorage, envías el dato a tu base de datos mediante tu API
+    // 🌟 NUEVO: Aseguramos que la sesión tenga el array de favoritos listo
+    if (!usuarioActivo) {
+        console.warn("⚠️ Debes iniciar sesión para guardar favoritos.");
+        return;
+    }
+    if (!usuarioActivo.favoritos) {
+        usuarioActivo.favoritos = [];
+    }
+
+    // 🌟 NUEVO: Forzamos el ID a String para que coincida con tu Supabase (["3","2"])
+    const idString = String(idProducto);
+
+    if (estaActivo) {
+        // Si no está en el array local, lo agregamos
+        if (!usuarioActivo.favoritos.includes(idString)) {
+            usuarioActivo.favoritos.push(idString);
+        }
+    } else {
+        // Si lo desmarcó, lo quitamos del array local
+        usuarioActivo.favoritos = usuarioActivo.favoritos.filter(favId => String(favId) !== idString);
+    }
+
+    // 🌟 NUEVO: Guardamos el estado actual en el LocalStorage para no perderlo al recargar
+    localStorage.setItem('zen_sesion', JSON.stringify(usuarioActivo));
+
+    // Tu fetch actual a la API queda exactamente igual
     fetch('/api/favoritos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -827,8 +903,16 @@ function alternarFavorito(elementoBoton, idProducto) {
         })
     })
     .then(res => res.json())
-    .then(data => console.log("Favoritos sincronizados en la Base de Datos"));
+    .then(data => {
+        console.log("Favoritos sincronizados en la Base de Datos");
+        // Opcional: Si el usuario está parado en la pantalla de favoritos y desmarca uno, 
+        // podés revivir la función para que desaparezca la tarjeta al instante:
+        if (document.getElementById('view-favoritos') && !document.getElementById('view-favoritos').classList.contains('hidden')) {
+            mostrarFavoritos();
+        }
+    });
 }
+
 // ==========================================================
 // DETECTOR AUTOMÁTICO DE INICIO DE SESIÓN PARA FAVORITOS
 // ==========================================================
@@ -879,4 +963,110 @@ if (btnAuthSubmit) {
             sincronizarFavoritosAlIngresar();
         }, 1500);
     });
+}
+function mostrarFavoritos() {
+    mostrarSeccion('favoritos'); 
+
+    const grid = document.getElementById('favoritos-grid');
+    const msgVacio = document.getElementById('fav-vacio');
+    const contadorFav = document.getElementById('fav-count');
+    const spinnerFav = document.getElementById('fav-cargando'); // 🌟 Capturamos spinner
+    
+    if (!grid) return;
+    grid.innerHTML = ''; 
+    
+    // 🌟 1. Prendemos el spinner de favoritos antes de evaluar nada
+    if (spinnerFav) spinnerFav.style.display = 'flex';
+    if (msgVacio) msgVacio.style.display = 'none';
+
+    // Le damos un mini respiro asíncrono simulado de 300ms para que la animación se luzca y limpie
+    setTimeout(() => {
+        
+        // 🌟 2. Apagamos el spinner porque ya procesamos los datos
+        if (spinnerFav) spinnerFav.style.display = 'none';
+
+        if (!usuarioActivo || !usuarioActivo.favoritos || usuarioActivo.favoritos.length === 0) {
+            if (msgVacio) msgVacio.style.display = 'block';
+            if (contadorFav) contadorFav.innerText = '0 artículos';
+            return;
+        }
+
+        const favoritosUsuario = usuarioActivo.favoritos.map(id => String(id).trim());
+        const productosFavoritos = productos.filter(item => favoritosUsuario.includes(String(item.id).trim()));
+        
+        if (contadorFav) contadorFav.innerText = `${productosFavoritos.length} artículos`;
+
+        if (productosFavoritos.length === 0) {
+            if (msgVacio) msgVacio.style.display = 'block';
+            return;
+        }
+
+                // Dibuja tus tarjetas
+        productosFavoritos.forEach(item => {
+            grid.innerHTML += `
+                <div class="product-card fav-card">
+                    <!-- Contenedor de la Imagen con fondo profundo -->
+                    <div class="fav-card-media">
+                        <img src="${item.imagen}" alt="${item.titulo}" onerror="this.src='https://placeholder.com'">
+                    </div>
+                    
+                    <!-- Datos del Producto con tipografía cuidada -->
+                    <div class="fav-card-info">
+                        <h3 class="fav-card-title">${item.titulo}</h3>
+                        <p class="fav-card-price">$${item.precio}</p>
+                    </div>
+                    
+                    <!-- Barra de Acciones con botones premium -->
+                    <div class="fav-card-actions">
+                        <button class="btn-fav-add" onclick="agregarAlCarritoPorId('${item.id}')">
+                            Agregar al carrito
+                        </button>
+                        <button class="btn-fav-remove-premium" onclick="eliminarDeFavoritos('${item.id}')" title="Quitar de favoritos">
+                            💔
+                        </button>
+                    </div>
+                </div>`;
+        });
+
+    }, 300); // 300 milisegundos de delay estético
+}
+
+async function eliminarDeFavoritos(id) {
+    console.log("Intentando eliminar ID de favoritos:", id);
+    
+    if (!usuarioActivo || !usuarioActivo.favoritos) {
+        console.error("No hay un usuario activo o la lista no existe.");
+        return;
+    }
+    
+    const idString = String(id).trim();
+
+    // 1. Lo quitamos del array local del usuario en el frontend
+    usuarioActivo.favoritos = usuarioActivo.favoritos.filter(favId => String(favId).trim() !== idString);
+    
+    // 2. Guardamos la actualización en el LocalStorage del navegador para mantener la sesión al día
+    localStorage.setItem('zen_sesion', JSON.stringify(usuarioActivo));
+
+    // 3. Buscamos el botón de corazón correspondiente en la tienda para apagarlo visualmente también allá
+    // Nota: Esto busca un botón que tenga la función alternarFavorito con el ID del producto
+    const botonesTienda = document.querySelectorAll(`[onclick*="alternarFavorito"][onclick*="${idString}"]`);
+    botonesTienda.forEach(btn => btn.classList.remove('activo'));
+
+    // 4. Sincronizamos en tiempo real con Supabase para actualizar tu columna de favoritos
+    if (usuarioActivo.email) {
+        try {
+            const { error } = await supabase
+                .from('usuarios')
+                .update({ favoritos: usuarioActivo.favoritos }) // Le mandamos el array nuevo sin el ID eliminado
+                .eq('email', usuarioActivo.email);
+
+            if (error) throw error;
+            console.log("⭐ Eliminado con éxito de Supabase.");
+        } catch (err) {
+            console.error("Error al guardar la eliminación en la nube:", err.message);
+        }
+    }
+
+    // 5. Refrescamos la pantalla de favoritos inmediatamente para que la tarjeta desaparezca de la vista
+    mostrarFavoritos();
 }

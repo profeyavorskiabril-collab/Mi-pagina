@@ -672,79 +672,378 @@ grid-template-columns: 1fr;
     }
 }
 
-/* Asegura que el contenedor donde se inyectan los productos no los corte */
-#seccion-carrito-items {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    box-sizing: border-box;
-}
+/* ==========================================
+   ARREGLO DEFINITIVO DEL TACHITO (CLASES REALES)
+   ========================================== */
 
-/* 
-   Busca en tu JavaScript cómo se llama la clase del div que contiene cada producto. 
-   Suele ser algo como .cart-item o .producto-carrito. 
-   Reemplaza ".nombre-de-tu-clase-item" por esa clase si es necesario.
-*/
-#seccion-carrito-items > div, .cart-item {
+/* 1. Forzamos a que la tarjeta del producto sea flexible y respete los límites de la pantalla */
+.cart-item {
     display: flex !important;
-    align-items: center;
-    justify-content: space-between; /* Empuja el tacho al extremo derecho */
+    align-items: center !important;
+    justify-content: space-between !important; /* Manda el tacho al extremo derecho */
     width: 100% !important;
-    box-sizing: border-box;
-    padding: 12px;
-    gap: 15px; /* Espacio de seguridad entre imagen/texto y el tacho */
+    box-sizing: border-box !important;
+    padding: 12px !important;
+    gap: 12px !important; /* Espacio mínimo seguro entre elementos */
+    background-color: #151824; /* Color de fondo aproximado de tu diseño, ajustalo si usás otro */
+    border-radius: 8px;
 }
 
-/* Asegura que el tacho de basura no se achique ni se salga */
-#seccion-carrito-items button, #seccion-carrito-items .fa-trash, #seccion-carrito-items img[src*="trash"] {
-    flex-shrink: 0; /* Evita que el botón se aplaste */
-    margin-left: auto; /* Refuerza que se vaya a la derecha */
+/* 2. Hacemos que la zona del texto se adapte y no empuje al tacho hacia afuera */
+.cart-item-details {
+    flex-grow: 1 !important;    /* Ocupa todo el espacio sobrante del centro */
+    min-width: 0 !important;    /* Clave: evita que textos largos rompan la caja */
+    padding-right: 5px !important;
 }
 
-@media (max-width: 768px) {
-    /* Transformamos el menú en una barra deslizante de izquierda a derecha */
-    .nav-menu {
-        display: flex !important;
-        flex-direction: row !important;
-        overflow-x: auto !important; /* Activa el scroll horizontal */
-        white-space: nowrap !important; /* Evita que los botones salten de línea */
-        justify-content: flex-start !important;
-        padding: 10px 15px !important;
-        gap: 12px !important;
-        scrollbar-width: none; /* Oculta scrollbar en Firefox */
-        -webkit-overflow-scrolling: touch; /* Scroll ultra suave en iPhones */
-    }
+/* Evita que los textos del título o precio se desborden de forma desproporcionada */
+.cart-item-title {
+    margin: 0 0 4px 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important; /* Si el título es muy largo, le pone ... */
+}
 
-    /* Oculta la barra de scroll visual en Chrome/Safari para mantenerlo limpio */
-    .nav-menu::-webkit-scrollbar {
+.cart-item-price {
+    margin: 0 !important;
+}
+
+/* 3. Aseguramos el botón del tacho para que se quede estático en su lugar */
+.btn-remove-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;  /* ¡Obligatorio! Evita que el botón se aplaste o se deforme */
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 8px !important;
+    margin-left: auto !important; /* Imán hacia la derecha */
+}
+
+/* Tamaño controlado para tu SVG del tacho */
+.icon-trash {
+    width: 20px !important;
+    height: 20px !important;
+    fill: #a0aec0 !important; /* Color grisáceo/azul que combina con tu estilo */
+    transition: fill 0.2s ease;
+}
+
+.btn-remove-item:hover .icon-trash {
+    fill: #e53e3e !important; /* Se vuelve rojo al pasar el mouse */
+}
+/* ==========================================
+   DISEÑO PARA PANTALLAS GRANDES (PC / Escritorio)
+   ========================================== */
+@media (min-width: 769px) {
+    /* OCULTAMOS por completo el botón de las tres rayitas en computadoras */
+    .menu-hamburger {
         display: none !important;
     }
 
-    /* Estilizamos los botones principales del menú */
+
+}
+
+/* ==========================================
+   DISEÑO PARA PANTALLAS CHICAS (Móviles / Celulares)
+   ========================================== */
+@media (max-width: 768px) {
+    /* Mostramos el botón de las tres rayitas centrado solo en celular */
+    .menu-hamburger {
+        display: block !important;
+        background: none;
+        border: none;
+        color: var(--color-cian, #00ced1);
+        font-size: 30px;
+        cursor: pointer;
+        padding: 10px;
+        width: 100%;
+        text-align: left;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+    }
+
+    /* Ocultamos la lista del menú por defecto en celular */
+    .nav-menu {
+        display: none !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        background: #0f111a !important; /* Fondo oscuro */
+        padding: 10px 0 !important;
+        margin: 0 !important;
+        list-style: none;
+        border-bottom: 2px solid var(--color-cian, #00ced1);
+    }
+
+    /* Cuando se toca el botón y se activa con JS, lo mostramos */
+    .nav-menu.active {
+        display: flex !important;
+    }
+
+    /* Estilo de los enlaces en la lista desplegada del celular */
     .nav-menu > li {
-        display: inline-block !important;
-        flex-shrink: 0; /* Evita que los botones se achiquen */
+        width: 100% !important;
+        text-align: center !important;
     }
 
     .nav-menu > li > a {
-        display: block;
-        padding: 8px 16px !important;
-        background: rgba(255, 255, 255, 0.05) !important; /* Fondo sutil moderno */
-        border: 1px solid rgba(0, 206, 209, 0.3) !important; /* Borde cian sutil a juego con tu marca */
-        border-radius: 20px !important; /* Forma de píldora */
-        font-size: 14px !important;
+        display: block !important;
+        padding: 15px 0 !important;
         color: #fff !important;
+        font-size: 16px !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         text-decoration: none;
     }
 
-    /* Desactivamos los menús desplegables (dropdowns) pesados en móvil para que no floten raros */
+    /* Evita que los dropdowns se rompan flotando en celular */
     .dropdown-content {
-        display: none !important; /* En celular es mejor que toquen la categoría principal */
+        position: relative !important;
+        background: rgba(0, 0, 0, 0.3) !important;
+        box-shadow: none !important;
+        display: none !important;
     }
-    
-    /* Quitamos la flechita del texto original si te molesta, o la dejamos como indicador */
-    .dropbtn {
-        pointer-events: auto;
-    }
+}
+/* ==========================================
+   DISEÑO PARA PANTALLAS GRANDES (PC / Escritorio)
+   ========================================== */
+.btn-quitar-fav {
+    background: rgba(255, 74, 74, 0.1);
+    border: 1px solid #ff4a4a;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.btn-quitar-fav:hover {
+    background: rgba(255, 74, 74, 0.25);
+}
+/* Contenedor del estado de carga */
+.loading-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    width: 100%;
+    color: #aaa;
+    font-size: 14px;
+    gap: 15px;
+}
+
+/* El círculo giratorio */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top: 4px solid var(--color-cian, #00ced1); /* Tu color cian */
+    border-radius: 50%;
+    animation: girarSpinner 0.8s linear infinite;
+}
+
+@keyframes girarSpinner {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+@keyframes popIcon {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+
+
+/* Fondo oscuro translúcido */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(11, 13, 20, 0.85); /* Fondo de tu tienda */
+    backdrop-filter: blur(5px); /* Efecto borroso premium */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* Caja del cartel */
+.modal-content {
+    background: #151824; /* Gris oscuro del carrito */
+    border: 1px solid rgba(0, 206, 209, 0.3); /* Borde cian sutil */
+    border-radius: 12px;
+    padding: 30px 20px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    animation: aparecerModal 0.3s ease-out;
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+/* Botones del cartel */
+.btn-modal {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+}
+.btn-modal:active { transform: scale(0.98); }
+
+.btn-confirmar {
+    background: var(--color-cian, #00ced1);
+    color: #0b0d14;
+}
+.btn-consulta {
+    background: transparent;
+    border: 1px solid #aaa;
+    color: #fff;
+}
+.btn-consulta:hover { background: rgba(255,255,255,0.05); }
+
+.btn-modal-cerrar {
+    background: none;
+    border: none;
+    color: #888;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+@keyframes aparecerModal {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+/* ==========================================
+   DISEÑO PREMIUM DE TARJETAS DE FAVORITOS
+   ========================================== */
+
+/* Tarjeta contenedora principal */
+.fav-card {
+    background: #151824 !important; /* Gris oscuro elegante */
+    border: 1px solid rgba(255, 255, 255, 0.03) !important;
+    border-radius: 14px !important;
+    padding: 15px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    box-sizing: border-box;
+}
+
+/* Efecto hover/foco para que flote en la pantalla */
+.fav-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 8px 20px rgba(0, 206, 209, 0.1) !important; /* Brillo cian sutil */
+    border-color: rgba(0, 206, 209, 0.2) !important;
+}
+
+/* Espaciado de la imagen */
+.fav-card-media {
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #0b0d14; /* Fondo profundo para que resalte el blister/caja */
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fav-card-media img {
+    max-height: 180px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.fav-card:hover .fav-card-media img {
+    transform: scale(1.05); /* Mini zoom en el Deadpool al pasar el mouse */
+}
+
+/* Bloque de Información */
+.fav-card-info {
+    margin-top: 12px !important;
+    text-align: left !important;
+}
+
+.fav-card-title {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #fff !important;
+    margin: 0 0 6px 0 !important;
+}
+
+.fav-card-price {
+    font-size: 18px !important;
+    font-weight: bold !important;
+    color: var(--color-cian, #00ced1) !important; /* Destaca el precio en cian */
+    margin: 0 !important;
+}
+
+/* Contenedor de Botones Inferiores */
+.fav-card-actions {
+    display: flex !important;
+    gap: 10px !important;
+    margin-top: 15px !important;
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* Botón Agregar al Carrito */
+.btn-fav-add {
+    flex-grow: 1 !important;
+    background: linear-gradient(135deg, #a855f7, #7c3aed) !important; /* Degradado violeta premium */
+    color: white !important;
+    border: none !important;
+    padding: 10px 15px !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: filter 0.2s ease, transform 0.1s ease !important;
+}
+
+.btn-fav-add:hover {
+    filter: brightness(1.15) !important; /* Brilla un poco más */
+}
+
+.btn-fav-add:active {
+    transform: scale(0.97) !important;
+}
+
+/* Botón Corazón Roto (Eliminar) */
+.btn-fav-remove-premium {
+    background: rgba(239, 68, 68, 0.08) !important; /* Fondo rojo ultra sutil translúcido */
+    border: 1px solid rgba(239, 68, 68, 0.3) !important; /* Borde rojo suave */
+    color: #ef4444 !important;
+    padding: 10px 14px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background 0.2s, border-color 0.2s !important;
+}
+
+.btn-fav-remove-premium:hover {
+    background: rgba(239, 68, 68, 0.2) !important; /* Se intensifica el rojo al apuntar */
+    border-color: #ef4444 !important;
 }

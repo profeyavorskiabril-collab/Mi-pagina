@@ -3,19 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Collector Zone - Compra y Venta</title>
-    <link rel="stylesheet" href="style.css?v=1.0.2">
+
+    <!-- Cambia el color de la barra del navegador en celulares (Chrome/Safari) para que combine con tu fondo oscuro -->
+    <meta name="theme-color" content="#0b0d14">
+
+    <!-- Idioma oficial de la página para que los navegadores no ofrezcan traducirla por error -->
+    <meta http-equiv="content-language" content="es">
+
+    <!-- Autor de la tienda -->
+    <meta name="author" content="Zen & Zen">
+    <title>Zen & Zen | Coleccionables Premium</title>
+    <link rel="icon" type="image/png" href="icon.png">
+     
+<!-- En el <head> para el CSS -->
+<link rel="stylesheet" href="style.css?v=1.0.1">  
     <!-- CONEXIÓN REAL A SUPABASE DESDE EL NAVEGADOR -->
     <!-- Reemplazo para evitar el bloqueo de red y cargar Supabase con éxito -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    
-    <!-- Tu archivo de lógica con el atributo defer -->
-    <script src="script.js?v=1.0.3" defer></script>
+
+
+<!-- Al final del body para el JS -->
+<script src="script.js?v=1.0.1"></script>
 
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<!-- METAETIQUETAS OPEN GRAPH (Para WhatsApp, Instagram y Facebook) -->
+    <meta property="og:title" content="Zen & Zen | Coleccionables Premium" />
+    <meta property="og:description" content="Explorá las mejores rarezas en Hot Wheels RLC, Treasure Hunts y figuras coleccionables premium. ¡Piezas únicas para tu colección!" />
+    <!-- Cuando subas tu web, acá ponés el link de tu logo en internet -->
+    <meta property="og:image" content="https://tuweb.com" /> 
+    <meta property="og:url" content="https://tuweb.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Zen & Zen" />
 
+    <!-- Metaetiquetas básicas para Google -->
+    <meta name="description" content="Encuentra figuras exclusivas, Funko Pops y autos Hot Wheels Red Line Club en Argentina. Envíos locales y nacionales." />
+    <meta name="keywords" content="Hot Wheels, RLC, Funko Pop, Figuras de accion, Coleccionables, Marvel, Star Wars, Argentina" />
 </head>
 <body>
 
@@ -47,31 +71,39 @@
         
         <!-- MENÚ DE CATEGORÍAS ENLAZADO A LA TIENDA -->
         <nav class="main-nav">
+            
+            <!-- BOTÓN HAMBURGUESA (Solo se activa en celulares) -->
+            <button class="menu-hamburger" onclick="document.querySelector('.nav-menu').classList.toggle('active')">
+                ☰
+            </button>
+            
+            <!-- UNA SOLA LISTA OFICIAL CON TODOS SUS SUBMENÚS -->
             <ul class="nav-menu">
-                <!-- Ver Todo ahora asegura que te muestra la tienda principal -->
-                <li><a href="#" onclick="filtrarCategoria('Todos')">Ver Todo</a></li>
-                
-                <li class="dropdown">
-                    <a href="#" class="dropbtn" onclick="filtrarCategoria('Hot Wheels')">Hot Wheels ▾</a>
-                    <ul class="dropdown-content">
-                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Mainline')">Mainline</a></li>
-                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Treasure Hunt')">Treasure Hunt (T-Hunt)</a></li>
-                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Premium')">Premium / Pop Culture</a></li>
-                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Red Line Club')">RLC (Red Line Club)</a></li>
-                    </ul>
-                </li>
-                
-                <li class="dropdown">
-                    <a href="#" class="dropbtn" onclick="filtrarCategoria('Figuras')">Figuras ▾</a>
-                    <ul class="dropdown-content">
-                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Marvel')">Marvel </a></li>
-                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Star Wars')">Star Wars Black Series</a></li>
-                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Dragon Ball Z')">Dragon Ball</a></li>
-                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Funko Pop')">Funko Pop</a></li>
-                    </ul>
-                </li>
+        <li><a href="#" onclick="filtrarCategoria('Todos')">Ver Todo</a></li>
+        
+        <li class="dropdown">
+            <a href="#" class="dropbtn" onclick="filtrarCategoria('Hot Wheels')">Hot Wheels ▾</a>
+            <ul class="dropdown-content">
+                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Mainline')">Mainline</a></li>
+                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Treasure Hunt')">Treasure Hunt (T-Hunt)</a></li>
+                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Premium')">Premium / Pop Culture</a></li>
+                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Red Line Club')">RLC (Red Line Club)</a></li>
             </ul>
-        </nav>
+        </li>
+        
+        <li class="dropdown">
+            <a href="#" class="dropbtn" onclick="filtrarCategoria('Figuras')">Figuras ▾</a>
+            <ul class="dropdown-content">
+                <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Marvel')">Marvel </a></li>
+                <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Star Wars')">Star Wars Black Series</a></li>
+                <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Dragon Ball Z')">Dragon Ball</a></li>
+                <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Funko Pop')">Funko Pop</a></li>
+            </ul>
+        </li>
+            <li><a href="#" onclick="mostrarFavoritos()">Mis Favoritos </a></li>
+    </ul>
+</nav>
+
 
     </header>
 
@@ -92,7 +124,7 @@
         <section class="form-section" style="text-align: center; margin-top: 30px;">
             <h2 style="color: var(--color-cian); margin-bottom: 10px;">¡Bienvenidos a Zen & Zen!</h2>
             <p style="color: #ccc;">Explorá nuestro menú superior para descubrir las mejores rarezas en Hot Wheels RLC y figuras coleccionables premium.</p>
-            <button class="btn-submit" style="max-width: 250px; margin-top: 20px;" onclick="filtrarCategoria('Todos')">Ir a la Tienda Completa 🛒</button>
+            <button class="btn-submit" style="max-width: 250px; margin-top: 20px;" onclick="filtrarCategoria('Todos')">Ver productos</button>
         </section>
     </main>
 
@@ -108,16 +140,93 @@
             <button class="cat-btn active" onclick="filtrarCategoria('Todos')">Todos</button>
             <button class="cat-btn" onclick="filtrarCategoria('Hot Wheels')">Hot Wheels</button>
             <button class="cat-btn" onclick="filtrarCategoria('Figuras')">Figuras</button>
+
         </section>
+                <!-- Poné esto adentro de #view-tienda, justo ARRIBA de #products-grid -->
+        <div id="tienda-cargando" class="loading-box">
+            <div class="spinner"></div>
+            <p>Cargando vitrina de Zen & Zen...</p>
+        </div>
+
+        <!-- Poné esto adentro de #view-favoritos, justo ARRIBA de #favoritos-grid -->
+        <div id="fav-cargando" class="loading-box" style="display: none;">
+            <div class="spinner"></div>
+            <p>Buscando tus corazones...</p>
+        </div>
 
         <!-- GRILLA DE PRODUCTOS -->
         <section class="products-section">
             <h2 id="seccion-titulo" style="color: #fff; margin-bottom: 20px;">Artículos en Exhibición</h2>
             <div class="products-grid" id="products-grid"></div>
         </section>
+        </main>
+        <main id="view-favoritos" class="main-container hidden">
+        <section class="form-section">
+            <h2 style="color: var(--color-cian); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <span>Mis Favoritos ❤️</span>
+                <span id="fav-count" style="font-size: 14px; color: #aaa;">0 artículos</span>
+            </h2>
+            
+            <!-- Mensaje si la lista está vacía -->
+            <div id="fav-vacio" style="display: none; text-align: center; color: #ccc; margin: 30px 0;">
+                <p>Todavía no guardaste ningún artículo favorito.</p>
+            </div>
+
+            <!-- Acá se inyectan las tarjetas con JavaScript -->
+            <div class="products-grid" id="favoritos-grid"></div>
+            
+                <button class="btn-seguir-buscando" onclick="mostrarSeccion('tienda')">
+                    <svg class="icono-flecha" viewBox="0 0 24 24">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                    </svg>
+                    Seguir Buscando
+                </button>
+        </section>
+        </main>
+    <!-- VISTA 4: PÁGINA DE ÉXITO AL COMPRAR -->
+    <main id="view-exito-compra" class="main-container hidden">
+        <section class="form-section" style="text-align: center; padding: 40px 20px; max-width: 500px; margin: 40px auto;">
+            <div style="font-size: 60px; margin-bottom: 20px; animation: popIcon 0.5s ease;">🎉</div>
+            
+            <h2 style="color: var(--color-cian); margin-bottom: 15px;">¡Gracias por tu compra de coleccionista!</h2>
+            
+            <p style="color: #ccc; line-height: 1.6; margin-bottom: 25px;">
+                Tu orden ha sido procesada con éxito. Ya registramos tus datos y nos estamos comunicando a la brevedad para coordinar el pago y el envío de tus piezas únicas.
+            </p>
+
+            <!-- Un detalle temático para tus clientes -->
+            <div style="background: rgba(0, 206, 209, 0.05); border: 1px dashed var(--color-cian); padding: 15px; border-radius: 8px; margin-bottom: 30px; font-size: 14px; color: #aaa;">
+                📦 Las piezas se embalan con protección térmica y plástico burbuja a prueba de golpes.
+            </div>
+
+            <button class="btn-submit" style="margin: 0; width: 100%;" onclick="mostrarSeccion('tienda')">
+                Volver a la Tienda 🛒
+            </button>
+        </section>
     </main>
-
-
+        <!-- CARTEL FLOTANTE DE CONFIRMACIÓN WHATSAPP -->
+    <div id="modal-confirmar-pedido" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div style="font-size: 40px; margin-bottom: 15px;">💬</div>
+            <h3 style="color: var(--color-cian); margin-bottom: 10px;">¿Cómo querés continuar?</h3>
+            <p style="color: #ccc; font-size: 14px; margin-bottom: 25px; line-height: 1.5;">
+                Estás por comunicarte con Zen & Zen. Elegí si querés enviar la orden de compra definitiva o hacer una consulta general.
+            </p>
+            
+            <div class="modal-actions">
+                <!-- Opción 1: Compra en firme -->
+                <button class="btn-modal btn-confirmar" onclick="procesarWhatsApp('pedido')">
+                    🛒 Hacer Pedido
+                </button>
+                <!-- Opción 2: Solo dudas -->
+                <button class="btn-modal btn-consulta" onclick="procesarWhatsApp('consulta')">
+                    ❓ Solo Consultar
+                </button>
+            </div>
+            
+            <button class="btn-modal-cerrar" onclick="cerrarModalPedido()">Cancelar</button>
+        </div>
+    </div>
     <!-- VISTA ADMINISTRADOR (AGREGAR PRODUCTOS) -->
     <main id="view-vender" class="main-container hidden">
         <section class="form-section">
@@ -209,17 +318,20 @@
                 <div class="profile-actions-container">
                     <!-- 1. Guardar Datos (Principal - Violeta) -->
                     <button type="submit" class="btn-profile btn-guardar">
-                        💾 Guardar Datos de Envío
+                        Guardar Datos de Envío
                     </button>
                     
                     <!-- 2. Volver a la Tienda (Secundario - Borde Cian) -->
-                    <button type="button" class="btn-profile btn-volver" onclick="mostrarSeccion('inicio')">
-                        🛒 Volver a la Tienda
-                    </button>
+                <button class="btn-seguir-buscando" onclick="mostrarSeccion('tienda')">
+                    <svg class="icono-flecha" viewBox="0 0 24 24">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                    </svg>
+                    Seguir Buscando
+                </button>
                     
                     <!-- 3. Cerrar Sesión (Alerta - Rojo Destructivo) -->
                     <button type="button" class="btn-profile btn-logout" onclick="logout()">
-                        🚪 Cerrar Sesión
+                        Cerrar Sesión
                     </button>
                 </div>
 
