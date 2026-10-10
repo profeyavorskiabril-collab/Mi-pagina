@@ -29,13 +29,32 @@ function renderizarTienda() {
     // ... Tu forEach actual de productos ...
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    sincronizarFavoritosAlIngresar();
+// ==========================================================
+// ARRANQUE AUTOMÁTICO DE LA TIENDA (ÚNICO ARRANQUE MAESTRO)
+// ==========================================================
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("🚀 Iniciando arranque maestro de Zen & Zen de forma segura...");
 
-    // 🌟 Esta es la única versión que debe quedar viva:
+    // 1. Inicializar Supabase si hace falta
+    if (window.supabase && window.supabase.createClient && typeof window.supabase.from !== 'function') {
+        window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+    
+    // 2. Enlazamos los formularios primero para asegurar que los botones respondan siempre
+    const formPerfil = document.getElementById('perfil-form');
+    if (formPerfil) formPerfil.addEventListener('submit', guardarDatosPerfil);
+
+    const formAdmin = document.getElementById('product-form');
+    if (formAdmin) formAdmin.addEventListener('submit', agregarProductoAdmin);
+
+    // 🌟 AGREGADO AQUÍ ADENTRO DEL PASO 2: Enlazamos de forma segura el formulario de login
+    const formAuth = document.getElementById('auth-form');
+    if (formAuth) formAuth.addEventListener('submit', procesarIdentificacionUsuario);
+
+    // 3. BLINDAJE INTERNO: Activamos el buscador de forma segura dentro del flujo principal
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
-        console.log("🔍 Buscador detectado y activado de forma segura.");
+        console.log("🔍 Buscador detectado y activado correctamente.");
         searchInput.addEventListener('input', (e) => {
             const texto = e.target.value.toLowerCase();
             document.querySelectorAll('.product-card').forEach(tarjeta => {
@@ -47,8 +66,33 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     }
-});
 
+    // 4. Sincronizamos los favoritos del usuario desde la nube
+    if (typeof sincronizarFavoritosAlIngresar === 'function') {
+        await sincronizarFavoritosAlIngresar();
+    }
+
+    // 5. Cargamos los datos asincrónicos de los productos desde la nube
+    try {
+        await traerProductosDesdeNube();
+    } catch (e) {
+        console.warn("No se pudieron cargar los productos en el arranque:", e.message);
+    }
+    
+    // 6. Aplicamos la interfaz de usuario activa si inició sesión
+    if (usuarioActivo) {
+        try {
+            aplicarInterfazUsuario();
+        } catch (e) {
+            console.warn("No se pudo aplicar la interfaz de usuario:", e.message);
+        }
+    }
+
+    // 7. Renderizamos el carrito si tenía artículos guardados
+    if (carrito.length > 0 && typeof actualizarCarritoVisual === 'function') {
+        actualizarCarritoVisual();
+    }
+});
 
 
 // ==========================================
@@ -165,7 +209,7 @@ function cambiarSlide(dir) {
 }
 setInterval(() => cambiarSlide(1), 6000);
 // ==========================================
-// 3. REGISTRO, LOGIN Y PERFILES
+// FUNCIONES DE CONTROL DE MODAL AUTH
 // ==========================================
 function abrirModalAuth() {
     if (usuarioActivo) mostrarSeccion('perfil');
@@ -181,7 +225,8 @@ function cambiarAuthTab(tab) {
     document.getElementById('btn-auth-submit').textContent = tab === 'login' ? 'Entrar' : 'Registrarse';
 }
 
-document.getElementById('auth-form').addEventListener('submit', async function(e) {
+// 🌟 FUNCIÓN DE ACCIÓN AUTOMÁTICA DEL LOGIN (Separada para evitar colisiones)
+async function procesarIdentificacionUsuario(e) {
     e.preventDefault();
     
     // Forzamos minúsculas y limpiamos espacios para evitar fallas de tipeo
@@ -212,13 +257,12 @@ document.getElementById('auth-form').addEventListener('submit', async function(e
             try {
                 const { data, error } = await window.supabase
                     .from('usuarios')
-                    .select('*') // Trae campos clave: email, password, rol, favoritos, etc.
+                    .select('*') 
                     .eq('email', email)
                     .eq('password', pass)
-                    .maybeSingle(); // Usamos maybeSingle para evitar excepciones si no encuentra nada
+                    .maybeSingle(); 
                 
                 if (data) {
-                    // CORRECCIÓN 1: Asignamos a 'usuarioEncontrado' para que el flujo continúe con éxito
                     usuarioEncontrado = data; 
                 }
             } catch (err) {
@@ -244,24 +288,24 @@ document.getElementById('auth-form').addEventListener('submit', async function(e
 
         // 3. Si encontramos las credenciales en cualquiera de los dos lados, iniciamos sesión de forma segura
         if (usuarioEncontrado) {
-            // CORRECCIÓN 2: Limpiamos residuos de sesiones anteriores para evitar bloqueos en el segundo login
             localStorage.removeItem('zen_sesion');
-            
-            // Pasamos el objeto completo (con rol de admin y favoritos si venían de la nube)
             usuarioActivo = usuarioEncontrado; 
-            
-            // Resguardamos en la sesión local del navegador
             localStorage.setItem('zen_sesion', JSON.stringify(usuarioActivo));
             
             aplicarInterfazUsuario();
             cerrarModalAuth();
+            
+            // 🌟 NUEVO: Si el usuario tenía favoritos cargados en Supabase, los forzamos en pantalla de una
+            if (typeof sincronizarFavoritosAlIngresar === 'function') {
+                sincronizarFavoritosAlIngresar();
+            }
+
             alert(`¡Ingreso exitoso! Bienvenido.`);
         } else { 
             alert("Datos incorrectos. Revisá tu correo y contraseña."); 
         }
     }
-});
-
+}
 
 function aplicarInterfazUsuario() {
     if (!usuarioActivo) return;
@@ -743,10 +787,10 @@ async function finalizarOrdenWhatsApp() {
     mensaje += `🚚 *Costo Envío:* ${envioTexto}\n`;
     mensaje += `💵 *TOTAL NETO:* *${totalFinalTexto}*\n`;
 
-    // 🌟 NUEVO: Cartel de confirmación Sí / No antes de disparar el proceso
+    // 🌟 CONFIRMACIÓN NATIVA (Corregida la variable sin la "s" final)
     const quiereComprar = confirm("¿Querés enviar la orden de compra definitiva por WhatsApp?");
 
-    if (quieresComprar) {
+    if (quiereComprar) {
         // SI ELIGE SÍ: Abrimos WhatsApp en una pestaña nueva
         const linkFinal = "https://wa.me/" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
         window.open(linkFinal, '_blank');
@@ -768,7 +812,6 @@ async function finalizarOrdenWhatsApp() {
         console.log("El coleccionista canceló el envío del pedido.");
     }
 }
-
 
 
 // ==========================================
@@ -939,6 +982,9 @@ async function sincronizarFavoritosAlIngresar() {
     }
 }
 
+// Ejecutamos la sincronización de inmediato si el usuario ya tenía la sesión abierta al recargar la página
+
+
 // Interceptamos cuando el usuario hace clic en el botón de 'Entrar' para actualizar sus favoritos un segundo después
 const btnAuthSubmit = document.getElementById('btn-auth-submit');
 if (btnAuthSubmit) {
@@ -1003,7 +1049,7 @@ function mostrarFavoritos() {
                     
                     <!-- Barra de Acciones con botones premium -->
                     <div class="fav-card-actions">
-                        <button class="btn-fav-add" onclick="agregarAlCarritoPorId('${item.id}')">
+                        <button class="btn-fav-add" onclick="agregarAlCarrito('${item.id}')">
                             Agregar al carrito
                         </button>
                         <button class="btn-fav-remove-premium" onclick="eliminarDeFavoritos('${item.id}')" title="Quitar de favoritos">
@@ -1014,6 +1060,7 @@ function mostrarFavoritos() {
         });
 
     }, 300); // 300 milisegundos de delay estético
+    actualizarCarritoUI();
 }
 
 async function eliminarDeFavoritos(id) {
