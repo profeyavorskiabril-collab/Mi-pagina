@@ -29,48 +29,16 @@ function renderizarTienda() {
     // ... Tu forEach actual de productos ...
 }
 
-// ==========================================================
-// DETECTOR AUTOMÁTICO DE INICIO DE SESIÓN Y EVENTOS SEGUROS
-// ==========================================================
-async function sincronizarFavoritosAlIngresar() {
-    if (usuarioActivo && usuarioActivo.email) {
-        try {
-            const { data: usuarioBD, error } = await supabase
-                .from('usuarios')
-                .select('favoritos')
-                .eq('email', usuarioActivo.email)
-                .single();
-
-            if (error) throw error;
-
-            if (usuarioBD) {
-                let favsBD = usuarioBD.favoritos || [];
-                if (typeof favsBD === 'string') {
-                    favsBD = favsBD ? favsBD.split(',') : [];
-                }
-                usuarioActivo.favoritos = favsBD;
-                localStorage.setItem('zen_sesion', JSON.stringify(usuarioActivo));
-                console.log("⭐ Favoritos sincronizados desde Supabase con éxito al iniciar sesión.");
-            }
-        } catch (err) {
-            console.error("Error al sincronizar favoritos desde la nube:", err.message);
-        }
-    }
-}
-
-// 🌟 REEMPLAZÁ TU DETECTOR DOMContentLoaded POR ESTE COMPLETO:
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Sincroniza los favoritos de la base de datos
     sincronizarFavoritosAlIngresar();
 
-    // 2. Activamos el buscador de forma segura (Alineado con el HTML ya cargado)
+    // 🌟 Esta es la única versión que debe quedar viva:
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
         console.log("🔍 Buscador detectado y activado de forma segura.");
         searchInput.addEventListener('input', (e) => {
             const texto = e.target.value.toLowerCase();
             document.querySelectorAll('.product-card').forEach(tarjeta => {
-                // Buscamos el título de tu Funko o Hot Wheels
                 const tituloEl = tarjeta.querySelector('.product-title');
                 if (tituloEl) {
                     const titulo = tituloEl.textContent.toLowerCase();
@@ -80,6 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+
 
 // ==========================================
 // 2. CONEXIÓN Y CARGA DEL CATÁLOGO
@@ -968,9 +938,6 @@ async function sincronizarFavoritosAlIngresar() {
         }
     }
 }
-
-// Ejecutamos la sincronización de inmediato si el usuario ya tenía la sesión abierta al recargar la página
-document.addEventListener("DOMContentLoaded", sincronizarFavoritosAlIngresar);
 
 // Interceptamos cuando el usuario hace clic en el botón de 'Entrar' para actualizar sus favoritos un segundo después
 const btnAuthSubmit = document.getElementById('btn-auth-submit');
