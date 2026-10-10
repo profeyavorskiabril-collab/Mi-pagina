@@ -29,39 +29,57 @@ function renderizarTienda() {
     // ... Tu forEach actual de productos ...
 }
 
-// ARRANQUE AUTOMÁTICO DE LA TIENDA (ORDEN SEGURO DE FORMULARIOS)
-document.addEventListener("DOMContentLoaded", async () => {
-    // 1. Inicializar Supabase si hace falta
-    if (window.supabase && window.supabase.createClient && typeof window.supabase.from !== 'function') {
-        window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
-    
-    // 2. CORREGIDO: Enlazamos los formularios primero para asegurar que los botones respondan siempre
-    const formPerfil = document.getElementById('perfil-form');
-    if (formPerfil) formPerfil.addEventListener('submit', guardarDatosPerfil);
-
-    const formAdmin = document.getElementById('product-form');
-    if (formAdmin) formAdmin.addEventListener('submit', agregarProductoAdmin);
-
-    // 3. Después cargamos los datos asincrónicos de la nube
-    try {
-        await traerProductosDesdeNube();
-    } catch (e) {
-        console.warn("No se pudieron cargar los productos en el arranque:", e.message);
-    }
-    
-    if (usuarioActivo) {
+// ==========================================================
+// DETECTOR AUTOMÁTICO DE INICIO DE SESIÓN Y EVENTOS SEGUROS
+// ==========================================================
+async function sincronizarFavoritosAlIngresar() {
+    if (usuarioActivo && usuarioActivo.email) {
         try {
-            aplicarInterfazUsuario();
-        } catch (e) {
-            console.warn("No se pudo aplicar la interfaz de usuario:", e.message);
+            const { data: usuarioBD, error } = await supabase
+                .from('usuarios')
+                .select('favoritos')
+                .eq('email', usuarioActivo.email)
+                .single();
+
+            if (error) throw error;
+
+            if (usuarioBD) {
+                let favsBD = usuarioBD.favoritos || [];
+                if (typeof favsBD === 'string') {
+                    favsBD = favsBD ? favsBD.split(',') : [];
+                }
+                usuarioActivo.favoritos = favsBD;
+                localStorage.setItem('zen_sesion', JSON.stringify(usuarioActivo));
+                console.log("⭐ Favoritos sincronizados desde Supabase con éxito al iniciar sesión.");
+            }
+        } catch (err) {
+            console.error("Error al sincronizar favoritos desde la nube:", err.message);
         }
     }
-        if (carrito.length > 0 && typeof actualizarCarritoVisual === 'function') {
-        actualizarCarritoVisual();
+}
+
+// 🌟 REEMPLAZÁ TU DETECTOR DOMContentLoaded POR ESTE COMPLETO:
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Sincroniza los favoritos de la base de datos
+    sincronizarFavoritosAlIngresar();
+
+    // 2. Activamos el buscador de forma segura (Alineado con el HTML ya cargado)
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        console.log("🔍 Buscador detectado y activado de forma segura.");
+        searchInput.addEventListener('input', (e) => {
+            const texto = e.target.value.toLowerCase();
+            document.querySelectorAll('.product-card').forEach(tarjeta => {
+                // Buscamos el título de tu Funko o Hot Wheels
+                const tituloEl = tarjeta.querySelector('.product-title');
+                if (tituloEl) {
+                    const titulo = tituloEl.textContent.toLowerCase();
+                    tarjeta.style.display = titulo.includes(texto) ? "flex" : "none";
+                }
+            });
+        });
     }
 });
-
 
 // ==========================================
 // 2. CONEXIÓN Y CARGA DEL CATÁLOGO
