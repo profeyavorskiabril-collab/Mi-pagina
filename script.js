@@ -933,7 +933,7 @@ async function finalizarOrdenWhatsApp() {
                 mostrarAlertaZen("¡Procesando tu pedido! Abriendo WhatsApp...", "success");
             }
 
-            const linkFinal = "https://wa.me" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
+            const linkFinal = "https://wa.me/" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
             window.open(linkFinal, '_blank');
             
             carrito = []; 
