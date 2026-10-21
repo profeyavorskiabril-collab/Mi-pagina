@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
 
     <!-- Cambia el color de la barra del navegador en celulares (Chrome/Safari) para que combine con tu fondo oscuro -->
     <meta name="theme-color" content="#0b0d14">
@@ -16,14 +17,14 @@
     <link rel="icon" type="image/png" href="icon.png">
      
 <!-- En el <head> para el CSS -->
-<link rel="stylesheet" href="style.css?v=1.0.1">  
+<link rel="stylesheet" href="style.css?v=1.0.2">  
     <!-- CONEXIÓN REAL A SUPABASE DESDE EL NAVEGADOR -->
     <!-- Reemplazo para evitar el bloqueo de red y cargar Supabase con éxito -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 
 <!-- Al final del body para el JS -->
-<script src="script.js?v=1.0.2"></script>
+<script src="script.js?v=1.0.3"></script>
 
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -45,23 +46,35 @@
 
     <!-- BARRA DE NAVEGACIÓN -->
     <!-- BARRA DE NAVEGACIÓN Y MENÚS ESTILO VADER TOYS -->
+    <!-- BARRA DE NAVEGACIÓN COMPLETAMENTE ORGANIZADA -->
     <header>
         <div class="header-container">
            
-                        <!-- EL LOGO AHORA TE LLEVA DIRECTO AL INICIO CON EL CARRUSEL -->
+            <!-- FILA SUPERIOR: El logo de Zen & Zen centrado y con aire propio -->
             <h1 class="logo" onclick="mostrarSeccion('inicio')">
                 <img src="logo.png" alt="ZEN & ZEN" width="180" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <span style="display:none; color:#00ced1; cursor:pointer;">ZEN & ZEN</span>
             </h1>
 
-            <nav class="header-nav">
+            <nav class="header-nav hidden-mobile">
                 <ul class="nav-links">
                     <li id="nav-vender" class="hidden"><a href="#" onclick="mostrarSeccion('vender')">Panel Admin</a></li>
                 </ul>
             </nav>
-            <!-- REEMPLAZAR ESTE PEDACITO EN TU HEADER -->
+
+            <!-- FILA INFERIOR CONTENEDORA: Todo alineado perfectamente en paralelo -->
             <div class="auth-cart-zone">
-                <span id="user-status" onclick="abrirModalAuth()">Iniciar Sesión</span>
+                
+                <!-- Bloque izquierdo de la fila inferior: Hamburguesa + Perfil -->
+                <div class="profile-menu-wrapper">
+                    <!-- ☰ El botón hamburguesa ahora vive acá de forma nativa -->
+                    <button class="menu-hamburger" onclick="document.querySelector('.nav-menu').classList.toggle('active')">
+                        ☰
+                    </button>
+                    <span id="user-status" onclick="abrirModalAuth()">Iniciar Sesión</span>
+                </div>
+                
+                <!-- Bloque derecho de la fila inferior: El Carrito -->
                 <div class="cart-icon" onclick="mostrarSeccion('carrito')">
                     🛒 <span id="cart-count">0</span>
                 </div>
@@ -69,42 +82,34 @@
 
         </div>
         
-        <!-- MENÚ DE CATEGORÍAS ENLAZADO A LA TIENDA -->
+        <!-- PANEL DESPLEGABLE LATERAL (Limpio, sin botones sueltos) -->
         <nav class="main-nav">
-            
-            <!-- BOTÓN HAMBURGUESA (Solo se activa en celulares) -->
-            <button class="menu-hamburger" onclick="document.querySelector('.nav-menu').classList.toggle('active')">
-                ☰
-            </button>
-            
-            <!-- UNA SOLA LISTA OFICIAL CON TODOS SUS SUBMENÚS -->
             <ul class="nav-menu">
-        <li><a href="#" onclick="filtrarCategoria('Todos')">Ver Todo</a></li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropbtn" onclick="filtrarCategoria('Hot Wheels')">Hot Wheels ▾</a>
-            <ul class="dropdown-content">
-                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Mainline')">Mainline</a></li>
-                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Treasure Hunt')">Treasure Hunt (T-Hunt)</a></li>
-                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Premium')">Premium / Pop Culture</a></li>
-                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Red Line Club')">RLC (Red Line Club)</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropbtn" onclick="filtrarCategoria('Figuras')">Figuras ▾</a>
-            <ul class="dropdown-content">
-                <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Marvel')">Marvel </a></li>
-                <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Star Wars')">Star Wars Black Series</a></li>
-                <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Dragon Ball Z')">Dragon Ball</a></li>
-                <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Funko Pop')">Funko Pop</a></li>
-            </ul>
-        </li>
-            <li><a href="#" onclick="mostrarFavoritos()">Mis Favoritos </a></li>
-    </ul>
-</nav>
+                <li><a href="#" onclick="filtrarCategoria('Todos')">Ver Todo</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropbtn" onclick="filtrarCategoria('Hot Wheels')">Hot Wheels ▾</a>
+                    <ul class="dropdown-content">
+                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Mainline')">Mainline</a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Treasure Hunt')">Treasure Hunt (T-Hunt)</a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Premium')">Premium / Pop Culture</a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Red Line Club')">RLC (Red Line Club)</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropbtn" onclick="filtrarCategoria('Figuras')">Figuras ▾</a>
+                    <ul class="dropdown-content">
+                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Marvel')">Marvel </a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Star Wars')">Star Wars Black Series</a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Dragon Ball Z')">Dragon Ball</a></li>
+                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Funko Pop')">Funko Pop</a></li>
+                    </ul>
+                </li>
+                <li><a href="#" onclick="mostrarFavoritos()">Mis Favoritos </a></li>
+                <!-- Enlace deslizable a la sección de información -->
+                <li><a href="#sobre-nosotros-section" class="scroll-link" onclick="mostrarInfo()">INFORMACION</a></li>
 
-
+            </ul>
+        </nav>
     </header>
 
 
@@ -339,6 +344,54 @@
             </form>
         </section>
     </main>
+<!-- ==========================================================
+     👥 SECCIÓN: SOBRE NOSOTROS (ZEN & ZEN)
+     ========================================================== -->
+<section id="sobre-nosotros-section" class="about-section hidden">
+    <div class="about-container">
+        <h2 class="about-main-title">👥 Sobre Zen & Zen</h2>
+        <p class="about-subtitle">Una tienda creada por fanáticos del coleccionismo, para fanáticos de verdad.</p>
+        
+        <div class="about-grid">
+            <!-- Tarjeta 1: Quiénes Somos -->
+            <div class="about-card">
+                <div class="about-icon">🔥</div>
+                <h3>Nuestra Pasión</h3>
+                <p>Comenzamos este negocio con un único objetivo: traer los mejores productos al mercado y conectar con personas que comparten nuestra misma locura por los coleccionables. Estamos creciendo día a día para mejorar la autonomía de nuestra web y sumar cada vez más métodos de pago, evolucionando junto a nuestra comunidad.</p>
+            </div>
+
+            <!-- Tarjeta 2: Envíos y Entregas -->
+            <div class="about-card">
+                <div class="about-icon">📦</div>
+                <h3>Envíos y Retiros</h3>
+                <p>Llegamos a donde estés. Hacemos envíos a domicilio a todo el país por <strong>Correo Argentino</strong> (calculado según tu código postal). Si eres de <strong>Garín o alrededores (Zona Norte)</strong>, contamos con envío a domicilio por un monto fijo que puedes consultar directo en el carrito, o coordinar un punto de encuentro en Garín al enviar tu pedido.</p>
+            </div>
+
+            <!-- Tarjeta 3: Transparencia Total -->
+            <div class="about-card">
+                <div class="about-icon">🛡️</div>
+                <h3>Garantía y Transparencia</h3>
+                <p>Aquí no hay sorpresas. En la descripción de cada producto te detallamos con total honestidad si son <strong>originales o réplicas</strong>, y si se encuentran sellados. Todos nuestros artículos son <strong>sin uso</strong>, aunque algunos pueden haber sido abiertos exclusivamente para verificar que estén correctos y fotografiarlos para la web. ¡Sepan entender!</p>
+            </div>
+            <div class="about-card">
+                <div class="about-icon">💬</div>
+                <h3>Atención Humana y Real</h3>
+                <p>Cada pedido que realizas genera un mensaje automático a nuestro <strong>WhatsApp</strong>, donde te contestamos a la brevedad. Nos encanta atenderte en persona para que verifiques que somos un equipo de carne y hueso comprometido con tu colección.</p>
+            </div>
+            <div class="about-card">
+                <div class="about-icon">💳</div>
+                <h3>Medios de Pago Activos</h3>
+                <p>De momento, operamos de la forma más segura y directa: aceptamos <strong>transferencias bancarias</strong> y <strong>efectivo contra entrega</strong> al momento de recibir tu producto.</p>
+            </div>
+     
+        </div>
+
+
+
+    </div>
+</section>
+
+
     <!-- VISTA 4: LA SECCIÓN COMPLETA DE CARRITO (NUEVA PÁGINA) -->
     <main id="view-carrito" class="main-container hidden">
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; flex-wrap: wrap;" id="carrito-layout-wrapper">
@@ -347,7 +400,7 @@
             <section class="form-section">
                 <h2 style="color: var(--color-cian); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                     <span>Tu Orden de Compra</span>
-                    <span style="font-size: 14px; color: #aaa;">Las piezas son únicas</span>
+                    <span style="font-size: 14px; color: #aaa;"></span>
                 </h2>
                 <div id="seccion-carrito-items">
                     <!-- Los productos del carrito se inyectan acá con JavaScript -->
@@ -364,7 +417,7 @@
             <section class="form-section" style="border-color: var(--color-violeta); height: fit-content;">
                 <h3 style="color: #fff; margin-bottom: 15px; border-bottom: 1px solid #2a3447; padding-bottom: 10px;">Resumen del Pedido</h3>
                 
-                <div style="margin-bottom: 20px;">
+                <div id="precio" style="margin-bottom: 20px;">
                     <p style="display:flex; justify-content:space-between; margin-bottom:10px; color:#ccc;">Subtotal: <span id="resumen-subtotal">$0</span></p>
                     <p style="display:flex; justify-content:space-between; margin-bottom:10px; color:#ccc;">Envío: <span style="color: var(--color-cian); font-weight:600;">A Coordinar</span></p>
                     <h3 style="display:flex; justify-content:space-between; border-top:1px solid #2a3447; padding-top:15px; color: var(--color-oro);">Total: <span id="resumen-total">$0</span></h3>
@@ -376,8 +429,7 @@
                     <!-- El selector ahora es simple: Retiro o Envío -->
                 <select id="metodo-entrega-select" onchange="calcularTotalPedido()" style="width: 100%; padding: 10px; border: 1px solid #2a3447; background: #0b0e14; color: white; border-radius: 6px; cursor: pointer; font-size: 13px;">
                     <!-- PUNTOS DE ENCUENTRO EN GARÍN -->
-                    <option value="retiro_estacion">🏃‍♂️ Punto de Retiro:  Estación de Garín (Gratis)</option>
-                    <option value="retiro_puente">🏃‍♂️ Punto de Retiro:  Puente Garin (Gratis)</option>
+                    <option value="retiro_puente">🏃‍♂️ Punto de Retiro (A coordinar)</option>
                     <option value="moto">🛵 Envio a domicilio: Motomensajeria (Buenos Aires Zona Norte)</option>
                     <!-- ENVÍO POR CORREO -->
                     <option value="envio">🚚Envío a Domicilio: Correo Argentino (Calculado por CP)</option>
@@ -406,20 +458,20 @@
 
                 <!-- SELECTOR DE MÉTODO DE PAGO -->
                 <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="color: var(--color-cian);">Método de Pago Preferido:</label>
+                    <label style="color: var(--color-cian);">Método de Pago:</label>
                     <select id="checkout-metodo-pago">
                         <option value="Transferencia Bancaria">Transferencia Bancaria</option>
                         <option value="Efectivo / Rapipago">Efectivo (contra entrega)</option>
                     </select>
                 </div>
 
-                <!-- REVISIÓN DE DATOS DE ENVÍO -->
-                <div style="background: #0b0e14; padding: 12px; border-radius: 6px; border: 1px solid #2a3447; margin-bottom: 20px; font-size: 13px;">
-                    <h4 style="color:#fff; margin-bottom: 5px;">📍 Datos de Despacho:</h4>
-                    <div id="resumen-datos-envio" style="color: #aaa; line-height: 1.4;">
+                <div class="caja-despacho-contenedor">
+                    <h4>📍 Datos de Despacho:</h4>
+                    <div id="resumen-datos-envio">
                         Iniciá sesión y completá tu perfil para adjuntar tu dirección automáticamente.
                     </div>
                 </div>
+
 
                 <button class="btn-submit" style="background: var(--color-cian); color: #111; font-size: 16px; padding: 15px;" onclick="finalizarOrdenWhatsApp()">
                  Enviar Pedido a WhatsApp
@@ -445,7 +497,11 @@
     <!-- MODAL DE AUTENTICACIÓN CORREGIDO -->
     <div id="modal-auth" class="modal">
         <div class="modal-content">
-            <span class="close-modal" onclick="cerrarModalAuth()">&times;</span>
+                <!-- 🎯 BOTÓN CORRECCIÓN: Agregar la X de cierre en la esquina -->
+    <button class="btn-modal-close-premium" onclick="cerrarModalAuth()" title="Cerrar ventana">
+        &times;
+    </button>
+         
             <div class="auth-tabs">
                 <!-- LE AGREGAMOS LOS ID CORRECTOS AQUÍ -->
                 <button id="tab-login" class="tab-link active" onclick="cambiarAuthTab('login')">Ingresar</button>
@@ -453,13 +509,32 @@
             </div>
             
             <form id="auth-form" class="auth-form">
-                <h3 id="auth-title">Identificación</h3>
+                <h3 id="auth-title">Iniciar sesion</h3><br>
                 <input type="email" id="auth-email" placeholder="Correo electrónico" required>
                 <input type="password" id="auth-pass" placeholder="Contraseña" required>
-                <button type="submit" class="btn-submit" id="btn-auth-submit">Entrar</button>
+                <button type="submit" class="btn-submit" id="btn-auth-submit">Ingresar</button>
             </form>
         </div>
     </div>
+<!-- ==========================================================
+     ❓ CARTEL PREMIUM DE CONFIRMACIÓN DE COMPRA (MODAL CORREGIDO)
+     ========================================================== -->
+<div id="modal-confirmar-compra" class="confirm-modal-overlay-zen hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(7, 3, 16, 0.6); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+    <div class="modal-confirm-card" style="background: var(--bg-tarjetas); border: 1px solid var(--borde-tarjeta); padding: 30px; border-radius: 12px; max-width: 400px; width: calc(100% - 40px); text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+        <div style="font-size: 40px; margin-bottom: 15px;">🛒</div>
+        <h3 style="color: var(--texto-principal); font-size: 20px; margin-bottom: 10px; font-weight: 700;">¿Confirmar tu Pedido?</h3>
+        <p style="color: var(--texto-secundario); font-size: 14px; margin-bottom: 25px; line-height: 1.5;">¿Querés enviar la orden de compra definitiva a nuestro WhatsApp? <br>⚠️ Se vaciara el carrito</p>
+        
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button id="btn-cancelar-pedido" style="background: #e2e8f0; color: #1e293b; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+                Cancelar
+            </button>
+            <button id="btn-aceptar-pedido" style="background: var(--color-violeta); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; box-shadow: 0 4px 12px rgba(125, 38, 205, 0.2);">
+                Aceptar
+            </button>
+        </div>
+    </div>
+</div>
 
 
 <!-- SECCIÓN DE DETALLE DE PRODUCTO (PANTALLA COMPLETA INTEGRADA) -->
@@ -537,14 +612,17 @@
         <div class="footer-container">
             <div class="footer-section">
                 <h4 style="color:#00ced1; cursor:pointer;" onclick="mostrarSeccion('inicio')">Zen & Zen</h4>
-                <p>La zona definitiva para coleccionistas de Hot Wheels y figuras.</p>
+                <button id="theme-toggle-btn" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 8px;" title="Cambiar Modo de Pantalla">
+    🌓
+</button>
+                <p>La zona definitiva para coleccionistas. Para no perderte ninguna novedad y ver imágenes exclusivas de cada ingreso</p>
             </div>
             <div class="footer-section">
-                <h4>Nuestras Redes</h4>
+                <h4>Contacto</h4>
                 <ul>
+                    <li><a href="#sobre-nosotros-section" class="scroll-link" onclick="mostrarInfo()">⚠️ Informacion</a></li>
                     <li><a href="#">📸 Instagram</a></li>
-                    <li><a href="#">👥 Facebook</a></li>
-                    <li><a href="#">💬 Comunidad WhatsApp</a></li>
+                    <li><a href="#">💬 WhatsApp</a></li>
                 </ul>
             </div>
         </div>

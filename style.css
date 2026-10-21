@@ -1,33 +1,55 @@
 /* ==========================================================
-   ESTILOS GENERALES Y VARIABLES
+   CONFIGURACIÓN DE TEMAS (MODO OSCURO / MODO CLARO INTELIGENTE)
    ========================================================== */
 * {
     margin: 0; padding: 0; box-sizing: border-box;
     font-family: 'Segoe UI', system-ui, sans-serif;
 }
 :root {
+    /* MODO OSCURO POR DEFECTO (Tu diseño original preservado) */
     --bg-principal: #0b0e14;
     --bg-tarjetas: #161c26;
+    --texto-principal: #f5f5f5;
+    --texto-secundario: #a0aec0;
+    --borde-tarjeta: #2a3447;
+    --fondo-input: #161c26;
+    --bg-desplegable: #161c26;
+
+    /* Colores de Marca Inmutables */
     --color-violeta: #7d26cd;    /* Violeta Zen & Zen */
     --color-cian: #00ced1;       /* Cian Zen & Zen */
     --color-oro: #f39c12;        /* Oro de la corona */
-    --texto-claro: #f5f5f5;
 }
 
+/* CUANDO EL INTERRUPTOR ACTIVA EL MODO CLARO */
+body.light-mode {
+    --bg-principal: #f4f6f9;      /* Fondo gris claro suave */
+    --bg-tarjetas: #ffffff;       /* Tarjetas blanco puro */
+    --texto-principal: #1e293b;   /* Títulos color carbón */
+    --texto-secundario: #64748b;  /* Textos secundarios gris oscuro */
+    --borde-tarjeta: #e2e8f0;     /* Bordes finos y limpios */
+    --fondo-input: #ffffff;       /* Buscador blanco */
+    --bg-desplegable: #ffffff;    /* Menús blancos en modo claro */
+}
+
+/* Aplicación automática de variables de tema */
 body { 
     background-color: var(--bg-principal); 
-    color: var(--texto-claro); 
+    color: var(--texto-principal); 
     overflow-x: hidden; 
 }
 
-/* Navegación */
-header { 
-    background: #11151d; 
-    padding: 15px 0; 
-    position: sticky; 
-    top: 0; 
-    z-index: 999; 
-    border-bottom: 3px solid var(--color-violeta); 
+/* ==========================================================
+   BARRA DE NAVEGACIÓN (HEADER IDENTIDAD POTENTE)
+   ========================================================== */
+header, #main-header { 
+    background: linear-gradient(135deg, var(--color-violeta) 0%, #4c1d95 100%) !important; /* Degradado violeta */
+    padding: 15px 0 !important; 
+    position: sticky !important; 
+    top: 0 !important; 
+    z-index: 1000 !important; 
+    border-bottom: 3px solid var(--color-cian) !important; /* Línea inferior celeste cian */
+    box-shadow: 0 4px 20px rgba(109, 40, 217, 0.25) !important; 
 }
 .header-container { 
     max-width: 1200px; 
@@ -37,14 +59,39 @@ header {
     align-items: center; 
     padding: 0 20px; 
 }
-.logo { font-size: 24px; cursor: pointer; display: flex; align-items: center; }
+.logo { font-size: 24px; cursor: pointer; display: flex; align-items: center; color: #ffffff !important; font-weight: 700; }
 .nav-links { display: flex; list-style: none; gap: 20px; }
-.nav-links a { color: white; text-decoration: none; font-weight: 500; }
-.nav-links a:hover { color: var(--color-cian); }
+.nav-links a { color: #ffffff !important; text-decoration: none; font-weight: 600; }
+.nav-links a:hover { color: var(--color-cian) !important; }
 .auth-cart-zone { display: flex; align-items: center; gap: 20px; }
-#user-status { cursor: pointer; border-bottom: 1px dashed var(--color-cian); padding-bottom: 2px; font-size: 14px; }
-.cart-icon { background: var(--color-cian); padding: 8px 15px; border-radius: 4px; color: #111; font-weight: bold; cursor: pointer; }
+#user-status { cursor: pointer; border-bottom: 1px dashed var(--color-cian) !important; padding-bottom: 2px; font-size: 14px; color: #ffffff !important; font-weight: 500; }
+
+.cart-icon { 
+    background: var(--color-cian) !important; 
+    padding: 8px 16px; 
+    border-radius: 6px; 
+    color: #0f172a !important; 
+    font-weight: bold; 
+    cursor: pointer; 
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3) !important;
+    transition: transform 0.2s, background-color 0.2s;
+}
+.cart-icon:hover { transform: scale(1.05); background: #22d3ee !important; }
 .hidden { display: none !important; }
+
+/* Enlazamos dinámicamente las tarjetas y elementos repetitivos */
+.product-card { 
+    background: var(--bg-tarjetas) !important; 
+    border: 1px solid var(--borde-tarjeta) !important; 
+}
+.product-card img { background-color: var(--bg-principal); }
+.product-title { color: var(--texto-principal) !important; }
+.search-container input { 
+    background-color: var(--fondo-input) !important; 
+    color: var(--texto-principal) !important;
+    border: 1px solid var(--borde-tarjeta) !important;
+}
+
 
 /* Menú de categorías estilo desplegable */
 .main-nav { background: #0e121a; border-bottom: 1px solid #2a3447; }
@@ -735,75 +782,234 @@ grid-template-columns: 1fr;
 /* ==========================================
    DISEÑO PARA PANTALLAS GRANDES (PC / Escritorio)
    ========================================== */
+/* ==========================================================================
+   💥 ADAPTACIÓN PREMIUM PARA CELULARES (INSPIRACIÓN GEOMÉTRICA)
+   ========================================================================== */
+
 @media (min-width: 769px) {
-    /* OCULTAMOS por completo el botón de las tres rayitas en computadoras */
     .menu-hamburger {
-        display: none !important;
+        display: none !important; /* Oculta por completo la hamburguesa en PC */
     }
-
-
 }
 
-/* ==========================================
-   DISEÑO PARA PANTALLAS CHICAS (Móviles / Celulares)
-   ========================================== */
+/* ==========================================================================
+   💥 ADAPTACIÓN PREMIUM PARA CELULARES - CABECERA CORREGIDA SIN SUPERPOSICIÓN
+   ========================================================================== */
+
+/* ==========================================================================
+   💥 ADAPTACIÓN PREMIUM PARA CELULARES - RESPONSIVE CORREGIDO DE RAÍZ
+   ========================================================================== */
+
 @media (max-width: 768px) {
-    /* Mostramos el botón de las tres rayitas centrado solo en celular */
+    /* Ocultamos elementos innecesarios de PC en el celular */
+    .hidden-mobile {
+        display: none !important;
+    }
+
+header, #main-header {
+    /* Degradado lineal: empieza arriba con tu violeta sutil y se funde hacia tu fondo oscuro */
+    background: linear-gradient(180deg, rgba(125, 38, 205, 0.25) 0%, #161c26 100%) !important; 
+    
+    padding: 15px 0 !important;
+    border-bottom: 2px solid var(--color-violeta) !important;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    height: auto !important;
+}
+    .header-container {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        width: 100% !important;
+        padding: 0 15px !important;
+        gap: 12px !important; /* Espacio prolijo entre el logo y los botones */
+    }
+
+    /* FILA SUPERIOR: Tu logo de Zen & Zen imponente y perfectamente centrado */
+    .logo {
+        margin: 0 auto !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+
+    .logo img, .logo-container img {
+        max-height: 36px !important; /* Proporción ideal de tu captura */
+        width: auto !important;
+        object-fit: contain !important;
+    }
+
+    /* FILA INFERIOR: Todo alineado de extremo a extremo */
+    .auth-cart-zone {
+        display: flex !important;
+        width: 100% !important;
+        justify-content: space-between !important; /* Separa los grupos a los extremos */
+        align-items: center !important;
+        padding-top: 10px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.06) !important; /* Línea divisoria fina */
+    }
+
+    /* Sub-contenedor izquierdo: Junta las rayitas con el perfil en paralelo */
+    .profile-menu-wrapper {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important; /* Separación limpia entre el icono ☰ y 'Mi Perfil' */
+    }
+
+    /* El botón de las tres rayitas perfectamente alineado y nativo */
     .menu-hamburger {
         display: block !important;
-        background: none;
-        border: none;
-        color: var(--color-cian, #00ced1);
-        font-size: 30px;
-        cursor: pointer;
-        padding: 10px;
-        width: 100%;
-        text-align: left;
-        border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+        background: none !important;
+        border: none !important;
+        color: var(--color-cian) !important; /* Tu color celeste */
+        font-size: 24px !important;
+        cursor: pointer !important;
+        padding: 0 !important;
+        width: auto !important;
+        text-align: left !important;
     }
 
-    /* Ocultamos la lista del menú por defecto en celular */
+    /* Tu texto de estado de sesión a la par de la hamburguesa */
+    #user-status {
+        font-size: 13px !important;
+        color: var(--texto-claro) !important;
+        border-bottom: 1px dashed var(--color-cian) !important;
+        cursor: pointer !important;
+        white-space: nowrap !important;
+    }
+
+    /* El carrito destacado a la derecha extrema de la fila inferior */
+    .cart-icon {
+        padding: 6px 14px !important;
+        font-size: 13px !important;
+        background: var(--color-cian) !important;
+        color: #111111 !important;
+        border-radius: 6px !important;
+    }
+
+    /* 2. PANEL LATERAL DESPLEGABLE DE CATEGORÍAS */
+    .main-nav {
+        background: transparent !important;
+        border: none !important;
+    }
+
     .nav-menu {
-        display: none !important;
-        flex-direction: column !important;
-        width: 100% !important;
-        background: #0f111a !important; /* Fondo oscuro */
-        padding: 10px 0 !important;
+        display: block !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: -100% !important; /* Fuera de pantalla */
+        width: 280px !important;
+        height: 100vh !important;
+        background: #0b0e14 !important; /* Tu fondo oscuro principal */
+        border-right: 2px solid var(--color-violeta) !important;
+        box-shadow: 6px 0 25px rgba(0, 0, 0, 0.7) !important;
+        transition: left 0.3s ease-in-out !important;
+        padding: 70px 15px 20px 15px !important;
         margin: 0 !important;
         list-style: none;
-        border-bottom: 2px solid var(--color-cian, #00ced1);
+        overflow-y: auto;
+        z-index: 1000 !important;
     }
 
-    /* Cuando se toca el botón y se activa con JS, lo mostramos */
     .nav-menu.active {
-        display: flex !important;
+        display: block !important;
+        left: 0 !important; /* Entra fluido desde el costado */
     }
 
-    /* Estilo de los enlaces en la lista desplegada del celular */
     .nav-menu > li {
         width: 100% !important;
-        text-align: center !important;
+        border-bottom: 1px solid #161c26 !important;
+        text-align: left !important;
     }
 
     .nav-menu > li > a {
         display: block !important;
-        padding: 15px 0 !important;
-        color: #fff !important;
-        font-size: 16px !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        text-decoration: none;
+        padding: 12px 10px !important;
+        color: #ffffff !important;
+        font-size: 15px !important;
     }
 
-    /* Evita que los dropdowns se rompan flotando en celular */
     .dropdown-content {
         position: relative !important;
-        background: rgba(0, 0, 0, 0.3) !important;
+        background: #161c26 !important;
         box-shadow: none !important;
+        border: none !important;
+        padding-left: 15px !important;
+        margin-top: 5px !important;
         display: none !important;
     }
+
+    .dropdown:hover .dropdown-content {
+        display: block !important;
+    }
+
+    /* 3. GRILLA DE PRODUCTOS RESPONSIVE (2 Columnas perfectas) */
+    .products-grid, #vitrina-productos, #favoritos-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        padding: 8px !important;
+        margin-top: 15px !important;
+    }
+
+    .product-card, #vitrina-productos .producto-card, .fav-card {
+        background: var(--bg-tarjetas) !important;
+        border: 1px solid #2a3447 !important;
+        border-radius: 8px !important;
+        padding: 0 !important;
+    }
+
+    .product-card img, #vitrina-productos .producto-card img, .fav-card-media img {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        border-radius: 8px 8px 0 0 !important;
+    }
+
+    .product-info, .fav-card-info {
+        padding: 10px !important;
+        text-align: center !important;
+        align-items: center !important;
+    }
+
+    /* 4. SECCIONES RESTANTES ADAPTADAS */
+    .carousel-container {
+        height: 180px !important;
+        margin: 15px 10px !important;
+    }
+
+    .modal-content {
+        width: 92% !important;
+        padding: 25px 20px !important;
+        background: var(--bg-tarjetas) !important;
+    }
+
+    .detail-layout {
+        grid-template-columns: 1fr !important;
+        gap: 25px !important;
+    }
+
+    .footer-container {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 25px !important;
+    }
 }
+
+@media (max-width: 480px) {
+    .products-grid, #vitrina-productos, #favoritos-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+
+
 /* ==========================================
    DISEÑO PARA PANTALLAS GRANDES (PC / Escritorio)
    ========================================== */
@@ -1047,3 +1253,1403 @@ grid-template-columns: 1fr;
     background: rgba(239, 68, 68, 0.2) !important; /* Se intensifica el rojo al apuntar */
     border-color: #ef4444 !important;
 }
+/* Aplicable a tus contenedores de formularios/modales */
+#modal-identificacion .modal-content, 
+.seccion-perfil form {
+    background: #ffffff !important;
+    border-radius: 0px; /* Bordes rectos y limpios como la inspiración */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 25px 20px;
+}
+
+/* Tus campos de texto internos */
+#modal-identificacion input[type="text"],
+#modal-identificacion input[type="email"],
+#modal-identificacion input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    margin-top: 6px;
+    margin-bottom: 14px;
+    border: 1px solid #cccccc;
+    border-radius: 4px; /* Un pequeño toque curvo en los inputs */
+    font-size: 0.95rem;
+    background-color: #ffffff;
+}
+
+/* El botón principal de acción dentro del formulario */
+#modal-identificacion .btn-submit,
+.seccion-perfil .btn-guardar {
+    background-color: #ff8c00; /* Naranja vibrante de la inspiración */
+    color: #ffffff;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+/* ==========================================================
+   MÁSCARA MAESTRA: FUERZA EL MODO CLARO EN ELEMENTOS REBELDES
+   ========================================================== */
+body.light-mode {
+    background-color: #f4f6f9 !important; /* Fondo general gris claro suave */
+    color: #1e293b !important;            /* Textos generales en color oscuro */
+}
+
+/* 1. Forzar Fondo Blanco en las Tarjetas de la Vitrina */
+body.light-mode .product-card, 
+body.light-mode .fav-card {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+}
+body.light-mode .product-card:hover, 
+body.light-mode .fav-card:hover {
+    box-shadow: 0 10px 20px rgba(109, 40, 217, 0.08) !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* 2. Corregir Imágenes de Productos para que no queden oscuras */
+body.light-mode .product-card img, 
+body.light-mode .fav-card-media {
+    background-color: #f8fafc !important;
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* 3. Volver Oscuros los Títulos y Precios dentro de las Tarjetas */
+body.light-mode .product-title, 
+body.light-mode .fav-card-title,
+body.light-mode h2, 
+body.light-mode .seccion-titulo {
+    color: #1e293b !important;
+}
+body.light-mode .product-price {
+    font-weight: bold !important; 
+    color: #6d28d9 !important; /* Cambia tus precios a un violeta nítido y legible */
+}
+
+/* 4. Adaptar el Buscador y los Botones de Categorías */
+body.light-mode .search-container input {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #e2e8f0 !important;
+}
+body.light-mode .cat-btn {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #e2e8f0 !important;
+}
+body.light-mode .cat-btn.active {
+    background-color: #7d26cd !important; /* Mantiene tu violeta activo original */
+    color: #ffffff !important;
+}
+
+/* 5. Forzar Blanco en Menú Desplegable y Menú Hamburguesa Celular */
+body.light-mode .nav-menu, 
+body.light-mode .dropdown-content {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+}
+body.light-mode .nav-menu > li > a, 
+body.light-mode .dropdown-content li a {
+    color: #1e293b !important;
+}
+body.light-mode .nav-menu > li {
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* 6. Etiquetas internas de empaque y estado (Mint, Escala, etc.) */
+body.light-mode .tag-category, 
+body.light-mode .tag-escala {
+    background-color: #f1f5f9 !important;
+    background: #f1f5f9 !important;
+    color: #64748b !important;
+}
+/* ==========================================================
+   💥 ARREGLO INTEGRAL DE MODALES E INPUTS (MODO CLARO)
+   ========================================================== */
+body.light-mode .modal-content, 
+body.light-mode #modal-auth .modal-content {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+}
+
+/* Forzar que las casillas de texto sean blancas con letras oscuras */
+body.light-mode .modal-content input, 
+body.light-mode #modal-auth input {
+    background-color: #f8fafc !important; /* Fondo gris claro ultra limpio */
+    background: #f8fafc !important;
+    color: #1e293b !important;            /* Texto que escribes en oscuro */
+    border: 1px solid #cbd5e1 !important;  /* Borde prolijo */
+}
+body.light-mode .modal-content input::placeholder, 
+body.light-mode #modal-auth input::placeholder {
+    color: #94a3b8 !important;            /* Texto de sugerencia legible */
+}
+
+/* Títulos y pestañas del login */
+body.light-mode .modal-content h2,
+body.light-mode .modal-content h3,
+body.light-mode .tab-link {
+    color: #1e293b !important;
+}
+
+/* ==========================================================
+   👑 REDISEÑO COMPACTO Y PRESERVADO DE LA CABECERA (PC Y MÓVIL)
+   ========================================================== */
+header, #main-header {
+    background: linear-gradient(135deg, #7d26cd 0%, #4c1d95 100%) !important; /* Degradado violeta Zen */
+    padding: 12px 0 !important;
+    border-bottom: 3px solid #00ced1 !important; /* Línea cian */
+    box-shadow: 0 4px 15px rgba(125, 38, 205, 0.2) !important;
+    height: auto !important;
+}
+
+/* Forzar que el logo sea blanco brillante y no oscuro */
+.logo, .logo-container {
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.logo a, .logo span {
+    color: #ffffff !important;
+}
+
+/* Ajuste fino para evitar que se desarme en celular */
+@media (max-width: 768px) {
+    header, #main-header {
+        padding: 10px 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+    .header-container {
+        flex-direction: column !important;
+        gap: 8px !important;
+        padding: 0 10px !important;
+    }
+    .auth-cart-zone {
+        width: 100% !important;
+        justify-content: space-between !important;
+        padding-top: 6px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+}
+/* ==========================================================
+   ⚡ BLINDAJE ULTRA PARA PANTALLAS GRANDES Y VISTAS INTERNAS
+   ========================================================== */
+
+/* 1. Corrección Total de la Cabecera en PC: Forzar Texto e Iconos en Blanco */
+header .logo, 
+header .logo *, 
+#main-header .logo-container,
+#main-header .logo {
+    color: #ffffff !important;
+}
+/* ==========================================================
+   ✨ OPTIMIZACIÓN DE ESTRUCTURA Y CONTRASTE EN MODO CLARO
+   ========================================================== */
+
+/* 1. Fondo general ligeramente más gris para que las cajas blancas floten */
+body.light-mode {
+    background-color: #f1f5f9 !important; /* Gris pastel estructurado */
+}
+
+/* 2. El contenedor principal del formulario ahora tiene fondo gris para simular el Modo Oscuro */
+body.light-mode .form-section,
+body.light-mode #view-carrito {
+    background-color: #ffffff !important;
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 24px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 3. Volvemos a darles "cuerpo" a los selectores de Envío y Pago */
+body.light-mode select,
+body.light-mode #metodo-entrega-select,
+body.light-mode #checkout-metodo-pago {
+    background-color: #f8fafc !important; /* Fondo gris sutil para que se note la caja */
+    color: #1e293b !important;
+    font-weight: 600 !important;
+    border: 2px solid #cbd5e1 !important; /* Borde más grueso y firme */
+    border-radius: 8px !important;
+    padding: 12px !important;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.02) !important;
+}
+
+/* 4. Resaltamos las líneas del desglose (Subtotal, Envío) para que no parezcan renglones vacíos */
+body.light-mode [id*="resumen-"],
+body.light-mode .form-section p,
+body.light-mode .form-section span {
+    color: #334155 !important;
+    font-weight: 500 !important;
+}
+
+/* 5. ARREGLO CLAVE: El cartel de "Datos de Despacho" pasa a ser un bloque destacado */
+body.light-mode div[style*="background: rgba(11, 14, 20, 0.85)"],
+body.light-mode .form-section div:has(> p) {
+    background-color: #e2e8f0 !important; /* Gris oscuro intermedio, idéntico al contraste original */
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 14px !important;
+}
+
+/* Forzar que el título con el emoji de chinche 📍 brille en rosa/fucsia sobre el fondo gris */
+body.light-mode div[style*="background"] h4,
+body.light-mode div[style*="background"] strong,
+body.light-mode .form-section div h4 {
+    color: #1e293b !important;
+    font-weight: 700 !important;
+}
+
+/* Hacemos legible el texto explicativo inferior que antes se perdía */
+body.light-mode div[style*="background"] p,
+body.light-mode div[style*="background"] span,
+body.light-mode .form-section div p {
+    color: #475569 !important; /* Gris oscuro nítido */
+    font-weight: 500 !important;
+}
+/* ==========================================================
+   🎯 SOLUCIÓN DEFINITIVA PARA LA CAJA DE DESPACHO INTERNA
+   ========================================================== */
+
+/* 1. Forzar que la caja contenedora completa sea gris clara en Modo Claro */
+body.light-mode .form-section h4:last-of-type,
+body.light-mode .cart-footer h4:last-of-type,
+body.light-mode [id*="view-"] h4:has(+ br),
+body.light-mode h4:has(> [style*="color"]) {
+    background-color: #f1f5f9 !important; /* Fondo gris suave pastel */
+    background: #f1f5f9 !important;
+    color: #1e293b !important;            /* Texto del título en color oscuro */
+    border: 1px solid #cbd5e1 !important;  /* Borde prolijo estructural */
+    border-radius: 8px !important;
+    padding: 16px !important;
+}
+
+/* 2. Capturar y aclarar el texto suelto de abajo que quedó invisible */
+body.light-mode .form-section h4:last-of-type::after,
+body.light-mode h4:has(> [style*="color"]) + text,
+body.light-mode .form-section {
+    color: #334155 !important; /* Fuerza color carbón en textos remanentes */
+}
+
+/* Si tu HTML usa un contenedor nativo oculto en la estructura */
+body.light-mode .form-section div,
+body.light-mode .form-section p {
+    color: #334155 !important; /* Garantiza lectura total de las instrucciones */
+}
+/* ==========================================================
+   🎯 PARCHE EXCLUSIVO Y ÚNICO PARA LA CAJA DE DESPACHO
+   ========================================================== */
+body.light-mode h4:has(img[src*="pink"]),
+body.light-mode h4:has(text),
+body.light-mode .form-section > h4:last-of-type,
+body.light-mode h4[style*="background"] {
+    background-color: #f1f5f9 !important; /* Cambia el fondo negro a un gris suave pastel */
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;  /* Le da un borde fino y limpio */
+    border-radius: 8px !important;
+    color: #1e293b !important;            /* El título "Datos de Despacho" pasa a oscuro */
+    padding: 14px !important;
+}
+
+/* Fuerza a que el texto de las instrucciones de abajo sea gris oscuro legible */
+body.light-mode h4[style*="background"] *,
+body.light-mode .form-section > h4:last-of-type * {
+    color: #334155 !important;
+}
+/* ==========================================================
+   🎯 SOLUCIÓN DE RAÍZ PARA EL BLOQUE DE DATOS DE DESPACHO
+   ========================================================== */
+
+/* 1. Atacamos directamente al contenedor negro por su color de fondo original */
+body.light-mode [style*="background: rgba(11, 14, 20"],
+body.light-mode [style*="background-color: rgba(11, 14, 20"],
+body.light-mode .form-section h4:last-of-type,
+body.light-mode div:has(> h4:contains("Datos de Despacho")) {
+    background-color: #f1f5f9 !important; /* Forzamos fondo gris suave pastel */
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;  /* Borde fino y prolijo */
+    border-radius: 8px !important;
+}
+
+/* 2. Forzamos que la cajita blanca interna del título mantenga un look limpio */
+body.light-mode [style*="background: rgba(11, 14, 20"] h4,
+body.light-mode .form-section h4:last-of-type span,
+body.light-mode h4:has(img[src*="pink"]) {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* 3. Volvemos completamente visible el texto de abajo (Iniciá sesión y completá...) */
+body.light-mode [style*="background: rgba(11, 14, 20"] *,
+body.light-mode .form-section h4:last-of-type * {
+    color: #334155 !important; /* Gris oscuro carbón hiper legible */
+}
+
+/* Parche por si el texto de abajo quedó suelto como texto plano en el HTML */
+body.light-mode [style*="background: rgba(11, 14, 20"] {
+    color: #334155 !important;
+}
+
+/* ==========================================================
+   🎯 DISEÑO INTERACTIVO PARA LA CAJA DE DESPACHO
+   ========================================================== */
+
+/* 1. Estilos por defecto (Modo Oscuro Original de Zen & Zen) */
+.caja-despacho-contenedor {
+    background: #0b0e14 !important;
+    padding: 12px !important;
+    border-radius: 6px !important;
+    border: 1px solid #2a3447 !important;
+    margin-bottom: 20px !important;
+    font-size: 13px !important;
+}
+.caja-despacho-contenedor h4 {
+    color: #ffffff !important;
+    margin-bottom: 5px !important;
+}
+#resumen-datos-envio {
+    color: #aaaaaa !important;
+    line-height: 1.4 !important;
+}
+
+/* 2. Transformación Automática al activar el Modo Claro */
+body.light-mode .caja-despacho-contenedor {
+    background: #f1f5f9 !important;        /* Cambia a un gris suave pastel premium */
+    border: 1px solid #cbd5e1 !important;  /* Borde fino y prolijo */
+}
+body.light-mode .caja-despacho-contenedor h4 {
+    color: #1e293b !important;             /* El título pasa a color oscuro/carbón */
+}
+body.light-mode #resumen-datos-envio {
+    color: #475569 !important;             /* Las instrucciones de abajo pasan a ser legibles */
+}
+
+/* ==========================================================
+   🎯 AJUSTE EXCLUSIVO PARA FICHA TÉCNICA Y DETALLES EN MODO CLARO
+   ========================================================== */
+
+/* Cambia el fondo negro a gris suave solo en Modo Claro */
+body.light-mode .ficha-tecnica,
+body.light-mode .detail-description-block {
+    background-color: #f1f5f9 !important; /* Gris pastel idéntico al del carrito */
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;  /* Borde prolijo estructural */
+    border-radius: 8px !important;
+}
+
+/* Cambia las líneas divisorias internas a un color suave */
+body.light-mode .ficha-row {
+    border-bottom: 1px solid #cbd5e1 !important;
+}
+
+/* Pasa los textos del interior a color oscuro legible */
+body.light-mode .ficha-row *,
+body.light-mode .detail-description-block,
+body.light-mode .detail-description-block * {
+    color: #1e293b !important;
+}
+
+/* Mantiene el violeta premium en los títulos internos (FICHA DE COLECCIÓN / DETALLES) */
+body.light-mode .ficha-tecnica h3,
+body.light-mode .detail-description-block h3 {
+    color: #6d28d9 !important;
+    font-weight: 700 !important;
+}
+/* ==========================================================
+   💎 ESTILOS PARA LA VITRINA DE PRODUCTOS PREMIUM
+   ========================================================== */
+.product-info {
+    padding: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important; /* Centramos textos para un look sofisticado */
+    text-align: center !important;
+    gap: 6px !important;
+}
+
+.product-mini-category {
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+    color: var(--texto-secundario) !important;
+    font-weight: 600 !important;
+}
+
+.product-title {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: var(--texto-principal) !important;
+    margin: 4px 0 !important;
+}
+
+.product-price {
+    font-size: 19px !important;
+    font-weight: bold !important; 
+    font-weight: 700 !important;
+    color: var(--color-violeta) !important;
+}
+
+.product-tags-footer {
+    margin-top: auto !important;
+    padding-top: 8px !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+/* Diseño estilo píldora/cápsula para la etiqueta única */
+.tag-status-premium {
+    padding: 5px 14px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    border-radius: 20px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Color Verde para Cerrado / Mint */
+.tag-mint {
+    background-color: #e6f4ea !important;
+    color: #137333 !important;
+    border: 1px solid #ceead6 !important;
+}
+
+/* Color Azul para Original */
+.tag-original {
+    background-color: #e0f2fe !important;
+    color: #0369a1 !important;
+    border: 1px solid #bae6fd !important;
+}
+/* ==========================================================
+   🎨 REDISEÑO VISUAL DE LAS TARJETAS (SIN TOCAR EL JAVASCRIPT)
+   ========================================================== */
+
+/* 1. OCULTAR LAS ETIQUETAS SECUNDARIAS QUE MOLESTAN */
+.product-card .tag-category,
+.product-card .tag-escala,
+.product-card span:not(.tag-condition), /* Esconde textos extras sueltos */
+.product-card div:has(> input),          /* Esconde selectores o cajas de números si los hay */
+.product-card input,                     /* Oculta los recuadros de números */
+.product-card [style*="border: 1px solid rgb(0, 206, 209)"] { /* Quita el recuadro celeste del número */
+    display: none !important;
+}
+
+/* 2. REESTRUCTURAR LA TARJETA PARA QUE QUEDE CENTRADA Y PREMIUM */
+.product-info {
+    padding: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important; /* Centramos todo el contenido */
+    text-align: center !important;
+    gap: 8px !important;
+}
+
+/* 3. MEJORAR EL DISEÑO DEL NOMBRE DEL PRODUCTO */
+.product-title {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: var(--texto-principal) !important;
+    margin: 4px 0 !important;
+    order: 1 !important; /* Lo posiciona arriba */
+}
+
+/* 4. DESTACAR EL PRECIO EN VIOLETA */
+.product-price {
+    font-size: 23px !important;
+    font-weight: bold !important; 
+    font-weight: 700 !important;
+    color: var(--color-violeta) !important;
+    order: 2 !important; /* Lo posiciona debajo del título */
+}
+
+/* 5. DISEÑO DE LA ÚNICA ETIQUETA PERMITIDA (Cerrado / Mint o Nuevo) */
+.product-card .tag-condition,
+.product-card [class*="tag-condition"] {
+    display: inline-block !important;
+    order: 3 !important; /* La manda al fondo de la tarjeta */
+    margin-top: 8px !important;
+    padding: 6px 14px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    border-radius: 20px !important; /* Formato de píldora redondeada moderna */
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    background-color: #e6f4ea !important; /* Fondo verde pastel sutil */
+    color: #137333 !important;            /* Texto verde oscuro profesional */
+    border: 1px solid #ceead6 !important;
+}
+/* ==========================================================
+   👑 HEADER PREMIUM CYBERPUNK OSCURO (MÓVIL Y ESCRITORIO)
+   ========================================================== */
+header, #main-header {
+    /* Violeta medianoche ultra profundo con un sutil patrón de malla premium */
+    background-color: #0b0617 !important;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(125, 38, 205, 0.15) 0px, transparent 50%),
+        radial-gradient(at 50% 0%, rgba(0, 206, 209, 0.1) 0px, transparent 50%),
+        linear-gradient(180deg, #0e071e 0%, #070310 100%) !important;
+    
+    padding: 14px 0 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+    
+    /* Línea inferior brillante con tu color cian/celeste de marca */
+    border-bottom: 2px solid #00ced1 !important; 
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), 0 1px 10px rgba(0, 206, 209, 0.15) !important;
+}
+
+/* 1. HACER QUE EL LOGO RESALTE CON LUZ PROPIA */
+.logo, .logo-container, #main-header .logo {
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+    /* Efecto neón: Texto blanco con sombra violeta y cian */
+    color: #ffffff !important;
+    text-shadow: 
+        0 0 10px rgba(125, 38, 205, 0.6),
+        0 0 20px rgba(0, 206, 209, 0.3) !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Si tu logo tiene texto adentro en etiquetas secundarias */
+.logo *, .logo span, .logo a {
+    color: #ffffff !important;
+}
+
+/* 2. ENLACES DE NAVEGACIÓN ESTILIZADOS */
+.nav-links a {
+    color: #a29bfe !important; /* Violeta pastel claro para que contraste */
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease !important;
+}
+.nav-links a:hover {
+    color: #00ced1 !important; /* Brilla en cian al pasar el mouse */
+    text-shadow: 0 0 8px rgba(0, 206, 209, 0.6) !important;
+}
+
+/* 3. BOTÓN DE INICIAR SESIÓN Y MENÚ HAMBURGUESA */
+#user-status, .nav-links .auth-link, [onclick*="Modal"] {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border-bottom: 1px dashed #00ced1 !important;
+    transition: color 0.2s;
+}
+#user-status:hover {
+    color: #00ced1 !important;
+}
+
+/* Icono de las tres líneas (Menú Móvil) en color cian vibrante */
+.header-container .menu-toggle, 
+.header-container i, 
+.header-container svg,
+.header-container [class*="menu"] {
+    color: #00ced1 !important;
+    font-size: 22px;
+}
+
+/* 4. EL CARRITO COMO COMPONENTE DESTACADO */
+.cart-icon {
+    background: linear-gradient(135deg, #00ced1 0%, #008b8b 100%) !important; /* Degradado cian */
+    color: #070310 !important; /* Texto oscuro para legibilidad perfecta */
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    padding: 8px 18px !important;
+    box-shadow: 0 4px 15px rgba(0, 206, 209, 0.4) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.cart-icon:hover {
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: 0 6px 20px rgba(0, 206, 209, 0.6) !important;
+}
+
+/* 5. ARREGLO DE BARRA DE CATEGORÍAS INFERIOR (MÓVIL / PC) */
+.main-nav, .nav-menu {
+    background: #ffffff !important; /* Se mantiene blanco limpio para enlazar con los productos claro */
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+/* ==========================================================
+   🔒 ESCUDO AISLANTE: MANTENER EL MENÚ FIJO E INMUTABLE
+   ========================================================== */
+
+/* Bloqueamos el fondo para que se mantenga oscuro en ambos modos */
+.main-nav,
+.nav-menu,
+[class*="menu"],
+body.light-mode .main-nav,
+body.light-mode .nav-menu,
+body.light-mode [class*="menu"] {
+    background-color: #0b0617 !important; /* El violeta profundo original de tu cabecera */
+    background: #0b0617 !important;
+}
+
+/* Bloqueamos las listas internas para que no se tiñan de blanco en modo claro */
+.nav-menu li,
+.main-nav li,
+body.light-mode .nav-menu li,
+body.light-mode .main-nav li {
+    background-color: #0b0617 !important;
+    background: #0b0617 !important;
+}
+
+/* Bloqueamos las letras para que sean SIEMPRE blancas en ambos modos */
+.nav-menu > li > a,
+.nav-menu li a,
+.main-nav a,
+[class*="menu"] a,
+body.light-mode .nav-menu > li > a,
+body.light-mode .nav-menu li a,
+body.light-mode .main-nav a,
+body.light-mode [class*="menu"] a {
+    color: #ffffff !important; /* Letras blancas nítidas permanentes */
+}
+
+/* Bloqueamos el efecto hover para que siempre brille en tu celeste de marca */
+.nav-menu > li > a:hover,
+.nav-menu li a:hover,
+.main-nav a:hover,
+body.light-mode .nav-menu > li > a:hover,
+body.light-mode .nav-menu li a:hover,
+body.light-mode .main-nav a:hover {
+    color: #00ced1 !important;
+    text-shadow: 0 0 8px rgba(0, 206, 209, 0.6) !important;
+    background: transparent !important;
+}
+/* ==========================================================
+   💥 ELIMINAR BORDE BLANCO REMANENTE DEL MENÚ
+   ========================================================== */
+.main-nav, 
+.nav-menu, 
+[class*="menu"],
+body.light-mode .main-nav, 
+body.light-mode .nav-menu, 
+body.light-mode [class*="menu"] {
+    border: none !important;                 /* Elimina cualquier borde blanco rígido */
+    outline: none !important;                /* Quita cualquier línea de selección externa */
+    box-shadow: none !important;             /* Remueve sombras claras que simulen un borde */
+    border-bottom: 1px solid rgba(0, 206, 209, 0.2) !important; /* Mantiene solo la fina línea cian estética */
+}
+/* ==========================================================
+   💥 ELIMINAR LÍNEA INTRUSA EN LA UNIÓN DEL MENÚ (MODO CLARO)
+   ========================================================== */
+
+/* 1. Separamos el catálogo para que su borde superior no se meta debajo del menú */
+body.light-mode .main-container,
+body.light-mode .search-container,
+body.light-mode .categories-container,
+body.light-mode main {
+    margin-top: 16px !important;    /* Crea un espacio limpio para que no colapse */
+    border-top: none !important;    /* Borra la línea gris intrusa si venía de acá */
+    box-shadow: none !important;
+}
+
+/* 2. Blindamos el fondo general en la zona de transición */
+body.light-mode {
+    background-color: #f1f5f9 !important;
+}
+
+/* 3. Nos aseguramos de que el menú bloquee cualquier transparencia */
+body.light-mode .main-nav,
+body.light-mode .nav-menu {
+    margin-bottom: 0 !important;
+    border-bottom: none !important; /* Limpieza absoluta de la base del menú */
+}
+/* ==========================================================
+   📱 REPARACIÓN ULTRA-RESPONSIVE EXCLUSIVA MODO CLARO (MÓVIL)
+   ========================================================== */
+@media (max-width: 768px) {
+    /* 1. SOLUCIÓN AL MENÚ HAMBURGUESA NEGRO: Lo obligamos a ser blanco/gris en Modo Claro */
+    body.light-mode .nav-menu,
+    body.light-mode .nav-links,
+    body.light-mode [class*="menu-toggle"],
+    body.light-mode [id*="menu"] {
+        background-color: #ffffff !important; /* El menú desplegable pasa a ser blanco limpio */
+        background: #ffffff !important;
+    }
+
+    /* Forzar que las letras de las categorías en el celular sean oscuras y legibles */
+    body.light-mode .nav-menu li a,
+    body.light-mode .nav-menu a,
+    body.light-mode [class*="menu"] a {
+        color: #1e293b !important; /* Texto color carbón profesional */
+    }
+
+    /* Las líneas de separación entre opciones en el móvil */
+    body.light-mode .nav-menu li {
+        border-bottom: 1px solid #e2e8f0 !important;
+        background: #ffffff !important;
+    }
+
+    /* 2. ELIMINACIÓN DE LA LÍNEA GRIS INTRUSA BAJO EL ENCABEZADO */
+    body.light-mode header,
+    body.light-mode #main-header,
+    body.light-mode .main-nav {
+        border-bottom: none !important; /* Borra cualquier línea o borde rebelde */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important; /* Mantiene solo una sombra suave limpia */
+    }
+
+    /* Separamos el buscador un poquito para que no choque con la cabecera */
+    body.light-mode .search-container {
+        margin-top: 20px !important;
+    }
+}
+/* ==========================================================
+   👤 BLINDAJE EXCLUSIVO PARA LA PÁGINA DE PERFIL (MODO CLARO)
+   ========================================================== */
+
+/* 1. Forzar que los campos de entrada (Inputs) pasen a gris claro/blanco con texto oscuro */
+body.light-mode .profile-container input,
+body.light-mode .profile-form input,
+body.light-mode input[type="text"],
+body.light-mode input[type="tel"],
+body.light-mode input[type="email"],
+body.light-mode .form-control {
+    background-color: #f8fafc !important; /* Fondo gris pastel ultra limpio */
+    background: #f8fafc !important;
+    color: #1e293b !important;            /* El texto que escribe el usuario pasa a negro/carbón */
+    border: 1px solid #cbd5e1 !important;  /* Borde prolijo para dar volumen */
+    border-radius: 8px !important;
+}
+
+/* 2. Corregir la caja superior donde se asoma el "Correo Electrónico" */
+body.light-mode div:has(> [style*="color"]),
+body.light-mode .profile-header,
+body.light-mode [style*="background: #0b0e14"],
+body.light-mode div[style*="background"] {
+    background-color: #f1f5f9 !important; /* Cambia el bloque negro de arriba a un gris suave */
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+}
+
+/* Forzar que el texto del correo electrónico de arriba sea legible */
+body.light-mode .profile-container *,
+body.light-mode .profile-form *,
+body.light-mode div[style*="background"] span,
+body.light-mode div[style*="background"] p {
+    color: #1e293b !important; /* Pasa a color carbón */
+}
+
+/* 3. Mantener tus títulos en el celeste/cian original pero bien nítidos */
+body.light-mode .profile-container label,
+body.light-mode .profile-form label,
+body.light-mode h3[style*="color"] {
+    color: #00ced1 !important; /* Tu cian de marca se conserva para guiar la vista */
+    font-weight: 600 !important;
+}
+/* ==========================================================
+   🔒 APAGÓN MAESTRO SINS BORDES: REPARACIÓN FINAL FOOTER
+   ========================================================== */
+
+/* 1. Forzar oscuridad en la tarjeta interna ELIMINANDO cualquier borde */
+footer div, 
+.footer-container div, 
+[class*="footer"] div,
+body.light-mode footer div,
+body.light-mode .footer-container div,
+body.light-mode [class*="footer"] div {
+    background-color: #0b0e14 !important; /* Gris oscuro profundo original */
+    background: #0b0e14 !important;
+    border: none !important;               /* FULMINA CUALQUIER BORDE NUEVO */
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* 2. Forzar que la frase descriptiva e iconos vuelvan a su gris claro nativo */
+footer p, 
+footer span, 
+.footer-container p,
+body.light-mode footer p,
+body.light-mode footer span,
+body.light-mode .footer-container p {
+    color: #a0aec0 !important; /* Texto claro nítido original */
+}
+
+/* 3. Garantizar que la base completa del sitio web sea siempre negra */
+footer, 
+.footer-container, 
+[class*="footer-section"],
+body.light-mode footer,
+body.light-mode .footer-container,
+body.light-mode [class*="footer-section"] {
+    background-color: #0b0e14 !important; /* Fondo negro maestro */
+    background: #0b0e14 !important;
+    border: none !important;               /* Asegura que la base no tenga líneas extra */
+}
+footer, body.light-mode footer {
+    border-top: 3px solid var(--color-violeta) !important;
+}
+/* 4. Título principal de redes e hipervínculos inmutables */
+footer h3, 
+footer a,
+body.light-mode footer h3,
+body.light-mode footer a {
+    color: #ffffff !important; /* Blanco brillante para Instagram, Facebook, etc. */
+}
+/* ==========================================================
+   👥 ESTILOS INTEGRADOS SECCIÓN SOBRE NOSOTROS
+   ========================================================== */
+.about-section {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.about-container {
+    text-align: center;
+}
+
+.about-main-title {
+    font-size: 32px !important;
+    font-weight: 800;
+    color: var(--texto-principal) !important;
+    margin-bottom: 10px;
+}
+
+.about-subtitle {
+    font-size: 16px;
+    color: var(--texto-secundario) !important;
+    margin-bottom: 40px;
+}
+
+/* Grilla adaptable para las tres tarjetas */
+.about-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+/* Tarjetas individuales que respetan las variables del tema */
+.about-card {
+    background: var(--bg-tarjetas) !important;
+    border: 1px solid var(--borde-tarjeta) !important;
+    border-radius: 12px;
+    padding: 30px 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.about-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 25px rgba(125, 38, 205, 0.15);
+    border-color: var(--color-violeta) !important;
+}
+
+.about-icon {
+    font-size: 40px;
+    margin-bottom: 15px;
+}
+
+.about-card h3 {
+    font-size: 20px !important;
+    font-weight: 700;
+    color: var(--color-cian) !important; /* Resalta con tu celeste de marca */
+    margin-bottom: 12px;
+}
+
+.about-card p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--texto-secundario) !important;
+    text-align: justify;
+}
+
+/* Ajustes visuales de elevación en Modo Claro */
+body.light-mode .about-card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+}
+body.light-mode .about-card h3 {
+    color: var(--color-violeta) !important; /* En modo claro pasa a violeta para mejor lectura */
+}
+/* ==========================================================
+   💊 REDISEÑO MINIMALISTA DEL BOTÓN DE CONDICIÓN
+   ========================================================== */
+
+/* Contenedor inferior para centrar el botón sin que se estire */
+.product-tags-footer {
+    margin-top: auto !important;
+    padding-top: 6px !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important; /* Centra el botón horizontalmente */
+}
+
+/* Rediseño del botón verde en modo claro */
+body.light-mode .tag-condition,
+.tag-condition {
+    display: inline-block !important; /* Evita que ocupe todo el ancho de la tarjeta */
+    width: auto !important;          /* Achica el botón al tamaño justo del texto */
+    padding: 4px 12px !important;    /* Espaciado interno perfecto y discreto */
+    font-size: 11px !important;      /* Tipografía más pequeña y fina */
+    font-weight: 700 !important;
+    border-radius: 20px !important;  /* Forma de cápsula redondeada premium */
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    
+    /* Colores pastel premium en armonía con el fondo claro */
+    background-color: #e6f4ea !important; /* Verde pastel sutil */
+    color: #137333 !important;            /* Texto verde oscuro elegante */
+    border: 1px solid #ceead6 !important; /* Borde ultra fino */
+    box-shadow: none !important;
+}
+
+/* Ajuste por si el usuario vuelve al modo oscuro, para que no brille tosco */
+body:not(.light-mode) .tag-condition {
+    background-color: rgba(52, 168, 83, 0.15) !important; /* Verde translúcido místico */
+    color: #34a853 !important;
+    border: 1px solid rgba(52, 168, 83, 0.3) !important;
+}
+.product-price {
+    font-weight: bold !important; 
+    font-size: 19px !important;
+    font-weight: 700 !important; /* Lo hace bien negrita para resaltar */
+    color: var(--color-violeta) !important;
+    margin: 4px 0 !important;
+}
+/* ==========================================================
+   💎 DISEÑO PREMIUM PARA LA SECCIÓN DE MIS FAVORITOS
+   ========================================================== */
+
+/* Botón estilizado de corazón roto estilo píldora minimalista */
+.btn-fav-remove-premium {
+    background-color: #ffebee !important; /* Fondo rojo pastel sutil */
+    color: #c62828 !important;            /* Texto e icono rojo oscuro elegante */
+    border: 1px solid #ffcdd2 !important; /* Borde fino suave */
+    padding: 6px 14px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    border-radius: 20px !important;       /* Forma de cápsula idéntica a tus etiquetas */
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: transform 0.2s, background-color 0.2s !important;
+}
+
+.btn-fav-remove-premium:hover {
+    transform: scale(1.05) !important;
+    background-color: #f9d5d5 !important; /* Se intensifica levemente al apuntar */
+}
+
+/* Adaptación del botón cuando la tienda vuelve al Modo Oscuro */
+body:not(.light-mode) .btn-fav-remove-premium {
+    background-color: rgba(239, 83, 80, 0.12) !important; /* Rojo translúcido místico */
+    color: #ef5350 !important;
+    border: 1px solid rgba(239, 83, 80, 0.3) !important;
+}
+
+/* Nos aseguramos de que el título "Mis Favoritos" use el color correcto del tema */
+#favoritos-grid-header, 
+.seccion-titulo-favoritos,
+main[id*="favoritos"] h2 {
+    color: var(--texto-principal) !important;
+}
+
+/* ==========================================================
+   ❤️ CORAZÓN INTERACTIVO FLOTANTE EN LA GRILLA DE PRODUCTOS
+   ========================================================== */
+.product-card-media-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* El botón flotante invisible por defecto que se asoma suavemente */
+.grid-fav-toggle-btn {
+    position: absolute;
+    top: 9px;
+    right: 9px;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.85) !important; /* Fondo blanco translúcido circular */
+    border: 1px solid #e2e8f0 !important;
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 50% !important; /* Círculo perfecto */
+    font-size: 16px !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08) !important;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s !important;
+}
+
+.grid-fav-toggle-btn:hover {
+    transform: scale(1.15) !important;
+    background: #ffffff !important;
+}
+
+/* Cuando el producto YA es favorito: Se ilumina en rojo con aura rosa */
+.grid-fav-toggle-btn.fav-active {
+    background: #fff0f1 !important;
+    border-color: #ffa7b6 !important;
+    box-shadow: 0 4px 12px rgba(255, 23, 68, 0.2) !important;
+}
+
+/* Adaptación estética si el usuario activa el Modo Oscuro */
+body:not(.light-mode) .grid-fav-toggle-btn {
+    background: rgba(22, 28, 38, 0.85) !important; /* Gris oscuro translúcido Cyberpunk */
+    border: 1px solid #2a3447 !important;
+}
+body:not(.light-mode) .grid-fav-toggle-btn.fav-active {
+    background: rgba(255, 23, 68, 0.12) !important;
+    border-color: rgba(255, 23, 68, 0.4) !important;
+}
+/* ==========================================================
+   ❤️ CONTROL DE ESTILOS PARA EL CORAZÓN VECTORIAL (SVG)
+   ========================================================== */
+
+/* Tamaño y comportamiento del icono interno */
+.heart-icon-vector {
+    width: 9px !important;
+    height: 9px !important;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+/* 1. ESTADO: CUANDO NO ES FAVORITO (🤍 Vacío y fino) */
+.grid-fav-toggle-btn.fav-inactive .heart-icon-vector {
+    stroke: #94a3b8 !important; /* Borde gris suave estético */
+    fill: transparent !important; /* Interior transparente */
+}
+.grid-fav-toggle-btn.fav-inactive:hover .heart-icon-vector {
+    stroke: #ff2a5f !important; /* Se tiñe levemente de rosa al pasar el mouse */
+}
+
+/* 2. ESTADO: CUANDO YA ES FAVORITO (❤️ Relleno con destello rosa) */
+.grid-fav-toggle-btn.fav-active {
+    background: #ffffff !important;
+    border-color: #ffa7b6 !important;
+    box-shadow: 0 4px 12px rgba(255, 42, 95, 0.25) !important;
+}
+
+.grid-fav-toggle-btn.fav-active .heart-icon-vector {
+    stroke: #ff2a5f !important; /* Tu línea rosa/fucsia nítida de la captura */
+    fill: #ff2a5f !important;   /* Relleno completo del mismo tono */
+    transform: scale(1.05);
+}
+
+/* 3. ADAPTACIÓN DE TONOS PARA EL MODO OSCURO */
+body:not(.light-mode) .grid-fav-toggle-btn.fav-inactive .heart-icon-vector {
+    stroke: #4b5563 !important; /* Gris oscuro que contrasta en el búnker nocturno */
+}
+body:not(.light-mode) .grid-fav-toggle-btn.fav-active {
+    background: rgba(22, 28, 38, 0.9) !important;
+    border-color: rgba(255, 42, 95, 0.4) !important;
+    box-shadow: 0 4px 14px rgba(255, 42, 95, 0.3) !important;
+}
+/* ==========================================================
+   📐 REDUCCIÓN DE TAMAÑO PARA EL BOTÓN DE FAVORITO EN LA GRILLA
+   ========================================================== */
+
+/* 1. Achicamos la burbuja circular exterior a 32px */
+.product-card .btn-favorito,
+body .btn-favorito {
+    width: 32px !important;
+    height: 32px !important;
+    top: 10px !important;    /* Lo acomodamos un poquito más hacia la esquina */
+    right: 10px !important;
+}
+
+/* 2. El truco clave: Achicamos el dibujo del corazón interior a 16px */
+.product-card .btn-favorito .icono-corazon,
+body .btn-favorito .icono-corazon {
+    width: 16px !important;
+    height: 16px !important;
+    stroke-width: 2.8 !important; /* Engrosamos un poquito la línea para que no pierda fuerza al ser más chico */
+}
+/* ==========================================================
+   ❌ BOTÓN DE CIERRE PREMIUM PARA EL CARTEL DE REGISTRO
+   ========================================================== */
+.modal-content {
+    position: relative !important; /* Permite posicionar la X con precisión matemática */
+}
+
+.btn-modal-close-premium {
+    position: absolute !important;
+    top: 14px !important;
+    right: 18px !important;
+    background: transparent !important;
+    border: none !important;
+    font-size: 24px !important; /* Tamaño ideal para la X */
+    font-weight: 500 !important;
+    color: #64748b !important;   /* Gris suave e integrado */
+    cursor: pointer !important;
+    line-height: 1 !important;
+    padding: 4px !important;
+    z-index: 100 !important;
+    transition: color 0.2s ease, transform 0.2s ease !important;
+}
+
+.btn-modal-close-premium:hover {
+    color: var(--color-violeta) !important; /* Se ilumina en el morado de tu marca al apuntar */
+    transform: scale(1.1) !important;
+}
+
+/* Ajuste por si el usuario vuelve al modo oscuro, para que resalte en blanco */
+body:not(.light-mode) .btn-modal-close-premium {
+    color: #a0aec0 !important;
+}
+body:not(.light-mode) .btn-modal-close-premium:hover {
+    color: #ffffff !important;
+}
+/* ==========================================================
+   🔔 ESTILOS PREMIUM PARA ALERTAS FLOTANTES (TOASTS)
+   ========================================================== */
+#zen-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999; /* Máxima prioridad por sobre cualquier modal o menú */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 350px;
+    width: calc(100% - 48px);
+}
+
+/* Tarjeta base flotante con efecto cristal */
+.zen-toast-card {
+    background: rgba(14, 7, 30, 0.85) !important; /* Fondo violeta de la marca traslúcido */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-left: 4px solid var(--color-cian) !important; /* Línea guía en tu celeste cian */
+    border-top: 1px solid rgba(0, 206, 209, 0.1) !important;
+    border-right: 1px solid rgba(0, 206, 209, 0.1) !important;
+    border-bottom: 1px solid rgba(0, 206, 209, 0.1) !important;
+    padding: 14px 18px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 206, 209, 0.1) !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: zenToastSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.zen-toast-icon {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+}
+
+.zen-toast-text {
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #ffffff !important; /* Letras blancas nítidas siempre */
+    line-height: 1.4 !important;
+    margin: 0 !important;
+}
+
+/* Modificación de color si la tienda está en Modo Claro */
+body.light-mode .zen-toast-card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-left: 4px solid var(--color-violeta) !important; /* En modo claro se guía por el morado */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0,0,0,0.02) !important;
+    border-top: 1px solid #e2e8f0 !important;
+    border-right: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body.light-mode .zen-toast-text {
+    color: #1e293b !important; /* Letras oscuras en modo claro */
+}
+
+/* 🎢 ANIMACIONES DE ENTRADA Y SALIDA */
+@keyframes zenToastSlideIn {
+    from { transform: translateY(20px) scale(0.9); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.zen-toast-fadeout {
+    animation: zenToastSlideOut 0.4s ease forwards !important;
+}
+
+@keyframes zenToastSlideOut {
+    from { transform: translateY(0) scale(1); opacity: 1; }
+    to { transform: translateY(-10px) scale(0.9); opacity: 0; }
+}
+/* ==========================================================
+   📱 ARREGLO INTEGRAL: ELIMINAR EL ANCHO FIJO DEL CARRITO EN MÓVILES
+   ========================================================== */
+/* ==========================================================
+   📱 SOLUCIÓN DE RAÍZ: CARRITO RESPONSIVE ELÁSTICO (MOBILE)
+   ========================================================== */
+@media (max-width: 900px) {
+    /* 1. Destruimos las dos columnas fijas y hacemos que se apilen en vertical */
+    #carrito-layout-wrapper {
+        grid-template-columns: 1fr !important; /* Pasa a tener una sola columna elástica */
+        display: flex !important;
+        flex-direction: column !important;     /* Envía el resumen abajo del listado */
+        gap: 20px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 2. Forzamos que las dos secciones ocupen el ancho exacto de tu celular */
+    #view-carrito .form-section,
+    #view-carrito section {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* 3. Acomodamos el texto largo del selector de envío para que no empuje la pantalla */
+    #metodo-entrega-select, 
+    #checkout-metodo-pago {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        white-space: normal !important; /* Permite que las opciones largas de envío salten de renglón */
+    }
+
+    /* 4. Candado de seguridad para que la pantalla principal no sufra desbordes */
+    #view-carrito {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        padding: 10px !important;
+        box-sizing: border-box !important;
+    }
+}
+
+body.light-mode #btn-cancelar-pedido {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+/* ==========================================================
+   🎯 REPARACIÓN DE TARJETAS INTERNAS DEL CARRITO (MODO CLARO)
+   ========================================================= */
+
+/* 1. Forzar fondo gris suave premium en las tarjetas del carrito */
+body.light-mode #seccion-carrito-items > div,
+body.light-mode .cart-item,
+body.light-mode [class*="item-carrito"] {
+    background-color: #f1f5f9 !important; /* Gris suave idéntico a tus otras secciones limpias */
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;  /* Borde fino estructural prolijo */
+    border-radius: 8px !important;
+}
+
+
+/* 3. Resaltar tus precios largos en el violeta de la marca */
+body.light-mode #seccion-carrito-items [class*="price"],
+body.light-mode #seccion-carrito-items p:contains("$") {
+    
+    font-weight: 700 !important;
+}
+
+/* 4. Corregir el color del tachito de basura de eliminación */
+body.light-mode #seccion-carrito-items button,
+body.light-mode #seccion-carrito-items .remove-btn {
+    color: #64748b !important;
+}
+body.light-mode #seccion-carrito-items button:hover {
+    color: #ef4444 !important; /* Se ilumina en rojo al apuntar para eliminar */
+}
+/* ==========================================================
+   💎 CONFIGURACIÓN PREMIUM DE FILAS INTERNAS DEL CARRITO
+   ========================================================== */
+/* ==========================================================
+   💎 DISEÑO ELÁSTICO PREMIUM PARA LAS FILAS DEL CARRITO
+   ========================================================== */
+
+/* Contenedor principal de la fila (Idéntico en ambos modos) */
+.cart-custom-item-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 14px !important;
+    margin-bottom: 12px !important;
+    border-radius: 8px !important;
+    gap: 15px !important;
+    background-color: #11151d !important; /* Fondo oscuro Zen & Zen */
+    border: 1px solid #2a3447 !important;
+    box-sizing: border-box !important;
+}
+
+/* CAJA DE LA IMAGEN MINIATURA (Elimina bordes raros) */
+.cart-item-media,
+.cart-custom-item-row .cart-item-media {
+    background: transparent !important; /* Evita recuadros internos */
+    border: none !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.cart-item-media img {
+    width: 55px !important;
+    height: 55px !important;
+    object-fit: contain !important;
+    background: #ffffff !important; /* Fondo blanco limpio para contrastar el producto */
+    border-radius: 6px !important;
+    padding: 4px !important;
+    border: none !important;
+}
+
+/* CONTENEDOR CENTRAL DE TEXTOS (Obliga a mantener la misma forma en ambos modos) */
+.cart-item-details,
+.cart-custom-item-row .cart-item-details {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    flex-grow: 1 !important; /* Toma el control central */
+    text-align: left !important;
+    background: transparent !important; /* Frena recuadros grises colados en modo claro */
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* TÍTULO DEL PRODUCTO */
+.cart-item-main-title {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #ffffff !important; /* Blanco en modo oscuro */
+    margin: 0 !important;
+    line-height: 1.3 !important;
+}
+
+/* PRECIO ORIGINAL */
+.cart-item-main-price, body.light-mode .cart-item-main-price {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #ff9900 !important; /* Tu color oro nativo */
+    margin: 0 !important;
+}
+
+/* TACHITO DE BASURA */
+.cart-item-del-btn {
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 6px !important;
+}
+.icon-trash-vector {
+    width: 18px !important;
+    height: 18px !important;
+    fill: #64748b !important;
+}
+

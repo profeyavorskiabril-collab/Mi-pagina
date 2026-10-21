@@ -117,21 +117,16 @@ function renderizarProductos() {
     grid.innerHTML = '';
 
     const filtrados = productos.filter(p => {
-        // 🔴 CONTROL DE OCULTAR: Si el stock es -1 (Vendido definitivo), lo dejamos fuera de la lista pública
         if (parseInt(p.stock) === -1) return false;
-
         const cumpleCat = (categoriaActual === 'Todos' || p.categoria === categoriaActual);
         const cumpleSub = (subcategoriaActual === 'Todos' || p.subcategoria.toLowerCase() === subcategoriaActual.toLowerCase());
         return cumpleCat && cumpleSub;
     });
 
-    // Capturamos el elemento del spinner para poder apagarlo
     const spinnerTienda = document.getElementById('tienda-cargando');
 
     if (filtrados.length === 0) {
-        // 🌟 APAGAR SPINNER AQUÍ (Si el catálogo está vacío)
         if (spinnerTienda) spinnerTienda.style.display = 'none';
-
         grid.innerHTML = '<p style="padding:40px; color:#aaa; grid-column:1/-1; text-align:center;">El catálogo está vacío o las piezas se encuentran reservadas.</p>';
         return;
     }
@@ -141,30 +136,118 @@ function renderizarProductos() {
         card.classList.add('product-card');
         card.onclick = () => abrirDetalleProducto(p.id);
         
-        // 🟡 CARTEL DE RESERVADO EN LA TARJETA
         if (parseInt(p.stock) === 0) {
             card.innerHTML += `<div class="reservado-badge">🔒 Reservado</div>`;
         }
 
+        // Lógica inteligente de verificación de favoritos
+        let esFavorito = false;
+        if (typeof usuarioActivo !== 'undefined' && usuarioActivo && usuarioActivo.favoritos) {
+            esFavorito = usuarioActivo.favoritos.map(id => String(id).trim()).includes(String(p.id).trim());
+        }
+
+        // 🎯 ADAPTADO: Usamos tu clase '.activo' si el producto ya está en favoritos
+        const claseActivo = esFavorito ? 'activo' : '';
+
+        // INYECTAMOS TU NUEVA ESTRUCTURA PREMIUM CON TUS CLASES NATIVAS
         card.innerHTML += `
-            <img src="${p.imagen}">
+            <div class="product-card-media-wrapper">
+                <img src="${p.imagen}" loading="lazy">
+                
+                <!-- Botón de Favorito con tu estilo .btn-favorito -->
+                <button class="btn-favorito ${claseActivo}" 
+                        onclick="event.stopPropagation(); toggleFavoritoDesdeGrid('${p.id}')" 
+                        title="${esFavorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}">
+                    <svg class="icono-corazon" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                    </svg>
+                </button>
+            </div>
             <div class="product-info">
                 <h3 class="product-title">${p.titulo}</h3>
-                <p class="product-price">$${p.precio}</p>
-                <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:auto;">
-                    <span class="tag-category">${p.subcategoria}</span>
-                    <span class="tag-category" style="background:#0e121a; color:var(--color-cian); border:1px solid var(--color-cian);">${p.escala || '1:64'}</span>
+                <p class="product-price">$${Number(p.precio).toLocaleString('es-AR')}</p>
+                <div class="product-tags-footer">
                     <span class="tag-condition">${p.condicion}</span>
                 </div>
             </div>`;
+            
         grid.appendChild(card);
     });
-
-    // 🌟 APAGAR SPINNER AQUÍ (Cuando ya terminó de dibujar todas las tarjetas)
     if (spinnerTienda) {
         spinnerTienda.style.display = 'none';
     }
 }
+
+// ==========================================================
+// 🛡️ ESCUDO INTELIGENTE: PREVENIR SALTO AUTOMÁTICO A FAVORITOS
+// ==========================================================
+// Creamos una variable global en la memoria de la página para frenar el desvío
+window.bloquearSaltoFavoritos = false;
+
+function toggleFavoritoDesdeGrid(productoId) {
+    if (typeof usuarioActivo === 'undefined' || !usuarioActivo) {
+        if (typeof abrirModalAuth === 'function') abrirModalAuth();
+        return;
+    }
+
+    const favoritosUsuario = usuarioActivo.favoritos.map(id => String(id).trim());
+    const idBuscado = String(productoId).trim();
+    
+    // 🎯 ACTIVAMOS EL ESCUDO: Avisamos que estamos operando desde la grilla principal
+    window.bloquearSaltoFavoritos = true;
+
+    // Interceptamos y modificamos temporalmente tu función nativa de navegación
+    const funcionNavegarOriginal = window.mostrarSeccion || window.cambiarSeccion || window.navegar;
+    
+    const interceptorNavegacion = function(seccion) {
+        // SI EL SISTEMA INTENTA MANDARTE A FAVORITOS, LO DETENEMOS AQUÍ
+        if (seccion === 'favoritos' && window.bloquearSaltoFavoritos) {
+            console.log("🛡️ Escudo Zen: Salto automático a favoritos bloqueado con éxito.");
+            return; // Bloquea la ejecución y te deja en la misma pantalla
+        }
+        // Si es cualquier otra sección, la deja pasar normalmente
+        if (typeof funcionNavegarOriginal === 'function') {
+            funcionNavegarOriginal(seccion);
+        }
+    };
+
+    // Aplicamos el interceptor en todas las variantes de nombres de navegación que maneje tu tienda
+    if (window.mostrarSeccion) window.mostrarSeccion = interceptorNavegacion;
+    if (window.cambiarSeccion) window.cambiarSeccion = interceptorNavegacion;
+    if (window.navegar) window.navegar = interceptorNavegacion;
+
+    // Procesamos la baja o el alta en tus favoritos de Supabase de forma normal
+    if (favoritosUsuario.includes(idBuscado)) {
+        usuarioActivo.favoritos = usuarioActivo.favoritos.filter(id => String(id).trim() !== idBuscado);
+        if (typeof eliminarDeFavoritos === 'function') {
+            eliminarDeFavoritos(productoId);
+        } else if (typeof quitarFavorito === 'function') {
+            quitarFavorito(productoId);
+        }
+    } else {
+        if (typeof agregarAFavoritos === 'function') agregarAFavoritos(productoId);
+        else if (typeof agregarFavorito === 'function') agregarFavorito(productoId);
+        else {
+            usuarioActivo.favoritos.push(productoId);
+            if (typeof actualizarFavoritosUI === 'function') actualizarFavoritosUI();
+        }
+    }
+
+    // Volvemos a dibujar tus productos en caliente para actualizar los corazones vectoriales
+    if (typeof renderizarProductos === 'function') renderizarProductos(); 
+    else if (typeof renderProducts === 'function') renderProducts();
+
+    // ⏳ APAGAMOS EL ESCUDO: Le damos 400ms para que pasen todos los procesos asíncronos de Supabase
+    setTimeout(() => {
+        window.bloquearSaltoFavoritos = false;
+        // Restauramos tu función de navegación original para que el menú de arriba siga funcionando perfecto
+        if (window.mostrarSeccion) window.mostrarSeccion = funcionNavegarOriginal;
+        if (window.cambiarSeccion) window.cambiarSeccion = funcionNavegarOriginal;
+        if (window.navegar) window.navegar = funcionNavegarOriginal;
+    }, 400);
+}
+
+
 
 
 function filtrarCategoria(cat) {
@@ -173,6 +256,8 @@ function filtrarCategoria(cat) {
     if (t) t.textContent = cat === 'Todos' ? 'Artículos en Exhibición' : `Catálogo: ${cat}`;
     mostrarSeccion('tienda');
     renderizarProductos();
+        // Cierra el menú lateral automáticamente al hacer clic en una categoría
+document.querySelector('.nav-menu').classList.remove('active');
 }
 
 function filtrarSubcategoria(cat, subcat) {
@@ -181,6 +266,8 @@ function filtrarSubcategoria(cat, subcat) {
     if (t) t.textContent = `${cat} ‣ ${subcat}`;
     mostrarSeccion('tienda');
     renderizarProductos();
+    // Cierra el menú lateral automáticamente al hacer clic en una categoría
+document.querySelector('.nav-menu').classList.remove('active');
 }
 
 function mostrarSeccion(seccion) {
@@ -191,13 +278,47 @@ function mostrarSeccion(seccion) {
     document.getElementById('view-carrito').classList.toggle('hidden', seccion !== 'carrito');
     document.getElementById('view-favoritos').classList.toggle('hidden', seccion !== 'favoritos');
     document.getElementById('view-detalle').classList.toggle('hidden', seccion !== 'detalle');
-    
+    document.getElementById('sobre-nosotros-section').classList.toggle('hidden', seccion !== 'nosotros');
     // 🌟 NUEVO: Controlamos de forma limpia la pantalla de éxito al comprar
     document.getElementById('view-exito-compra').classList.toggle('hidden', seccion !== 'exito-compra');
-    
-    if (seccion === 'carrito') actualizarCarritoUI();
+
+// 🎯 EL LUGAR CORRECTO: Llamamos al escudo inmediatamente si el usuario entró al carrito
+if (seccion === 'carrito') {
+ 
+    actualizarCarritoUI();
+        document.body.classList.remove('light-mode');
+} else {
+    // Si va a otra sección, revisamos el localStorage para devolverle el modo claro si correspondía
+    const modoGuardado = localStorage.getItem("zen_theme");
+    if (modoGuardado === "light" || modoGuardado === null) {
+        document.body.classList.add('light-mode');
+    }
+}
 }
 
+// ==========================================================
+// 🛡️ ESCUDO NATIVO: ANULADOR DE MODO CLARO DENTRO DEL CARRITO
+// ==========================================================
+function forzarCarritoSiempreOscuro() {
+    const carritoSeccion = document.getElementById('view-carrito');
+    if (!carritoSeccion) return;
+
+    // 1. Le quitamos la clase light-mode a la sección completa para que use tu CSS oscuro original
+    carritoSeccion.classList.remove('light-mode');
+    
+    // 2. Le prohibimos la entrada al modo claro a CUALQUIER elemento interno o tarjeta inyectada
+    const todosLosSubelementos = carritoSeccion.querySelectorAll('*');
+    todosLosSubelementos.forEach(elemento => {
+        elemento.classList.remove('light-mode');
+    });
+
+    // 3. Forzamos los colores base de tu búnker nocturno por código directo
+    carritoSeccion.style.setProperty('background', '#0b0e14', 'important');
+    carritoSeccion.style.setProperty('background-color', '#0b0e14', 'important');
+    carritoSeccion.style.setProperty('color', '#ffffff', 'important');
+
+    console.log("🔒 Escudo Zen: Se anuló el modo claro dentro del carrito con éxito.");
+}
 
 function cambiarSlide(dir) {
     const carousel = document.getElementById('carousel');
@@ -600,33 +721,34 @@ function actualizarCarritoUI() {
         return;
     }
 
-    // Recorremos el carrito inyectando la nueva estructura profesional y limpia
+    // Recorremos el carrito inyectando la nueva estructura profesional, limpia y elástica
     carrito.forEach((item, index) => {
         total += item.precio;
         container.innerHTML += `
-            <div class="cart-item">
+            <div class="cart-custom-item-row">
                 <!-- 1. Foto del Artículo -->
                 <div class="cart-item-media">
                     <img src="${item.imagen}" alt="${item.titulo}">
                 </div>
                 
-                <!-- 2. Información del Artículo -->
+                <!-- 2. Información del Artículo (Arreglado el montado de textos) -->
                 <div class="cart-item-details">
-                    <h4 class="cart-item-title">${item.titulo}</h4>
-                    <p class="cart-item-price">$${item.precio}</p>
+                    <h4 class="cart-item-main-title">${item.titulo}</h4>
+                    <p class="cart-item-main-price">$${Number(item.precio).toLocaleString('es-AR')}</p>
                 </div>
                 
-                <!-- 3. Botón de Eliminar (Tacho de Basura SVG) -->
-                <button type="button" class="btn-remove-item" onclick="quitarDelCarrito(${index})" title="Eliminar de la orden">
-                    <svg class="icon-trash" viewBox="0 0 24 24">
+                <!-- 3. Botón de Eliminar (Mantenemos tu tacho de Basura SVG nativo) -->
+                <button type="button" class="cart-item-del-btn" onclick="quitarDelCarrito(${index})" title="Eliminar de la orden">
+                    <svg class="icon-trash-vector" viewBox="0 0 24 24">
                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                     </svg>
                 </button>
             </div>`;
     });
 
-    document.getElementById('resumen-subtotal').textContent = `$${total}`;
-    document.getElementById('resumen-total').textContent = `$${total}`;
+    // Formateamos también los subtotales del resumen final con puntos divisores
+    document.getElementById('resumen-subtotal').textContent = `$${total.toLocaleString('es-AR')}`;
+    document.getElementById('resumen-total').textContent = `$${total.toLocaleString('es-AR')}`;
     
     // Guardamos de forma persistente para que no se borre al recargar en GitHub Pages
     localStorage.setItem('zen_carrito', JSON.stringify(carrito));
@@ -712,6 +834,9 @@ if (selector && (selector.value === 'envio' || selector.value === 'moto')) {
     if (document.getElementById('cart-subtotal')) document.getElementById('cart-subtotal').textContent = `$${subtotal}`;
     if (document.getElementById('cart-shipping-cost')) document.getElementById('cart-shipping-cost').textContent = costoEnvio === 0 ? "Gratis" : `$${costoEnvio}`;
     if (document.getElementById('cart-total-final')) document.getElementById('cart-total-final').textContent = `$${totalFinal}`;
+        // ==========================================================
+
+
 }
 async function finalizarOrdenWhatsApp() {
     if (!usuarioActivo) { alert("Iniciá sesión para continuar."); abrirModalAuth(); return; }
@@ -787,30 +912,41 @@ async function finalizarOrdenWhatsApp() {
     mensaje += `🚚 *Costo Envío:* ${envioTexto}\n`;
     mensaje += `💵 *TOTAL NETO:* *${totalFinalTexto}*\n`;
 
-    // 🌟 CONFIRMACIÓN NATIVA (Corregida la variable sin la "s" final)
-    const quiereComprar = confirm("¿Querés enviar la orden de compra definitiva por WhatsApp?");
+    // ==========================================================
+    // 🚀 INTERCEPTOR PREMIUM: CONFIRMACIÓN ESTÉTICA DE COMPRA
+    // ==========================================================
+    const modalConfirmar = document.getElementById('modal-confirmar-compra');
+    const btnAceptar = document.getElementById('btn-aceptar-pedido');
+    const btnCancelar = document.getElementById('btn-cancelar-pedido');
 
-    if (quiereComprar) {
-        // SI ELIGE SÍ: Abrimos WhatsApp en una pestaña nueva
-        const linkFinal = "https://wa.me/" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
-        window.open(linkFinal, '_blank');
-        
-        // Vaciamos el carrito local y en almacenamiento
-        carrito = []; 
-        localStorage.removeItem('zen_carrito'); 
-        
-        // Actualizamos los contadores e interfaces visuales
-        if (typeof actualizarCarritoUI === 'function') actualizarCarritoUI(); 
-        
-        const cartCount = document.getElementById('cart-count');
-        if (cartCount) cartCount.innerText = '0';
+    if (modalConfirmar && btnAceptar && btnCancelar) {
+        modalConfirmar.classList.remove('hidden');
 
-        // Activamos tu nueva pantalla premium de éxito
-        mostrarSeccion('exito-compra');
-    } else {
-        // SI ELIGE NO: El cartel se cierra y el usuario se queda en el carrito intacto
-        console.log("El coleccionista canceló el envío del pedido.");
+        btnCancelar.onclick = () => {
+            modalConfirmar.classList.add('hidden');
+        };
+
+        btnAceptar.onclick = () => {
+            modalConfirmar.classList.add('hidden');
+
+            if (typeof mostrarAlertaZen === 'function') {
+                mostrarAlertaZen("¡Procesando tu pedido! Abriendo WhatsApp...", "success");
+            }
+
+            const linkFinal = "https://wa.me" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
+            window.open(linkFinal, '_blank');
+            
+            carrito = []; 
+            localStorage.removeItem('zen_carrito'); 
+            if (typeof actualizarCarritoUI === 'function') actualizarCarritoUI(); 
+            
+            const cartCount = document.getElementById('cart-count');
+            if (cartCount) cartCount.innerText = '0';
+
+            mostrarSeccion('exito-compra');
+        };
     }
+
 }
 
 
@@ -996,6 +1132,8 @@ if (btnAuthSubmit) {
     });
 }
 function mostrarFavoritos() {
+        // Cierra el menú lateral automáticamente al hacer clic en una categoría
+document.querySelector('.nav-menu').classList.remove('active');
     mostrarSeccion('favoritos'); 
 
     const grid = document.getElementById('favoritos-grid');
@@ -1033,28 +1171,20 @@ function mostrarFavoritos() {
         }
 
                 // Dibuja tus tarjetas
-        productosFavoritos.forEach(item => {
+productosFavoritos.forEach(item => {
             grid.innerHTML += `
-                <div class="product-card fav-card">
-                    <!-- Contenedor de la Imagen con fondo profundo -->
-                    <div class="fav-card-media">
-                        <img src="${item.imagen}" alt="${item.titulo}" onerror="this.src='https://placeholder.com'">
-                    </div>
-                    
-                    <!-- Datos del Producto con tipografía cuidada -->
-                    <div class="fav-card-info">
-                        <h3 class="fav-card-title">${item.titulo}</h3>
-                        <p class="fav-card-price">$${item.precio}</p>
-                    </div>
-                    
-                    <!-- Barra de Acciones con botones premium -->
-                    <div class="fav-card-actions">
-                        <button class="btn-fav-add" onclick="agregarAlCarrito('${item.id}')">
-                            Agregar al carrito
-                        </button>
-                        <button class="btn-fav-remove-premium" onclick="eliminarDeFavoritos('${item.id}')" title="Quitar de favoritos">
-                            💔
-                        </button>
+                <div class="product-card" onclick="verDetalleProducto('${item.id}')">
+                    <img src="${item.imagen}" alt="${item.titulo}" onerror="this.src='placeholder.jpg'">
+                    <div class="product-info">
+                        <h3 class="product-title">${item.titulo}</h3>
+                        <p class="product-price">$${Number(item.precio).toLocaleString('es-AR')}</p>
+                        
+                        <!-- Contenedor inferior exclusivo para el botón de remover -->
+                        <div class="product-tags-footer" onclick="event.stopPropagation();">
+                            <button class="btn-fav-remove-premium" onclick="eliminarDeFavoritos('${item.id}')" title="Quitar de favoritos">
+                                💔 Eliminar
+                            </button>
+                        </div>
                     </div>
                 </div>`;
         });
@@ -1102,3 +1232,149 @@ async function eliminarDeFavoritos(id) {
     // 5. Refrescamos la pantalla de favoritos inmediatamente para que la tarjeta desaparezca de la vista
     mostrarFavoritos();
 }
+// ==========================================================
+// 🌓 CONTROLADOR DE TEMA CON AISLAMIENTO DE RAÍZ EN EL CARRITO
+document.addEventListener("DOMContentLoaded", () => {
+
+    const themeBtn = document.getElementById("theme-toggle-btn");
+    if (!themeBtn) return;
+
+    // Función auxiliar para las cajas de despacho (Excluyendo el carrito)
+    const ajustarCajaDespachoDinamica = (isLight) => {
+        const cajasNegras = document.querySelectorAll('[style*="background: rgba(11, 14, 20"], [style*="background-color: rgba(11, 14, 20"]');
+        cajasNegras.forEach(caja => {
+            // 🛡️ Si la caja está dentro del carrito, NO LA TOCAMOS. Se queda oscura de fábrica.
+            if (caja.closest('#view-carrito')) return;
+
+            if (isLight) {
+                caja.style.setProperty('background', '#f1f5f9', 'important');
+                caja.style.setProperty('background-color', '#f1f5f9', 'important');
+                caja.style.setProperty('color', '#1e293b', 'important');
+                caja.style.setProperty('border', '1px solid #cbd5e1', 'important');
+            } else {
+                caja.style.setProperty('background', 'rgba(11, 14, 20, 0.85)', 'important');
+                caja.style.setProperty('background-color', 'rgba(11, 14, 20, 0.85)', 'important');
+                caja.style.setProperty('color', '#ffffff', 'important');
+                caja.style.setProperty('border', 'none', 'important');
+            }
+        });
+    };
+
+    // 🎯 EL CANDADO DEFINITIVO: Le prohíbe al carrito el Modo Claro usando atributos nativos
+    const forzarCarritoSiempreOscuro = () => {
+        const carritoSeccion = document.getElementById('view-carrito');
+        if (carritoSeccion) {
+            carritoSeccion.classList.remove('light-mode'); // Rompe la herencia clara
+            carritoSeccion.setAttribute('data-theme', 'dark'); // Fuerza al navegador a leerlo como oscuro
+            carritoSeccion.style.setProperty('background', '#0b0e14', 'important'); // Le clava su fondo negro original
+            carritoSeccion.style.setProperty('background-color', '#0b0e14', 'important');
+            carritoSeccion.style.setProperty('color', '#ffffff', 'important');
+        }
+    };
+
+    const modoGuardado = localStorage.getItem("zen_theme");
+    
+    // 1. Configuración al cargar la tienda por primera vez
+    if (modoGuardado === "light" || modoGuardado === null) {
+        document.body.classList.add("light-mode");
+        setTimeout(() => {
+            ajustarCajaDespachoDinamica(true);
+            forzarCarritoSiempreOscuro(); // Escudo activo desde el primer segundo
+        }, 100);
+    } else {
+        document.body.classList.remove("light-mode");
+        setTimeout(() => forzarCarritoSiempreOscuro(), 100);
+    }
+
+    // 2. Control interactivo al hacer clic en el botón 🌓
+    themeBtn.addEventListener("click", () => {
+        const esModoClaro = document.body.classList.toggle("light-mode");
+        const carritoSeccion = document.getElementById('view-carrito');
+        
+        if (carritoSeccion) {
+            carritoSeccion.classList.remove('light-mode');
+ forzarCarritoSiempreOscuro(); // Nos aseguramos de mantenerlo oscuro
+        }
+      
+        if (esModoClaro) {
+
+            localStorage.setItem("zen_theme", "light");
+            ajustarCajaDespachoDinamica(true);
+            forzarCarritoSiempreOscuro(); // Bloqueamos el modo claro en caliente
+            console.log("☀️ Modo Claro Activado en la tienda");
+        } else {
+            localStorage.setItem("zen_theme", "dark");
+            ajustarCajaDespachoDinamica(false);
+            forzarCarritoSiempreOscuro(); // Nos aseguramos de mantenerlo oscuro
+            console.log("🌙 Modo Oscuro Activado");
+        }
+    
+        const carritoVisible = !document.getElementById('view-carrito').classList.contains('hidden');
+    if (carritoVisible) {
+        document.body.classList.remove('light-mode');
+    }
+    });
+
+    // 3. Parche de seguridad por si el carrito se vuelve a dibujar al agregar productos
+    const btnCarrito = document.querySelector('.cart-icon') || document.getElementById('user-status');
+    if (btnCarrito) {
+        btnCarrito.addEventListener('click', () => {
+            setTimeout(() => {
+                forzarCarritoSiempreOscuro();
+                const actualmenteClaro = document.body.classList.contains("light-mode");
+                // 🛠️ CORREGIDO AQUÍ: Agregamos la "l" que faltaba en la variable para eliminar el error
+                ajustarCajaDespachoDinamica(actualmenteClaro);
+            }, 150);
+        });
+    }
+});
+
+// Busca el botón en tu HTML y haz que navegue de forma nativa a tu nueva sección
+function mostrarInfo(){
+document.querySelector('.nav-menu').classList.remove('active');
+        
+        // Llamas a tu función del sistema (usa el nombre exacto de tu función, ej: cambiarSeccion o mostrarVista)
+    mostrarSeccion('nosotros'); 
+
+
+}// ==========================================================
+// 🔔 SISTEMA DE NOTIFICACIONES PREMIUM (TOASTS) - ZEN & ZEN
+// ==========================================================
+function mostrarAlertaZen(mensaje, tipo = 'info') {
+    // 1. Buscamos o creamos el contenedor maestro en la pantalla
+    let contenedor = document.getElementById('zen-toast-container');
+    if (!contenedor) {
+        contenedor = document.createElement('div');
+        contenedor.id = 'zen-toast-container';
+        document.body.appendChild(contenedor);
+    }
+
+    // 2. Creamos la tarjeta de la notificación
+    const toast = document.createElement('div');
+    toast.className = `zen-toast-card zen-toast-${tipo}`;
+    
+    // Elegimos el emoji según el tipo de mensaje
+    let emoji = '🔔';
+    if (tipo === 'success' || mensaje.toLowerCase().includes('guardado') || mensaje.toLowerCase().includes('éxito')) emoji = '❤️';
+    if (tipo === 'error' || mensaje.toLowerCase().includes('error') || mensaje.toLowerCase().includes('iniciá')) emoji = '⚠️';
+
+    toast.innerHTML = `
+        <span class="zen-toast-icon">${emoji}</span>
+        <p class="zen-toast-text">${mensaje}</p>
+    `;
+
+    // 3. Lo metemos en la pantalla
+    contenedor.appendChild(toast);
+
+    // 4. Animación de salida y borrado automático a los 3.5 segundos
+    setTimeout(() => {
+        toast.classList.add('zen-toast-fadeout');
+        setTimeout(() => toast.remove(), 400);
+    }, 3500);
+}
+
+// 💥 TRUCO MAESTRO: Sobreescribimos el alert viejo del navegador
+// Esto hace que todo tu código viejo pase a verse hermoso al instante sin cambiar nada más
+window.alert = function(mensaje) {
+    mostrarAlertaZen(mensaje, 'info');
+};
