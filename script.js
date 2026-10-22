@@ -110,7 +110,6 @@ async function traerProductosDesdeNube() {
     }
     renderizarProductos();
 }
-
 function renderizarProductos() {
     const grid = document.getElementById('products-grid');
     if (!grid) return;
@@ -132,6 +131,14 @@ function renderizarProductos() {
     }
 
     filtrados.forEach(p => {
+        // ==========================================================
+        // CORRECCIÓN DINÁMICA: Extraemos solo la primera foto para el catálogo
+        // ==========================================================
+        let imagenPortada = p.imagen;
+        if (p.imagen && p.imagen.includes(',')) {
+            imagenPortada = p.imagen.split(',')[0]; // Tomamos la primera URL limpia
+        }
+
         const card = document.createElement('div');
         card.classList.add('product-card');
         card.onclick = () => abrirDetalleProducto(p.id);
@@ -146,13 +153,13 @@ function renderizarProductos() {
             esFavorito = usuarioActivo.favoritos.map(id => String(id).trim()).includes(String(p.id).trim());
         }
 
-        // 🎯 ADAPTADO: Usamos tu clase '.activo' si el producto ya está en favoritos
+        // Usamos tu clase '.activo' si el producto ya está en favoritos
         const claseActivo = esFavorito ? 'activo' : '';
 
-        // INYECTAMOS TU NUEVA ESTRUCTURA PREMIUM CON TUS CLASES NATIVAS
+        // INYECTAMOS TU ESTRUCTURA PREMIUM UTILIZANDO 'imagenPortada'
         card.innerHTML += `
             <div class="product-card-media-wrapper">
-                <img src="${p.imagen}" loading="lazy">
+                <img src="${imagenPortada}" loading="lazy">
                 
                 <!-- Botón de Favorito con tu estilo .btn-favorito -->
                 <button class="btn-favorito ${claseActivo}" 
@@ -287,6 +294,7 @@ if (seccion === 'carrito') {
  
     actualizarCarritoUI();
         document.body.classList.remove('light-mode');
+    
 } else {
     // Si va a otra sección, revisamos el localStorage para devolverle el modo claro si correspondía
     const modoGuardado = localStorage.getItem("zen_theme");
@@ -529,6 +537,8 @@ function logout() {
 }
 // ==========================================
 // 4. DETALLES, CARRITO Y PASARELA WHATSAPP
+// ==========================================
+// 4. DETALLES, CARRITO Y PASARELA WHATSAPP
 function abrirDetalleProducto(id) {
     if (document.getElementById('view-favoritos')) {
         document.getElementById('view-favoritos').classList.add('hidden');
@@ -536,8 +546,18 @@ function abrirDetalleProducto(id) {
     const p = productos.find(item => item.id === id);
     if (!p) return;
 
+    // SEPARACIÓN DINÁMICA: Rompemos el texto de las imágenes por sus comas
+    let fotosDisponibles = [];
+    if (p.imagen) {
+        fotosDisponibles = p.imagen.includes(',') ? p.imagen.split(',') : [p.imagen];
+    }
+    
+    // Respaldo por si abrís un artículo viejo de tu base de datos anterior
+    if (p.imagen_2 && !fotosDisponibles.includes(p.imagen_2)) fotosDisponibles.push(p.imagen_2);
+    if (p.imagen_3 && !fotosDisponibles.includes(p.imagen_3)) fotosDisponibles.push(p.imagen_3);
+
     // 1. Inyectar la información en los elementos correspondientes
-    document.getElementById('detail-img').src = p.imagen;
+    document.getElementById('detail-img').src = fotosDisponibles[0] || ""; // La primera siempre es la principal
     document.getElementById('detail-title').textContent = p.titulo;
     document.getElementById('detail-category').textContent = p.subcategoria;
     document.getElementById('detail-condition').textContent = p.condicion;
@@ -551,27 +571,25 @@ function abrirDetalleProducto(id) {
         stockSpan.style.color = parseInt(p.stock) === 0 ? "#ff9900" : "#00f0ff";
     }
 
-    // 2. Renderizar la galería de miniaturas interactiva
+    // 2. Renderizar la galería de miniaturas interactiva (INFINITAS FOTOS)
     const thumbContainer = document.getElementById('detail-thumbnails');
     if (thumbContainer) {
         thumbContainer.innerHTML = '';
-        const fotosDisponibles = [p.imagen];
-        if (p.imagen_2) fotosDisponibles.push(p.imagen_2);
-        if (p.imagen_3) fotosDisponibles.push(p.imagen_3);
 
         if (fotosDisponibles.length > 1) {
             fotosDisponibles.forEach((fotoUrl) => {
-                const imgThumb = document.createElement('img');
-                imgThumb.src = fotoUrl;
-                imgThumb.classList.add('thumb-item');
-                imgThumb.onclick = () => {
-                    document.getElementById('detail-img').src = fotoUrl;
-                };
-                thumbContainer.appendChild(imgThumb);
+                if (fotoUrl.trim() !== "") {
+                    const imgThumb = document.createElement('img');
+                    imgThumb.src = fotoUrl.trim();
+                    imgThumb.classList.add('thumb-item');
+                    imgThumb.onclick = () => {
+                        document.getElementById('detail-img').src = fotoUrl.trim();
+                    };
+                    thumbContainer.appendChild(imgThumb);
+                }
             });
         }
     }
-
     // ==========================================================
     // CONTROL DE FAVORITOS ENLAZADO POR EMAIL A SUPABASE
     // ==========================================================
@@ -627,7 +645,7 @@ function abrirDetalleProducto(id) {
             } catch (error) {
                 btnFav.classList.toggle('activo');
                 console.error("Error al guardar en Supabase:", error.message);
-                alert("Hubo un problema al guardar tus favoritos en la base de datos.");
+                alert("Hubo un problema al guardar tus favoritos in la base de datos.");
             }
         };
     }
@@ -646,14 +664,19 @@ function abrirDetalleProducto(id) {
             btnCompra.disabled = false; 
             btnCompra.style.background = "var(--color-violeta)";
             
-            // Le asignamos dinámicamente la función de compra para este producto
             btnCompra.onclick = () => agregarAlCarrito(p.id); 
         }
     }
 
+    // ==========================================================
+    // NUEVA INYECCIÓN: RENDERIZAR VIDEO DE FORMA SEGURA
+    // ==========================================================
+    renderizarVideoProducto(p); // Le pasamos 'p' que contiene toda la info de Supabase
+
     // 4. CAMBIO CLAVE: Cambiar de vista por completo como lo hace el carrito
     mostrarSeccion('detalle');
 }
+
 
 
 // Ya no necesitas abrir modales flotantes, esta función puede quedar vacía o borrarse
@@ -716,7 +739,7 @@ function actualizarCarritoUI() {
 
     if (carrito.length === 0) {
         container.innerHTML = '<h3 style="text-align:center; padding:20px; color:#aaa;">Tu carrito de Zen & Zen está vacío</h3>';
-        document.getElementById('resumen-subtotal').textContent = `$0`;
+     
         document.getElementById('resumen-total').textContent = `$0`;
         return;
     }
@@ -747,7 +770,7 @@ function actualizarCarritoUI() {
     });
 
     // Formateamos también los subtotales del resumen final con puntos divisores
-    document.getElementById('resumen-subtotal').textContent = `$${total.toLocaleString('es-AR')}`;
+ 
     document.getElementById('resumen-total').textContent = `$${total.toLocaleString('es-AR')}`;
     
     // Guardamos de forma persistente para que no se borre al recargar en GitHub Pages
@@ -933,7 +956,7 @@ async function finalizarOrdenWhatsApp() {
                 mostrarAlertaZen("¡Procesando tu pedido! Abriendo WhatsApp...", "success");
             }
 
-            const linkFinal = "https://wa.me/" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
+            const linkFinal = "https://wa.me" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
             window.open(linkFinal, '_blank');
             
             carrito = []; 
@@ -948,26 +971,84 @@ async function finalizarOrdenWhatsApp() {
     }
 
 }
+function renderizarVideoProducto(producto) {
+    const videoContainer = document.getElementById('detail-video-container');
+    const videoContent = document.getElementById('detail-video-content');
+    
+    // Si no existen los elementos en el HTML, frenamos para evitar errores en la consola
+    if (!videoContent || !videoContainer) return;
+    
+    // Limpiamos cualquier reproductor o botón anterior
+    videoContent.innerHTML = "";
+
+    // Si el producto no tiene un video cargado en Supabase, ocultamos toda la sección
+    if (!producto || !producto.video_url || producto.video_url.trim() === "") {
+        videoContainer.style.setProperty("display", "none", "important");
+        return;
+    }
+
+    const videoUrl = producto.video_url.trim();
+
+    // FORZAMOS A MOSTRAR EL CONTENEDOR EN LA FICHA DE DETALLES
+    videoContainer.style.setProperty("display", "block", "important");
+
+    // Inyectamos el reproductor de video nativo de HTML5 usando concatenación limpia
+    videoContent.innerHTML = 
+        '<div class="video-native-wrapper" style="width: 100%; border-radius: 8px; overflow: hidden; background: #000; margin-top: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">' +
+            '<video controls style="width: 100%; max-height: 450px; display: block;" playsinline>' +
+                '<source src="' + videoUrl + '" type="video/mp4">' +
+                '<source src="' + videoUrl + '" type="video/webm">' +
+                '<source src="' + videoUrl + '" type="video/ogg">' +
+                'Tu navegador no soporta la reproducción de videos nativos.' +
+            '</video>' +
+        '</div>';
+}
+
 
 
 // ==========================================
 // 5. PANEL DE ADMINISTRADOR
 // ==========================================
 // FUNCIÓN AUXILIAR: Sube un archivo al storage y devuelve su URL pública (o vacío si no hay archivo)
-async function subirFotoAStorage(inputId) {
+async function subirFotosAStorage(inputId) {
     const input = document.getElementById(inputId);
-    if (!input || !input.files || input.files.length === 0) return ""; // Si no hay foto seleccionada, devuelve texto vacío
+    if (!input || !input.files || input.files.length === 0) return []; // Devuelve un array vacío si no hay fotos
 
-    const archivo = input.files[0];
+    const urlsPromesas = Array.from(input.files).map(async (archivo) => {
+        const extension = archivo.name.split('.').pop();
+        const nombreArchivo = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${extension}`;
+
+        const { data, error } = await window.supabase
+            .storage
+            .from('imagenes-productos')
+            .upload(nombreArchivo, archivo);
+
+        if (error) throw new Error(`Error al subir imagen (${archivo.name}): ${error.message}`);
+
+        const { data: urlData } = window.supabase
+            .storage
+            .from('imagenes-productos')
+            .getPublicUrl(nombreArchivo);
+
+        return urlData.publicUrl;
+    });
+
+    // Espera a que todas las imágenes se suban en paralelo
+    return Promise.all(urlsPromesas);
+}
+// FUNCIÓN AUXILIAR UNIFICADA: Sube CUALQUIER archivo (imagen o video) al Storage de Supabase
+async function subirArchivoAStorage(archivo) {
+    if (!archivo) return "";
+
     const extension = archivo.name.split('.').pop();
     const nombreArchivo = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${extension}`;
 
     const { data, error } = await window.supabase
         .storage
-        .from('imagenes-productos')
+        .from('imagenes-productos') 
         .upload(nombreArchivo, archivo);
 
-    if (error) throw new Error(`Error al subir ${inputId}: ${error.message}`);
+    if (error) throw new Error(`Error al subir archivo (${archivo.name}): ${error.message}`);
 
     const { data: urlData } = window.supabase
         .storage
@@ -976,28 +1057,45 @@ async function subirFotoAStorage(inputId) {
 
     return urlData.publicUrl;
 }
-
+// FUNCIÓN PRINCIPAL DEL ADMINISTRADOR (COMPLETAMENTE DINÁMICA)
 async function agregarProductoAdmin(e) {
     e.preventDefault();
     if (!usuarioActivo || usuarioActivo.rol !== 'admin') {
         alert("Acceso denegado.");
         return;
     }
-    if (!window.supabase || typeof window.supabase.from !== 'function') { alert("Base de datos desconectada."); return; }
+    if (!window.supabase || typeof window.supabase.from !== 'function') { 
+        alert("Base de datos desconectada."); 
+        return; 
+    }
 
     try {
-        // 1. Subir las 3 fotos en paralelo al Storage usando la función auxiliar
-        const urlFoto1 = await subirFotoAStorage('prod-img');
-        const urlFoto2 = await subirFotoAStorage('prod-img2');
-        const urlFoto3 = await subirFotoAStorage('prod-img3');
+        // 1. Procesar y subir todas las imágenes seleccionadas
+        const inputImagenes = document.getElementById('prod-images');
+        let urlsSubidas = [];
+        
+        if (inputImagenes && inputImagenes.files && inputImagenes.files.length > 0) {
+            const promesasFotos = Array.from(inputImagenes.files).map(foto => subirArchivoAStorage(foto));
+            urlsSubidas = await Promise.all(promesasFotos);
+        }
 
-        // CORRECCIÓN: Eliminamos las líneas sobrantes de 'input.files[0]' que causaban el ReferenceError
-        // ya que tu función 'subirFotoAStorage' se encarga de subir las imágenes directamente.
+        if (urlsSubidas.length === 0) { 
+            alert("Por favor, selecciona al menos la foto principal."); 
+            return; 
+        }
 
-        // La primera foto siempre es obligatoria para la miniatura
-        if (!urlFoto1) { alert("Por favor, selecciona al menos la foto principal."); return; }
+        // UNIFICACIÓN DINÁMICA: Juntamos todas las URLs en un solo texto separado por comas
+        const cadenaImagenesDinamica = urlsSubidas.join(',');
 
-        // 2. Armar el objeto del nuevo producto con las URLs generadas automáticamente
+        // 2. Procesar y subir el archivo de video
+        const inputVideo = document.getElementById('prod-video');
+        let urlVideoPublica = null;
+
+        if (inputVideo && inputVideo.files && inputVideo.files.length > 0) {
+            urlVideoPublica = await subirArchivoAStorage(inputVideo.files[0]);
+        }
+
+        // 3. Armar el objeto final para la base de datos
         const nuevo = {
             titulo: document.getElementById('prod-title').value,
             precio: parseFloat(document.getElementById('prod-price').value),
@@ -1006,21 +1104,24 @@ async function agregarProductoAdmin(e) {
             escala: document.getElementById('prod-escala').value,
             condicion: document.getElementById('prod-condition').value,
             stock: 1, 
-            imagen: urlFoto1,      // Guardamos la foto principal
-            imagen_2: urlFoto2,    // Guardamos la segunda
-            imagen_3: urlFoto3,    // Guardamos la tercera
+            
+            // GUARDADO INTELIGENTE: Guardamos el bloque completo en tu columna de siempre
+            imagen: cadenaImagenesDinamica, 
+            
+            imagen_2: null, // Ya no las necesitamos, las dejamos en null
+            imagen_3: null, 
+            video_url: urlVideoPublica || null,  
             descripcion: document.getElementById('prod-desc').value
         };
 
-        // 3. Insertar el artículo completo en la tabla 'productos'
+        // 4. Insertar el artículo completo en la tabla 'productos'
         const { error: dbError } = await window.supabase.from('productos').insert([nuevo]);
         if (dbError) throw dbError;
 
-        // 4. Refrescar la tienda y resetear el formulario
         await traerProductosDesdeNube();
         document.getElementById('product-form').reset();
         mostrarSeccion('inicio');
-        alert("¡Rareza publicada con todas sus imágenes con éxito! 🎉");
+        alert("¡Rareza publicada con éxito con su galería dinámica y video! 🎉");
 
     } catch (err) { 
         alert("Supabase rechazó la carga: " + err.message); 
@@ -1251,6 +1352,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 caja.style.setProperty('background-color', '#f1f5f9', 'important');
                 caja.style.setProperty('color', '#1e293b', 'important');
                 caja.style.setProperty('border', '1px solid #cbd5e1', 'important');
+                document.getElementById('view-carrito').style = "background-color: red !important;"
             } else {
                 caja.style.setProperty('background', 'rgba(11, 14, 20, 0.85)', 'important');
                 caja.style.setProperty('background-color', 'rgba(11, 14, 20, 0.85)', 'important');
@@ -1269,6 +1371,7 @@ document.addEventListener("DOMContentLoaded", () => {
             carritoSeccion.style.setProperty('background', '#0b0e14', 'important'); // Le clava su fondo negro original
             carritoSeccion.style.setProperty('background-color', '#0b0e14', 'important');
             carritoSeccion.style.setProperty('color', '#ffffff', 'important');
+             carritoSeccion.style = "background-color: white;"
         }
     };
 
@@ -1291,22 +1394,29 @@ document.addEventListener("DOMContentLoaded", () => {
         const esModoClaro = document.body.classList.toggle("light-mode");
         const carritoSeccion = document.getElementById('view-carrito');
         
-        if (carritoSeccion) {
-            carritoSeccion.classList.remove('light-mode');
- forzarCarritoSiempreOscuro(); // Nos aseguramos de mantenerlo oscuro
-        }
-      
-        if (esModoClaro) {
 
+       
+        if (carritoSeccion) {
+            
+
+            forzarCarritoSiempreOscuro(); // Nos aseguramos de mantenerlo oscuro
+        
+        }
+        if (esModoClaro) {
             localStorage.setItem("zen_theme", "light");
             ajustarCajaDespachoDinamica(true);
             forzarCarritoSiempreOscuro(); // Bloqueamos el modo claro en caliente
             console.log("☀️ Modo Claro Activado en la tienda");
+            
         } else {
             localStorage.setItem("zen_theme", "dark");
+            
             ajustarCajaDespachoDinamica(false);
             forzarCarritoSiempreOscuro(); // Nos aseguramos de mantenerlo oscuro
             console.log("🌙 Modo Oscuro Activado");
+            
+
+           
         }
     
         const carritoVisible = !document.getElementById('view-carrito').classList.contains('hidden');

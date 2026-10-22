@@ -2653,3 +2653,30 @@ body.light-mode #seccion-carrito-items button:hover {
     fill: #64748b !important;
 }
 
+/* ==========================================================
+   ESTILOS DE MINIATURAS INTERACTIVAS (GALERÍA FLUIDA)
+   ========================================================== */
+.detail-thumbnails {
+    display: flex !important;
+    gap: 10px !important;
+    margin-top: 15px !important;
+    flex-wrap: wrap !important; /* Permite que las fotos extras bajen de fila prolijamente si no entran */
+    justify-content: flex-start !important;
+}
+
+.thumb-item {
+    width: 75px !important;
+    height: 75px !important;
+    object-fit: cover !important; /* Evita que la imagen se estire o se vea aplastada */
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.2s ease-in-out !important;
+    background-color: #111 !important;
+}
+
+/* Efecto visual cuando el usuario pasa el mouse por encima de la miniatura */
+.thumb-item:hover {
+    border-color: var(--color-violeta, #5c24b3) !important;
+    transform: scale(1.05);
+}
