@@ -13,7 +13,7 @@
 
     <!-- Autor de la tienda -->
     <meta name="author" content="Zen & Zen">
-    <title>Zen & Zen | Coleccionables Premium</title>
+    <title>Zen & Zen | Coleccionismo</title>
     <link rel="icon" type="image/png" href="icon.png">
      
 <!-- En el <head> para el CSS -->
@@ -71,9 +71,9 @@
                 <div class="profile-menu-wrapper">
                     <!-- ☰ El botón hamburguesa ahora vive acá de forma nativa -->
                     <button class="menu-hamburger" onclick="document.querySelector('.nav-menu').classList.toggle('active')">
-                        ☰
+                        ☰ 
                     </button>
-                    <span id="user-status" onclick="abrirModalAuth()">Iniciar Sesión</span>
+                    <!--  <span id="user-status" onclick="abrirModalAuth()">Iniciar Sesión</span>-->
                 </div>
                 
                 <!-- Bloque derecho de la fila inferior: El Carrito -->
@@ -88,35 +88,41 @@
             </div>
 
         </div>
-        
         <!-- PANEL DESPLEGABLE LATERAL (Limpio, sin botones sueltos) -->
-        <nav class="main-nav">
+        <nav class="main-nav" id="main-nav">
             <ul class="nav-menu">
-                <li><a href="#" onclick="filtrarCategoria('Todos')">Ver Todo</a></li>
+                <!-- 1. VER TODO -->
+                <li><a href="#" onclick="event.preventDefault(); filtrarCategoria('Todos')">Ver Todo</a></li>
+               
+                <!-- 2. FIGURAS Y SUBMENÚ (Despliega y filtra de forma inteligente) -->
                 <li class="dropdown">
-                    <a href="#" class="dropbtn" onclick="filtrarCategoria('Hot Wheels')">Hot Wheels ▾</a>
+                    <a href="#" class="dropbtn" onclick="event.preventDefault(); filtrarCategoria('Figuras')">Figuras ▾</a>
                     <ul class="dropdown-content">
-                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Mainline')">Mainline</a></li>
-                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Treasure Hunt')">Treasure Hunt (T-Hunt)</a></li>
-                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Premium')">Premium / Pop Culture</a></li>
-                        <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Red Line Club')">RLC (Red Line Club)</a></li>
+                        <li><a href="#" onclick="event.preventDefault(); filtrarSubcategoria('Figuras', 'Dragon Ball')">Dragon Ball</a></li>
                     </ul>
                 </li>
-                <li class="dropdown">
-                    <a href="#" class="dropbtn" onclick="filtrarCategoria('Figuras')">Figuras ▾</a>
-                    <ul class="dropdown-content">
-                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Marvel')">Marvel </a></li>
-                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Star Wars')">Star Wars Black Series</a></li>
-                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Dragon Ball Z')">Dragon Ball</a></li>
-                        <li><a href="#" onclick="filtrarSubcategoria('Figuras', 'Funko Pop')">Funko Pop</a></li>
-                    </ul>
-                </li>
-                <li><a href="#" onclick="mostrarFavoritos()">Mis Favoritos </a></li>
-                <!-- Enlace deslizable a la sección de información -->
-                <li><a href="#sobre-nosotros-section" class="scroll-link" onclick="mostrarInfo()">INFORMACION</a></li>
-
+                               <!--  <li class="dropdown">
+                            <a href="#" class="dropbtn" onclick="filtrarCategoria('Hot Wheels')">Hot Wheels ▾</a>
+                            <ul class="dropdown-content">
+                                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Mainline')">Mainline</a></li>
+                                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Treasure Hunt')">Treasure Hunt (T-Hunt)</a></li>
+                                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Premium')">Premium / Pop Culture</a></li>
+                                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Red Line Club')">RLC (Red Line Club)</a></li>
+                            </ul>
+                        </li> -->
+                <!-- 3. MIS FAVORITOS -->
+                <li><a href="#" onclick="event.preventDefault(); mostrarFavoritos()">Mis Favoritos </a></li>
+                
+                <!-- 4. INFORMACIÓN -->
+                <li><a href="#" class="scroll-link" onclick="event.preventDefault(); mostrarInfo()">INFORMACION</a></li>
+                
+                <!-- 5. MI PERFIL -->
+                <li><a href="#" onclick="event.preventDefault(); abrirModalAuth()">MI PERFIL</a></li>
+                <li><a href="#" onclick="event.preventDefault(); mostrarMisPedidos()">Mis Pedidos</a></li>
             </ul>
         </nav>
+
+
     </header>
 
 
@@ -147,13 +153,23 @@
             <input type="text" id="search-input" placeholder="Buscar en Zen & Zen... (Ej: Dragon ball, Iron Man, )">
         </section>
 
-        <!-- FILTROS RÁPIDOS -->
+        <!-- FILTROS RÁPIDOS 
         <section class="categories-container" style="padding: 0; margin: 20px 0;">
             <button class="cat-btn active" onclick="filtrarCategoria('Todos')">Todos</button>
             <button class="cat-btn" onclick="filtrarCategoria('Hot Wheels')">Hot Wheels</button>
             <button class="cat-btn" onclick="filtrarCategoria('Figuras')">Figuras</button>
 
-        </section>
+        </section>-->
+                <!-- Menú Desplegable Clásico: Ordenar por -->
+        <div class="filter-sort-group" style="margin: 15px 0; display: flex; gap: 10px; align-items: center;">
+            <label for="sort-select" style="color: #aaa; font-size: 0.9rem;">Ordenar por:</label>
+            <select id="sort-select" onchange="cambiarOrdenamiento()" style="background: #111; color: #fff; border: 1px solid #333; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                <option value="predeterminado">Destacados </option>
+                <option value="precio-menor">Precio: Menor a Mayor</option>
+                <option value="precio-mayor">Precio: Mayor a Menor</option>
+                <option value="alfabetico-az">Nombre: A - Z</option>
+            </select>
+        </div>
                 <!-- Poné esto adentro de #view-tienda, justo ARRIBA de #products-grid -->
         <div id="tienda-cargando" class="loading-box">
             <div class="spinner"></div>
@@ -198,7 +214,7 @@
         </section>
         </main>
     <!-- VISTA 4: PÁGINA DE ÉXITO AL COMPRAR -->
-    <main id="view-exito-compra" class="main-container hidden">
+ <main id="view-exito-compra" class="main-container hidden">
         <section class="form-section" style="text-align: center; padding: 40px 20px; max-width: 500px; margin: 40px auto;">
             <div style="font-size: 60px; margin-bottom: 20px; animation: popIcon 0.5s ease;">🎉</div>
             
@@ -209,15 +225,21 @@
             </p>
 
             <!-- Un detalle temático para tus clientes -->
-            <div style="background: rgba(0, 206, 209, 0.05); border: 1px dashed var(--color-cian); padding: 15px; border-radius: 8px; margin-bottom: 30px; font-size: 14px; color: #aaa;">
-                
-            </div>
+        <!-- 🎯 REEMPLAZO: Botón de Mis Pedidos Premium con contraste automático -->
+        <button onclick="event.preventDefault(); mostrarMisPedidos()" 
+                style="width: 100%; padding: 12px 20px; background-color: var(--color-cian, #00f0ff) !important; color: #0f111a !important; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-bottom: 25px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 240, 255, 0.2); transition: all 0.2s ease;"
+                onmouseover="this.style.opacity='0.9'; this.style.transform='scale(1.01)'" 
+                onmouseout="this.style.opacity='1'; this.style.transform='scale(1)'">
+            📦 Ver Mis Pedidos
+        </button>
+ 
 
             <button class="btn-submit" style="margin: 0; width: 100%;" onclick="mostrarSeccion('tienda')">
                 Volver a la Tienda 
             </button>
         </section>
     </main>
+        <!-- CARTEL FLOTANTE DE CONFIRMACIÓN WHATSAPP -->
         <!-- CARTEL FLOTANTE DE CONFIRMACIÓN WHATSAPP -->
     <div id="modal-confirmar-pedido" class="modal-overlay hidden">
         <div class="modal-content">
@@ -287,11 +309,11 @@
                 <small style="color: #666; display: block; margin-top: 4px;">Mantené presionado Ctrl para elegir más de una foto.</small>
             </div>
 
-<div class="form-group">
-    <label for="prod-video">Archivo de Video (Review en MP4/WebM):</label>
-    <input type="file" id="prod-video" accept="video/mp4,video/webm">
-    <small style="color: #888; display: block; margin-top: 4px;">Selecciona un archivo de video de tu computadora o celular para guardarlo en el catálogo.</small>
-</div>
+            <div class="form-group">
+                <label for="prod-video">Archivo de Video (Review en MP4/WebM):</label>
+                <input type="file" id="prod-video" accept="video/mp4,video/webm">
+                <small style="color: #888; display: block; margin-top: 4px;">Selecciona un archivo de video de tu computadora o celular para guardarlo en el catálogo.</small>
+            </div>
             <div class="form-group">
                 <label>Detalles / Historia / Certificación:</label>
                 <textarea id="prod-desc" rows="4" placeholder="Describe el estado de la caja, accesorios o procedencia..." required></textarea>
@@ -302,7 +324,7 @@
 </main>
 
     <!-- VISTA PERFIL DE USUARIO (NUEVA SECCIÓN) -->
-    <main id="view-perfil" class="main-container hidden">
+<main id="view-perfil" class="main-container hidden">
         <section class="form-section">
             <h2>Mi Perfil de Coleccionista</h2>
             <div style="margin-bottom: 25px; padding: 15px; background: #0b0e14; border-radius: 6px; border: 1px solid var(--color-violeta);">
@@ -352,8 +374,8 @@
 
             </form>
         </section>
-    </main>
-<!-- ==========================================================
+</main>
+<!-- ==========SOBRE NOSOTROS================================================
      👥 SECCIÓN: SOBRE NOSOTROS (ZEN & ZEN)
      ========================================================== -->
 <section id="sobre-nosotros-section" class="about-section hidden">
@@ -403,7 +425,7 @@
 
 
     <!-- VISTA 4: LA SECCIÓN COMPLETA DE CARRITO (NUEVA PÁGINA) -->
-    <main id="view-carrito" class="main-container hidden">
+<main id="view-carrito" class="main-container hidden">
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; flex-wrap: wrap;" id="carrito-layout-wrapper">
             
             <!-- LISTADO DE PIEZAS RESERVADAS -->
@@ -488,7 +510,7 @@
             </section>
 
         </div>
-    </main>
+</main>
 
     <!-- PANEL LATERAL DE CARRITO DESPLEGABLE -->
     <div id="sidebar-cart" class="cart-sidebar">
@@ -503,13 +525,13 @@
         </div>
     </div>
 
-    <!-- MODAL DE AUTENTICACIÓN CORREGIDO -->
+    <!-- MODAL DE AUTENTICACIÓN'' -->
     <div id="modal-auth" class="modal">
         <div class="modal-content">
                 <!-- 🎯 BOTÓN CORRECCIÓN: Agregar la X de cierre en la esquina -->
-    <button class="btn-modal-close-premium" onclick="cerrarModalAuth()" title="Cerrar ventana">
-        &times;
-    </button>
+            <button class="btn-modal-close-premium" onclick="cerrarModalAuth()" title="Cerrar ventana">
+                &times;
+            </button>
          
             <div class="auth-tabs">
                 <!-- LE AGREGAMOS LOS ID CORRECTOS AQUÍ -->
@@ -521,11 +543,37 @@
                 <h3 id="auth-title">Iniciar sesion</h3><br>
                 <input type="email" id="auth-email" placeholder="Correo electrónico" required>
                 <input type="password" id="auth-pass" placeholder="Contraseña" required>
+                
+                <!-- 🎯 NUEVO: Enlace de recuperación posicionado de forma prolija -->
+                <div class="auth-helper-row" id="auth-forget-row" style="display: flex; justify-content: flex-end; margin-top: -5px; margin-bottom: 15px;"><br>
+                    <a href="#" onclick="event.preventDefault(); manejarRecuperarContrasena()" style="color: #888; font-size: 0.85rem; text-decoration: none;">
+                        ¿Olvidaste tu contraseña?
+                    </a><br><br>
+
+
+                </div>
+
                 <button type="submit" class="btn-submit" id="btn-auth-submit">Ingresar</button>
             </form>
         </div>
     </div>
-<!-- ==========================================================
+<!-- SECCIÓN DE MIS PEDIDOS INDIVIDUALES -->
+<div id="view-pedidos" class="main-container hidden" style="padding: 20px; max-width: 800px; margin: 0 auto;">
+    <h2 style="color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+        📦 Historial de Pedidos
+    </h2>
+    
+    <!-- Spinner o cartel de carga para cuando busca en la nube -->
+    <div id="pedidos-cargando" style="display: none; text-align: center; color: var(--color-oro); padding: 20px;">
+        Cargando tu historial...
+    </div>
+
+    <!-- Contenedor donde se van a dibujar los pedidos dinámicamente -->
+    <div id="contenedor-historial-pedidos" style="display: flex; flex-direction: column; gap: 15px;"></div>
+
+</div>
+
+<!-- ========COnFRIRMa COMPRA==================================================
      ❓ CARTEL PREMIUM DE CONFIRMACIÓN DE COMPRA (MODAL CORREGIDO)
      ========================================================== -->
 <div id="modal-confirmar-compra" class="confirm-modal-overlay-zen hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(7, 3, 16, 0.6); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center;">
@@ -625,8 +673,8 @@
             <div class="footer-section">
                 <h4 style="color:#00ced1; cursor:pointer;" onclick="mostrarSeccion('inicio')">Zen & Zen</h4>
                 <button id="theme-toggle-btn" style="background: none; border: none; font-size: 20px; cursor: pointer; padding: 8px;" title="Cambiar Modo de Pantalla">
-    🌓
-</button>
+                🌓
+            </button>
                 <p>La zona definitiva para coleccionistas. Para no perderte ninguna novedad y ver imágenes exclusivas de cada ingreso</p>
             </div>
             <div class="footer-section">

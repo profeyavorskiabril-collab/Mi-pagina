@@ -94,6 +94,51 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
+// ==========================================
+// CERRAR MENÚ AL HACER CLIC EN CUALQUIER PARTE
+// ==========================================
+document.addEventListener('click', function(evento) {
+    const menu = document.querySelector('.nav-menu');
+    const botonMenu = document.querySelector('.menu-hamburger'); // <--- REEMPLAZA CON LA CLASE DE TU BOTÓN DE HAMBURGUESA
+
+    // Si el menú no existe en la página o no está activo, no hacemos nada
+    if (!menu || !menu.classList.contains('active')) return;
+
+    // Verificamos si el clic fue FUERA del menú y FUERA del botón que lo abre
+    if (!menu.contains(evento.target) && (!botonMenu || !botonMenu.contains(evento.target))) {
+        menu.classList.remove('active');
+    }
+});
+// ==========================================================
+// SENSOR DEL BOTÓN "ATRÁS" DEL CELULAR (CONECTADO A TU FUNCIÓN)
+// ==========================================================
+window.addEventListener('popstate', function(evento) {
+    // Si el historial del teléfono tiene guardada una sección previa
+    if (evento.state && evento.state.seccion) {
+        
+        // Activamos el escudo para que no se duplique el historial al volver atrás
+        window.evitarPushState = true;
+        
+        // Llamamos a tu función para renderizar la pantalla anterior
+        mostrarSeccion(evento.state.seccion);
+        
+        // Apagamos el escudo para futuros clics normales
+        window.evitarPushState = false;
+        
+    } else {
+        // Si vuelve al inicio del historial de la web, lo mandamos a la portada de la tienda
+        window.evitarPushState = true;
+        mostrarSeccion('inicio');
+        window.evitarPushState = false;
+    }
+});
+
+// Guardamos el estado inicial apenas el cliente entra a tu tienda por primera vez
+document.addEventListener('DOMContentLoaded', () => {
+    // Si entran sin hash, registramos que están en el inicio
+    const seccionInicial = window.location.hash ? window.location.hash.substring(1) : 'inicio';
+    history.replaceState({ seccion: seccionInicial }, "", "#" + seccionInicial);
+});
 
 // ==========================================
 // 2. CONEXIÓN Y CARGA DEL CATÁLOGO
@@ -129,7 +174,19 @@ function renderizarProductos() {
         grid.innerHTML = '<p style="padding:40px; color:#aaa; grid-column:1/-1; text-align:center;">El catálogo está vacío o las piezas se encuentran reservadas.</p>';
         return;
     }
+    const selectorOrden = document.getElementById('sort-select');
+    const metodoOrden = selectorOrden ? selectorOrden.value : 'predeterminado';
 
+    if (metodoOrden === 'precio-menor') {
+        // Ordena de menor a mayor precio
+        filtrados.sort((a, b) => parseFloat(a.precio || 0) - parseFloat(b.precio || 0));
+    } else if (metodoOrden === 'precio-mayor') {
+        // Ordena de mayor a menor precio
+        filtrados.sort((a, b) => parseFloat(b.precio || 0) - parseFloat(a.precio || 0));
+    } else if (metodoOrden === 'alfabetico-az') {
+        // Ordena alfabéticamente de la A a la Z
+        filtrados.sort((a, b) => (a.titulo || "").localeCompare(b.titulo || ""));
+    }
     filtrados.forEach(p => {
         // ==========================================================
         // CORRECCIÓN DINÁMICA: Extraemos solo la primera foto para el catálogo
@@ -256,25 +313,50 @@ function toggleFavoritoDesdeGrid(productoId) {
 
 
 
+function cambiarOrdenamiento() {
+    renderizarProductos();
+}
+
 
 function filtrarCategoria(cat) {
-    categoriaActual = cat; subcategoriaActual = 'Todos';
+    categoriaActual = cat; 
+    subcategoriaActual = 'Todos';
+    
     const t = document.getElementById('seccion-titulo');
     if (t) t.textContent = cat === 'Todos' ? 'Artículos en Exhibición' : `Catálogo: ${cat}`;
+    
     mostrarSeccion('tienda');
     renderizarProductos();
-        // Cierra el menú lateral automáticamente al hacer clic en una categoría
-document.querySelector('.nav-menu').classList.remove('active');
+
+    // 💡 CORRECCIÓN INTEGRADA:
+    // Si la categoría es 'Figuras' y estamos en celular (pantalla chica), 
+    // NO cerramos el menú para dejar que el submenú se abra en pantalla.
+    if (cat === 'Figuras' && window.innerWidth <= 768) {
+        // Buscamos el elemento contenedor de FIGURAS para ponerle la clase active y desplegarlo
+        const botonFiguras = document.querySelector('.dropdown-toggle') || document.querySelector('.nav-menu a[href*="figuras"]');
+        if (botonFiguras && botonFiguras.parentElement) {
+            botonFiguras.parentElement.classList.toggle('active');
+        }
+    } else {
+        // Para cualquier otra categoría común (o en computadora), cerramos el menú normalmente
+        const menu = document.querySelector('.nav-menu');
+        if (menu) menu.classList.remove('active');
+    }
 }
 
 function filtrarSubcategoria(cat, subcat) {
-    categoriaActual = cat; subcategoriaActual = subcat;
+    categoriaActual = cat; 
+    subcategoriaActual = subcat;
+    
     const t = document.getElementById('seccion-titulo');
     if (t) t.textContent = `${cat} ‣ ${subcat}`;
+    
     mostrarSeccion('tienda');
     renderizarProductos();
-    // Cierra el menú lateral automáticamente al hacer clic en una categoría
-document.querySelector('.nav-menu').classList.remove('active');
+    
+    // Al hacer clic en la subcategoría final (Ej: Marvel, DC), ahí sí cerramos el menú por completo
+    const menu = document.querySelector('.nav-menu');
+    if (menu) menu.classList.remove('active');
 }
 
 function mostrarSeccion(seccion) {
@@ -288,6 +370,8 @@ function mostrarSeccion(seccion) {
     document.getElementById('sobre-nosotros-section').classList.toggle('hidden', seccion !== 'nosotros');
     // 🌟 NUEVO: Controlamos de forma limpia la pantalla de éxito al comprar
     document.getElementById('view-exito-compra').classList.toggle('hidden', seccion !== 'exito-compra');
+// Agrega esta línea adentro de tu función mostrarSeccion para controlar la visibilidad:
+document.getElementById('view-pedidos').classList.toggle('hidden', seccion !== 'pedidos');
 
 // 🎯 EL LUGAR CORRECTO: Llamamos al escudo inmediatamente si el usuario entró al carrito
 if (seccion === 'carrito') {
@@ -302,6 +386,9 @@ if (seccion === 'carrito') {
         document.body.classList.add('light-mode');
     }
 }
+  if (!window.evitarPushState) {
+        history.pushState({ seccion: seccion }, "", "#" + seccion);
+    }
 }
 
 // ==========================================================
@@ -327,7 +414,7 @@ function forzarCarritoSiempreOscuro() {
 
     console.log("🔒 Escudo Zen: Se anuló el modo claro dentro del carrito con éxito.");
 }
-
+//======================CARRUCEL====================
 function cambiarSlide(dir) {
     const carousel = document.getElementById('carousel');
     if (!carousel) return;
@@ -343,6 +430,8 @@ setInterval(() => cambiarSlide(1), 6000);
 function abrirModalAuth() {
     if (usuarioActivo) mostrarSeccion('perfil');
     else document.getElementById('modal-auth').classList.add('open');
+    const menu = document.querySelector('.nav-menu');
+        if (menu) menu.classList.remove('active');
 }
 function cerrarModalAuth() { document.getElementById('modal-auth').classList.remove('open'); }
 
@@ -352,6 +441,12 @@ function cambiarAuthTab(tab) {
     document.getElementById('tab-register').classList.toggle('active', tab === 'register');
     document.getElementById('auth-title').textContent = tab === 'login' ? 'Identificación' : 'Registro de Coleccionista';
     document.getElementById('btn-auth-submit').textContent = tab === 'login' ? 'Entrar' : 'Registrarse';
+// Agrega esto dentro de tu función cambiarAuthTab(tab):
+const helperRow = document.getElementById('auth-forget-row');
+if (helperRow) {
+    helperRow.style.display = tab === 'login' ? 'flex' : 'none';
+}
+
 }
 
 // 🌟 FUNCIÓN DE ACCIÓN AUTOMÁTICA DEL LOGIN (Separada para evitar colisiones)
@@ -519,6 +614,31 @@ async function guardarDatosPerfil(e) {
         mostrarSeccion('inicio');
     } catch (err) { 
         alert("Error al guardar en Supabase: " + err.message); 
+    }
+}
+
+async function manejarRecuperarContrasena() {
+    const correoInput = document.getElementById('auth-email');
+    let correo = correoInput ? correoInput.value.trim() : "";
+
+    if (!correo) {
+        correo = prompt("Por favor, ingresa tu correo electrónico para restablecer la contraseña:");
+    }
+    if (!correo) return;
+
+    try {
+        // Obtenemos la dirección exacta y completa de tu GitHub Pages en tiempo real
+        const urlRetornoGitHub = window.location.origin + window.location.pathname;
+
+        const { data, error } = await window.supabase.auth.resetPasswordForEmail(correo, {
+            redirectTo: urlRetornoGitHub, 
+        });
+        
+        if (error) throw error;
+        alert("✉️ ¡Correo enviado a " + correo + "! Revisa tu bandeja de entrada o spam.");
+        
+    } catch (err) {
+        alert("Error: " + err.message);
     }
 }
 
@@ -710,9 +830,15 @@ function agregarAlCarrito(id) {
         actualizarCarritoVisual();
     }
     
-
     calcularTotalPedido();
+
+    // 🎯 CORRECCIÓN DIRECTA: Usamos 'p' que ya contiene toda la información del artículo
+    if (p && typeof mostrarToastAviso === 'function') {
+        // Lanzamos la notificación pasando el nombre de tu Funko o rareza
+        mostrarToastAviso(p.titulo);
+    }
 }
+
 
 
 // Asegurate de dejar la función de cierre vacía para que si se llama desde otra parte no rompa nada:
@@ -730,6 +856,7 @@ function quitarDelCarrito(index) {
     actualizarCarritoUI(); 
 }
 
+//FAVORITOS
 function actualizarCarritoUI() {
     document.getElementById('cart-count').textContent = carrito.length;
     const container = document.getElementById('seccion-carrito-items');
@@ -739,7 +866,6 @@ function actualizarCarritoUI() {
 
     if (carrito.length === 0) {
         container.innerHTML = '<h3 style="text-align:center; padding:20px; color:#aaa;">Tu carrito de Zen & Zen está vacío</h3>';
-     
         document.getElementById('resumen-total').textContent = `$0`;
         return;
     }
@@ -747,11 +873,20 @@ function actualizarCarritoUI() {
     // Recorremos el carrito inyectando la nueva estructura profesional, limpia y elástica
     carrito.forEach((item, index) => {
         total += item.precio;
+
+        // ==========================================================
+        // CORRECCIÓN MULTI-FOTO: Extraemos solo la primera imagen para el carrito
+        // ==========================================================
+        let miniaturaPortada = item.imagen;
+        if (item.imagen && item.imagen.includes(',')) {
+            miniaturaPortada = item.imagen.split(',')[0]; // Tomamos la primera imagen limpia
+        }
+
         container.innerHTML += `
             <div class="cart-custom-item-row">
-                <!-- 1. Foto del Artículo -->
+                <!-- 1. Foto del Artículo (Corregida con la variable dinámica) -->
                 <div class="cart-item-media">
-                    <img src="${item.imagen}" alt="${item.titulo}">
+                    <img src="${miniaturaPortada}" alt="${item.titulo}">
                 </div>
                 
                 <!-- 2. Información del Artículo (Arreglado el montado de textos) -->
@@ -770,7 +905,6 @@ function actualizarCarritoUI() {
     });
 
     // Formateamos también los subtotales del resumen final con puntos divisores
- 
     document.getElementById('resumen-total').textContent = `$${total.toLocaleString('es-AR')}`;
     
     // Guardamos de forma persistente para que no se borre al recargar en GitHub Pages
@@ -779,6 +913,7 @@ function actualizarCarritoUI() {
     // Ejecutamos tu función de cálculos automáticos por Código Postal (CP)
     calcularTotalPedido();
 }
+
 
 
 
@@ -798,69 +933,73 @@ function calcularTotalPedido() {
     let costoEnvio = 0;
     let mensajeEnvio = "";
 
-if (selector && (selector.value === 'envio' || selector.value === 'moto')) {
-    // 1. Validamos si el usuario inició sesión y tiene un código postal guardado
-    if (!usuarioActivo || !usuarioActivo.cp) {
-        if (infoTexto) infoTexto.style.display = "block";
-        mensajeEnvio = "⚠️ Completa tu Código Postal en tu Perfil para calcular.";
-        costoEnvio = 4500; // Costo base/promedio si no hay CP ingresado
-    } else {
-        // Convertimos el CP a número entero una sola vez para usarlo en ambos métodos
-        const cp = parseInt(usuarioActivo.cp);
-
-        // 2. Evaluamos si eligió ENVÍO (Correo Argentino)
-        if (selector.value === 'envio') {
+    if (selector && (selector.value === 'envio' || selector.value === 'moto')) {
+        // 1. Validamos si el usuario inició sesión y tiene un código postal guardado
+        if (!usuarioActivo || !usuarioActivo.cp) {
             if (infoTexto) infoTexto.style.display = "block";
+            mensajeEnvio = "⚠️ Completa tu Código Postal en tu Perfil para calcular.";
+            costoEnvio = 4500; // Costo base/promedio si no hay CP ingresado
+        } else {
+            // Convertimos el CP a número entero una sola vez para usarlo en ambos métodos
+            const cp = parseInt(usuarioActivo.cp);
 
-            if (cp >= 1000 && cp <= 1499) {
-                costoEnvio = 3200; // Capital Federal (CABA)
-                mensajeEnvio = `📍 Envío Local detectado (CABA - CP: ${cp}).`;
-            } else if (cp >= 1600 && cp <= 1999) {
-                costoEnvio = 3900; // GBA / Provincia de Buenos Aires cercana
-                mensajeEnvio = `📍 Envío Regional detectado (Buenos Aires - CP: ${cp}).`;
-            } else if ((cp >= 2000 && cp <= 3999) || (cp >= 5000 && cp <= 8999)) {
-                costoEnvio = 5800; // Provincias del Interior
-                mensajeEnvio = `📍 Envío Nacional Interior detectado (CP: ${cp}).`;
-            } else if (cp >= 9000 && cp <= 9999) {
-                costoEnvio = 7200; // Patagonia / Zonas Extremas
-                mensajeEnvio = `📍 Envío Nacional Zona Extrema detectado (Patagonia - CP: ${cp}).`;
-            } else {
-                costoEnvio = 5000; // Tarifa plana de respaldo
-                mensajeEnvio = `📍 Envío calculado para CP: ${cp}.`;
-            }
-        } 
-        // 3. Evaluamos si eligió MOTO
-        else if (selector.value === 'moto') {
-            // Nota: El rango 1601 a 1675 corresponde a Zona Norte de GBA (no CABA)
-            if (cp >= 1601 && cp <= 1675) {
-                costoEnvio = 2500; 
-                
-                if (infoTexto) infoTexto.style.display = "none"; // O "block" si querés mostrar el mensajeEnvio
-            } else {
-                costoEnvio = 5000; 
-                mensajeEnvio = ` ⚠️ No hay motomensajería en tu zona (CP: ${cp}).`;
-                if (infoTexto) infoTexto.style.display = "block"; // Activamos cartel para mostrar el error de zona
+            // 2. Evaluamos si eligió ENVÍO (Correo Argentino)
+            if (selector.value === 'envio') {
+                if (infoTexto) infoTexto.style.display = "block";
+
+                if (cp >= 1000 && cp <= 1499) {
+                    costoEnvio = 3200; // Capital Federal (CABA)
+                    mensajeEnvio = `📍 Envío Local detectado (CABA - CP: ${cp}).`;
+                } else if (cp >= 1600 && cp <= 1999) {
+                    costoEnvio = 3900; // GBA / Provincia de Buenos Aires cercana
+                    mensajeEnvio = `📍 Envío Regional detectado (Buenos Aires - CP: ${cp}).`;
+                } else if ((cp >= 2000 && cp <= 3999) || (cp >= 5000 && cp <= 8999)) {
+                    costoEnvio = 5800; // Provincias del Interior
+                    mensajeEnvio = `📍 Envío Nacional Interior detectado (CP: ${cp}).`;
+                } else if (cp >= 9000 && cp <= 9999) {
+                    costoEnvio = 7200; // Patagonia / Zonas Extremas
+                    mensajeEnvio = `📍 Envío Nacional Zona Extrema detectado (Patagonia - CP: ${cp}).`;
+                } else {
+                    costoEnvio = 5000; // Tarifa plana de respaldo
+                    mensajeEnvio = `📍 Envío calculated para CP: ${cp}.`;
+                }
+            } 
+            // 3. Evaluamos si eligió MOTO
+            else if (selector.value === 'moto') {
+                if (cp >= 1601 && cp <= 1675) {
+                    costoEnvio = 2500; 
+                    if (infoTexto) infoTexto.style.display = "none";
+                } else {
+                    costoEnvio = 5000; 
+                    mensajeEnvio = ` ⚠️ No hay motomensajería en tu zona (CP: ${cp}).`;
+                    if (infoTexto) infoTexto.style.display = "block"; 
+                }
             }
         }
+    } else {
+        costoEnvio = 0;
+        if (infoTexto) infoTexto.style.display = "none";
     }
-} else {
-    // Si el valor es cualquiera de los retiros de Garín, el costo de envío es 0
-    costoEnvio = 0;
-    if (infoTexto) infoTexto.style.display = "none";
-}
 
     // 3. Monto final
     let totalFinal = subtotal + costoEnvio;
 
-    // 4. Inyectar textos en el HTML
+    // 4. Inyectar textos en el HTML con el formato regional de puntos (.toLocaleString)
     if (infoTexto) infoTexto.textContent = mensajeEnvio;
-    if (document.getElementById('cart-subtotal')) document.getElementById('cart-subtotal').textContent = `$${subtotal}`;
-    if (document.getElementById('cart-shipping-cost')) document.getElementById('cart-shipping-cost').textContent = costoEnvio === 0 ? "Gratis" : `$${costoEnvio}`;
-    if (document.getElementById('cart-total-final')) document.getElementById('cart-total-final').textContent = `$${totalFinal}`;
-        // ==========================================================
-
-
+    
+    if (document.getElementById('cart-subtotal')) {
+        document.getElementById('cart-subtotal').textContent = `$${subtotal.toLocaleString('es-AR')}`;
+    }
+    
+    if (document.getElementById('cart-shipping-cost')) {
+        document.getElementById('cart-shipping-cost').textContent = costoEnvio === 0 ? "Gratis" : `$${costoEnvio.toLocaleString('es-AR')}`;
+    }
+    
+    if (document.getElementById('cart-total-final')) {
+        document.getElementById('cart-total-final').textContent = `$${totalFinal.toLocaleString('es-AR')}`;
+    }
 }
+
 async function finalizarOrdenWhatsApp() {
     if (!usuarioActivo) { alert("Iniciá sesión para continuar."); abrirModalAuth(); return; }
     if (carrito.length === 0) { alert("Tu carrito está vacío."); return; }
@@ -868,7 +1007,7 @@ async function finalizarOrdenWhatsApp() {
     const selectorEntrega = document.getElementById('metodo-entrega-select');
     const valorEntrega = selectorEntrega ? selectorEntrega.value : "retiro_estacion";
     
-    // Conseguimos el texto exacto del punto de encuentro elegido (ej: "🏃‍♂️ Retiro: Estación de Garín (Gratis)")
+    // Conseguimos el texto exacto del punto de encuentro elegido
     const puntoEncuentroElegido = selectorEntrega ? selectorEntrega.options[selectorEntrega.selectedIndex].text : "Punto a coordinar";
 
     // ==========================================================
@@ -901,39 +1040,12 @@ async function finalizarOrdenWhatsApp() {
     if (valorEntrega === 'envio') {
         metodoEntregaFinal = `🚚 Correo Argentino (${infoTexto.replace('📍 ', '')})`;
     } else {
-        // Si eligió un punto en Garín, limpia los emojis del texto para el reporte
         metodoEntregaFinal = `🤝 Punto de Encuentro: ${puntoEncuentroElegido.replace('🏃‍♂️ ', '')} *(A coordinar día y horario por privado)*`;
     }
 
     const subtotalTexto = document.getElementById('cart-subtotal')?.textContent || "\$0";
     const envioTexto = document.getElementById('cart-shipping-cost')?.textContent || "\$0";
     const totalFinalTexto = document.getElementById('cart-total-final')?.textContent || subtotalTexto;
-
-    // Armado del cuerpo del mensaje de WhatsApp
-    let mensaje = `👑 *ORDEN - ZEN & ZEN* 👑\n\n`;
-    mensaje += `📧 *Comprador:* ${usuarioActivo.email}\n`;
-    mensaje += `💳 *Pago:* ${metodoPago}\n`;
-    mensaje += `📦 *Entrega:* ${metodoEntregaFinal}\n`;
-    
-    if (usuarioActivo.nombre) mensaje += `👤 *Nombre:* ${usuarioActivo.nombre}\n`;
-    if (usuarioActivo.telefono) mensaje += `📞 *Teléfono:* ${usuarioActivo.telefono}\n`;
-    
-    // Solo si es envío por correo sumamos los datos postales detallados al texto
-    if (valorEntrega === 'envio') {
-        mensaje += `📍 *Dirección de Envío:* ${usuarioActivo.direccion}\n`;
-        mensaje += `📮 *Código Postal:* ${usuarioActivo.cp}\n`;
-    }
-    
-    mensaje += `\n📦 *Artículos solicitados:*\n`;
-    
-    for (const item of carrito) {
-        mensaje += `• ${item.titulo} -> *$${item.precio}*\n`;
-    }
-
-    mensaje += `\n-------------------------\n`;
-    mensaje += `💰 *Subtotal:* ${subtotalTexto}\n`;
-    mensaje += `🚚 *Costo Envío:* ${envioTexto}\n`;
-    mensaje += `💵 *TOTAL NETO:* *${totalFinalTexto}*\n`;
 
     // ==========================================================
     // 🚀 INTERCEPTOR PREMIUM: CONFIRMACIÓN ESTÉTICA DE COMPRA
@@ -949,14 +1061,77 @@ async function finalizarOrdenWhatsApp() {
             modalConfirmar.classList.add('hidden');
         };
 
-        btnAceptar.onclick = () => {
+        btnAceptar.onclick = async () => {
             modalConfirmar.classList.add('hidden');
 
             if (typeof mostrarAlertaZen === 'function') {
                 mostrarAlertaZen("¡Procesando tu pedido! Abriendo WhatsApp...", "success");
             }
 
-            const linkFinal = "https://wa.me" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
+            let idPedidoGenerado = "S/N";
+
+            try {
+                // 1. Simplificamos el carrito para enviarlo limpio en formato JSON a tu tabla
+                const listaProductosSimplificada = carrito.map(item => ({
+                    titulo: item.titulo,
+                    precio: item.precio
+                }));
+
+                // Limpiamos los símbolos de moneda para enviar el total como número puro
+                const totalNumerico = parseFloat(totalFinalTexto.replace(/[^0-9.-]+/g, "")) || 0;
+
+                // 2. Preparamos el objeto estructurado para Supabase
+                const nuevoPedido = {
+                    cliente_email: usuarioActivo.email,
+                    productos_comprados: listaProductosSimplificada,
+                    total: totalNumerico,
+                    estado: 'Pendiente'
+                };
+
+                // 3. RESPALDO AUTOMÁTICO EN LA NUBE: Registramos el pedido en Supabase
+                const { data, error: dbError } = await window.supabase
+                    .from('pedidos')
+                    .insert([nuevoPedido])
+                    .select();
+
+                if (dbError) throw dbError;
+
+                // Si Supabase procesó todo bien, extraemos el ID autoincremental de la fila
+                if (data && data.length > 0) {
+                    idPedidoGenerado = data[0].id;
+                }
+
+            } catch (err) {
+                console.error("Error al guardar el pedido de respaldo en Supabase:", err.message);
+                // No frenamos el flujo de WhatsApp del usuario, permitimos que continúe con ID "S/N"
+            }
+
+            // 4. Armado final del cuerpo del mensaje incluyendo el ID obtenido
+            let mensaje = `👑 *ORDEN - ZEN & ZEN (Pedido #${idPedidoGenerado})* 👑\n\n`;
+            mensaje += `📧 *Comprador:* ${usuarioActivo.email}\n`;
+            mensaje += `💳 *Pago:* ${metodoPago}\n`;
+            mensaje += `📦 *Entrega:* ${metodoEntregaFinal}\n`;
+            
+            if (usuarioActivo.nombre) mensaje += `👤 *Nombre:* ${usuarioActivo.nombre}\n`;
+            if (usuarioActivo.telefono) mensaje += `📞 *Teléfono:* ${usuarioActivo.telefono}\n`;
+            
+            if (valorEntrega === 'envio') {
+                mensaje += `📍 *Dirección de Envío:* ${usuarioActivo.direccion}\n`;
+                mensaje += `📮 *Código Postal:* ${usuarioActivo.cp}\n`;
+            }
+            
+            mensaje += `\n📦 *Artículos solicitados:*\n`;
+            for (const item of carrito) {
+                mensaje += `• ${item.titulo} -> *$${item.precio}*\n`;
+            }
+
+            mensaje += `\n-------------------------\n`;
+            mensaje += `💰 *Subtotal:* ${subtotalTexto}\n`;
+            mensaje += `🚚 *Costo Envío:* ${envioTexto}\n`;
+            mensaje += `💵 *TOTAL NETO:* *${totalFinalTexto}*\n`;
+
+            // 5. Redirección oficial y limpieza absoluta del Carrito Local
+            const linkFinal = "https://wa.me/" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
             window.open(linkFinal, '_blank');
             
             carrito = []; 
@@ -969,8 +1144,8 @@ async function finalizarOrdenWhatsApp() {
             mostrarSeccion('exito-compra');
         };
     }
-
 }
+
 function renderizarVideoProducto(producto) {
     const videoContainer = document.getElementById('detail-video-container');
     const videoContent = document.getElementById('detail-video-content');
@@ -1482,9 +1657,130 @@ function mostrarAlertaZen(mensaje, tipo = 'info') {
         setTimeout(() => toast.remove(), 400);
     }, 3500);
 }
+// ==========================================
+// NOTIFICACIÓN FLOTANTE (TOAST) DE ÉXITO
+// ==========================================
+function mostrarToastAviso(tituloProducto) {
+    // 1. Buscamos si ya existe un contenedor de toasts, si no, lo creamos
+    let contenedorToast = document.getElementById('toast-container');
+    if (!contenedorToast) {
+        contenedorToast = document.createElement('div');
+        contenedorToast.id = 'toast-container';
+        document.body.appendChild(contenedorToast);
+    }
+
+    // 2. Creamos la estructura de la notificación individual
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification success';
+
+    // Inyectamos un diseño limpio con un icono de check sólido
+    toast.innerHTML = 
+        '<div class="toast-icon">✓</div>' +
+        '<div class="toast-body">' +
+            '<strong>¡Agregado al carrito!</strong>' +
+            '<p>' + tituloProducto + '</p>' +
+        '</div>';
+
+    // 3. Añadimos el nuevo toast al contenedor flotante
+    contenedorToast.appendChild(toast);
+
+    // 4. Animación de salida y remoción automática a los 3 segundos
+    setTimeout(() => {
+        toast.classList.add('toast-fade-out');
+        // Esperamos a que termine la animación CSS para borrar el elemento del DOM
+        toast.addEventListener('animationend', () => {
+            toast.remove();
+        });
+    }, 3000);
+}
 
 // 💥 TRUCO MAESTRO: Sobreescribimos el alert viejo del navegador
 // Esto hace que todo tu código viejo pase a verse hermoso al instante sin cambiar nada más
 window.alert = function(mensaje) {
     mostrarAlertaZen(mensaje, 'info');
 };
+// ==========================================================
+// HISTORIAL DE PEDIDOS DINÁMICO DESDE SUPABASE
+// ==========================================================
+async function traerHistorialPedidos() {
+    if (!usuarioActivo || !usuarioActivo.email) {
+        alert("Debes iniciar sesión para ver tu historial de pedidos 🔒");
+        mostrarSeccion('inicio');
+        return;
+    }
+
+    const container = document.getElementById('contenedor-historial-pedidos');
+    const spinner = document.getElementById('pedidos-cargando');
+    if (!container) return;
+
+    container.innerHTML = "";
+    if (spinner) spinner.style.display = "block";
+
+    try {
+        const { data: listaPedidos, error } = await window.supabase
+            .from('pedidos')
+            .select('*')
+            .eq('cliente_email', usuarioActivo.email)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (spinner) spinner.style.display = "none";
+
+        if (!listaPedidos || listaPedidos.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#aaa; padding:30px;">Aún no has realizado ningún pedido en la tienda.</p>';
+            return;
+        }
+
+        listaPedidos.forEach(pedido => {
+            const fecha = new Date(pedido.created_at).toLocaleDateString('es-AR', {
+                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            const productos = Array.isArray(pedido.productos_comprados) 
+                ? pedido.productos_comprados 
+                : JSON.parse(pedido.productos_comprados || "[]");
+
+            let listaNombresHtml = "";
+            productos.forEach(p => {
+                // 🎯 CLASE AGREGADA: 'pedido-item-name' para controlar el color del texto del producto
+                listaNombresHtml += `<li class="pedido-item-name" style="font-size:0.9rem; margin-bottom:4px;">• ${p.titulo}</li>`;
+            });
+
+            const tarjeta = document.createElement('div');
+            // 🎯 CLASE AGREGADA: 'pedido-historial-card' para el fondo de la tarjeta
+            tarjeta.className = 'pedido-historial-card';
+            tarjeta.style.cssText = "background:#11121a; border:1px solid #222; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:10px;";
+
+            tarjeta.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #222; padding-bottom:8px;">
+                    <span class="pedido-card-header" style="color:#888; font-size:0.85rem;">Pedido #${pedido.id} - ${fecha}</span>
+                    <span class="badge-estado" style="background:rgba(0,240,255,0.1); color:#00f0ff; padding:4px 8px; border-radius:4px; font-size:0.8rem; font-weight:bold;">
+                        ${pedido.estado || 'Procesado'}
+                    </span>
+                </div>
+                <ul style="list-style:none; padding:0; margin:0;">
+                    ${listaNombresHtml}
+                </ul>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; font-weight:bold;">
+                    <span class="pedido-card-total-label" style="color:#aaa; font-size:0.9rem;">Total:</span>
+                    <!-- 🎯 CLASE AGREGADA: 'total-precio-oro' para blindar tu color dorado -->
+                    <span class="total-precio-oro" style="color: var(--color-oro, #ffd700) !important; font-size:1.1rem;">$${Number(pedido.total).toLocaleString('es-AR')}</span>
+                </div>
+            `;
+            container.appendChild(tarjeta);
+        });
+
+    } catch (err) {
+        if (spinner) spinner.style.display = "none";
+        console.error("Error al traer historial:", err.message);
+        container.innerHTML = '<p style="text-align:center; color:#ff4444;">No se pudo cargar el historial de pedidos.</p>';
+    }
+}
+
+
+// Función puente para el menú de navegación
+function mostrarMisPedidos() {
+    mostrarSeccion('pedidos'); // Prende la vista cambiándole las clases .hidden
+    traerHistorialPedidos();   // Carga los datos de Supabase al instante
+}

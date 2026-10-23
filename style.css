@@ -2680,3 +2680,355 @@ body.light-mode #seccion-carrito-items button:hover {
     border-color: var(--color-violeta, #5c24b3) !important;
     transform: scale(1.05);
 }
+/* ==========================================================
+   CONTENEDOR GLOBAL DE NOTIFICACIONES FLOTANTES (TOASTS)
+   ========================================================== */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 99999; /* Asegura que flote por encima de cualquier modal o menú */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 350px;
+    width: calc(100% - 40px);
+}
+
+.toast-notification {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(15, 15, 25, 0.95); /* Fondo oscuro translúcido */
+    border: 1px solid rgba(92, 36, 179, 0.5); /* Borde suave violeta */
+    border-left: 5px solid #00f0ff; /* Barra lateral cian vibrante */
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 6px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    animation: toastSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.toast-icon {
+    background: rgba(0, 240, 255, 0.15);
+    color: #00f0ff;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.toast-body strong {
+    display: block;
+    font-size: 0.95rem;
+    color: #00f0ff;
+    margin-bottom: 2px;
+}
+
+.toast-body p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #bbb;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Corta textos muy largos con puntos suspensivos */
+}
+
+/* Animación de desaparición controlada desde JS */
+.toast-notification.toast-fade-out {
+    animation: toastSlideOut 0.4s ease forwards;
+}
+
+/* ==========================================================
+   ANIMACIONES DE ENTRADA Y SALIDA
+   ========================================================== */
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes toastSlideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(40px) scale(0.9);
+    }
+}
+/* ==========================================================
+   ALINEACIÓN PREMIUM PARA MENÚ EN PANTALLAS GRANDES
+   ========================================================== */
+@media (min-width: 769px) {
+    .nav-menu {
+        display: flex !important;
+        align-items: center !important;
+        width: 100% !important; /* Forzamos a que el menú ocupe todo el ancho disponible */
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* 🎯 LA CLAVE: Empujamos el último elemento (Mi Perfil) hacia la derecha */
+    .nav-menu li:last-child {
+        margin-left: auto !important; 
+    }
+}
+
+/* ==========================================================
+   ESTILOS PREMIUM PARA EL SELECTOR "ORDENAR POR"
+   ========================================================== */
+.filter-sort-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.filter-sort-group label {
+    color: #888;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#sort-select {
+    background-color: #0d0d14 !important; /* Fondo oscuro a tono con la app */
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 10px 35px 10px 15px !important; /* Espacio extra a la derecha para nuestra flecha */
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    cursor: pointer !important;
+    outline: none !important;
+    transition: all 0.2s ease-in-out !important;
+    
+    /* 🎯 LA CLAVE: Ocultamos la flecha fea por defecto del navegador */
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    
+    /* Inyectamos una flecha personalizada minimalista en formato SVG */
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://w3.org' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 14px !important;
+}
+
+/* Efecto visual cuando el usuario hace clic o pasa el mouse */
+#sort-select:hover, #sort-select:focus {
+    border-color: var(--color-violeta, #5c24b3) !important;
+    box-shadow: 0 0 10px rgba(92, 36, 179, 0.3) !important;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://w3.org' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300f0ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important; /* La flecha cambia a cian al activarse */
+}
+
+/* Estilo para las opciones de adentro del menú */
+#sort-select option {
+    background-color: #0d0d14;
+    color: #fff;
+    padding: 10px;
+}
+/* ==========================================================
+   CONTENEDOR GLOBAL DEL FILTRO
+   ========================================================== */
+.filter-sort-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 15px 0 !important;
+    font-family: inherit;
+}
+
+/* Texto "Ordenar por:" ultra sutil y limpio */
+.filter-sort-group label {
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    color: #666 !important; /* Gris suave por defecto */
+    white-space: nowrap;
+}
+
+/* ==========================================================
+   DISEÑO BASE (MODO OSCURO - PREDETERMINADO)
+   ========================================================== */
+#sort-select {
+    background-color: #11121a !important; /* Gris oscuro premium, no negro puro */
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    padding: 8px 32px 8px 12px !important; /* Reducido para que no sea gigante */
+    border-radius: 6px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    outline: none !important;
+    transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    
+    /* Ocultamos la flecha tosca del sistema */
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    
+    /* Flecha minimalista gris */
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://w3.org' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    background-size: 12px !important;
+}
+
+/* Hover/Focus en Modo Oscuro */
+#sort-select:hover, #sort-select:focus {
+    border-color: var(--color-violeta, #5c24b3) !important;
+    box-shadow: 0 0 8px rgba(92, 36, 179, 0.25) !important;
+}
+
+/* Opciones internas en Modo Oscuro */
+#sort-select option {
+    background-color: #11121a;
+    color: #ffffff;
+}
+
+/* ==========================================================
+   🎯 ADAPTACIÓN AUTOMÁTICA AL MODO CLARO (.light-mode)
+   ========================================================== */
+.light-mode .filter-sort-group label {
+    color: #777777 !important; /* Ajuste de contraste para el texto */
+}
+
+.light-mode #sort-select {
+    background-color: #f1f3f9 !important; /* Gris claro premium mate (evita el blanco chillón) */
+    color: #1f2029 !important; /* Texto oscuro */
+    border: 1px solid #d1d5db !important; /* Borde sutil de e-commerce */
+    
+    /* Cambiamos la flecha a gris oscuro para que se vea bien en fondo claro */
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://w3.org' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23444444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+}
+
+/* Hover/Focus en Modo Claro */
+.light-mode #sort-select:hover, .light-mode #sort-select:focus {
+    border-color: var(--color-violeta, #5c24b3) !important;
+    background-color: #eaedf5 !important;
+    box-shadow: 0 0 8px rgba(92, 36, 179, 0.15) !important;
+}
+
+/* Opciones internas en Modo Claro */
+.light-mode #sort-select option {
+    background-color: #f1f3f9;
+    color: #1f2029;
+}
+/* ==========================================================
+   🎯 CORRECCIÓN PREMIUM MODO CLARO: HISTORIAL DE PEDIDOS
+   ========================================================== */
+
+/* 1. Forzamos a que las tarjetas tengan un fondo gris mate limpio y bordes definidos */
+.light-mode .pedido-historial-card {
+    background-color: #f8f9fa !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* 2. Resaltamos los nombres de los productos para que se lean perfectos en color oscuro */
+.light-mode .pedido-historial-card ul li {
+    color: #1a202c !important; /* Gris oscuro profundo/negro e-commerce */
+    font-weight: 600 !important; /* Un poco más grueso para que destaque */
+}
+
+/* 3. Mantenemos el color dorado/oro intacto para los números de precios */
+.light-mode .pedido-historial-card .total-precio-oro,
+.light-mode .pedido-historial-card span[style*="color"] {
+    color: var(--color-oro, #ffd700) !important; /* Mantiene tu dorado vibrante */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 4. Corregimos los textos secundarios de la cabecera (Pedido # e información) */
+.light-mode .pedido-historial-card div span:first-child {
+    color: #4a5568 !important; /* Gris intermedio legible */
+    font-weight: 500;
+}
+
+.light-mode .pedido-historial-card div span:last-child {
+    color: #555555 !important;
+}
+/* ==========================================================
+   🎯 ESTILOS CORRECTIVOS DE CONTRASTE PARA EL MODO CLARO
+   ========================================================== */
+
+/* Cambia el fondo de la tarjeta a un gris claro sutil */
+.light-mode .pedido-historial-card {
+    background-color: #f8f9fa !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* Cambia las letras de los productos a un color oscuro ultra legible */
+.light-mode .pedido-item-name {
+    color: #1a202c !important;
+    font-weight: 600 !important;
+}
+
+/* BLINDAJE DORADO: Asegura que el precio siga viéndose color oro */
+.light-mode .total-precio-oro {
+    color: #ffb700 !important; /* Un dorado con mejor contraste para fondos blancos */
+}
+
+/* Corrige los colores de los textos secundarios */
+.light-mode .pedido-card-header {
+    color: #4a5568 !important;
+}
+
+.light-mode .pedido-card-total-label {
+    color: #718096 !important;
+}
+/* ==========================================================
+   💎 DISEÑO PREMIUM PARA LA PÁGINA DE ÉXITO DE COMPRA
+   ========================================================== */
+
+/* Botón secundario estilizado para modo oscuro */
+.btn-mis-pedidos-secundario {
+    width: 100%;
+    padding: 12px 20px;
+    background: rgba(0, 240, 255, 0.06) !important;
+    color: var(--color-cian, #00f0ff) !important;
+    border: 1px solid rgba(0, 240, 255, 0.3) !important;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-mis-pedidos-secundario:hover {
+    background: rgba(0, 240, 255, 0.15) !important;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+    transform: scale(1.01);
+}
+
+/* ==========================================================
+   🎯 AJUSTES COMPATIBLES MODO CLARO (.light-mode)
+   ========================================================== */
+.light-mode .exito-texto-principal {
+    color: #4a5568 !important; /* Texto del párrafo bien legible */
+}
+
+.light-mode .btn-mis-pedidos-secundario {
+    background: #f1f3f9 !important;
+    color: #1a202c !important; /* Texto oscuro distinguido */
+    border: 1px solid #cbd5e1 !important;
+}
+
+.light-mode .btn-mis-pedidos-secundario:hover {
+    background: #e2e8f0 !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
