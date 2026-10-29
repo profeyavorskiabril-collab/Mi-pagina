@@ -17,7 +17,7 @@
     <link rel="icon" type="image/png" href="icon.png">
      
 <!-- En el <head> para el CSS -->
-<link rel="stylesheet" href="style.css?v=1.0.4">  
+<link rel="stylesheet" href="style.css?v=1.0.3">  
 
 
     <!-- CONEXIÓN REAL A SUPABASE DESDE EL NAVEGADOR -->
@@ -26,7 +26,7 @@
 
 
 <!-- Al final del body para el JS -->
-<script src="script.js?v=1.0.5"></script>
+<script src="script.js?v=1.0.4"></script>
 
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -101,15 +101,7 @@
                         <li><a href="#" onclick="event.preventDefault(); filtrarSubcategoria('Figuras', 'Dragon Ball')">Dragon Ball</a></li>
                     </ul>
                 </li>
-                               <!--  <li class="dropdown">
-                            <a href="#" class="dropbtn" onclick="filtrarCategoria('Hot Wheels')">Hot Wheels ▾</a>
-                            <ul class="dropdown-content">
-                                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Mainline')">Mainline</a></li>
-                                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Treasure Hunt')">Treasure Hunt (T-Hunt)</a></li>
-                                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Premium')">Premium / Pop Culture</a></li>
-                                <li><a href="#" onclick="filtrarSubcategoria('Hot Wheels', 'Red Line Club')">RLC (Red Line Club)</a></li>
-                            </ul>
-                        </li> -->
+
                 <!-- 3. MIS FAVORITOS -->
                 <li><a href="#" onclick="event.preventDefault(); mostrarFavoritos()">Mis Favoritos </a></li>
                 
@@ -120,6 +112,7 @@
                 <li><a href="#" onclick="event.preventDefault(); abrirModalAuth()">MI PERFIL</a></li>
                 <li><a href="#" onclick="event.preventDefault(); mostrarMisPedidos()">Mis Pedidos</a></li>
             </ul>
+
         </nav>
 
 
@@ -162,12 +155,12 @@
         </section>-->
                 <!-- Menú Desplegable Clásico: Ordenar por -->
         <div class="filter-sort-group" style="margin: 15px 0; display: flex; gap: 10px; align-items: center;">
-            <label for="sort-select" style="color: #aaa; font-size: 0.9rem;">Ordenar por:</label>
+         
             <select id="sort-select" onchange="cambiarOrdenamiento()" style="background: #111; color: #fff; border: 1px solid #333; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
-                <option value="predeterminado">Destacados </option>
-                <option value="precio-menor">Precio: Menor a Mayor</option>
-                <option value="precio-mayor">Precio: Mayor a Menor</option>
-                <option value="alfabetico-az">Nombre: A - Z</option>
+                <option value="predeterminado">Ordenar por: Destacados </option>
+                <option value="precio-menor">Ordenar por: Precio: Menor a Mayor</option>
+                <option value="precio-mayor">Ordenar por: Precio: Mayor a Menor</option>
+                <option value="alfabetico-az">Ordenar por: Nombre: A - Z</option>
             </select>
         </div>
                 <!-- Poné esto adentro de #view-tienda, justo ARRIBA de #products-grid -->
@@ -423,94 +416,105 @@
     </div>
 </section>
 
-
-    <!-- VISTA 4: LA SECCIÓN COMPLETA DE CARRITO (NUEVA PÁGINA) -->
-<main id="view-carrito" class="main-container hidden">
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; flex-wrap: wrap;" id="carrito-layout-wrapper">
+<!-- VISTA 4: LA SECCIÓN COMPLETA DE CARRITO (NUEVA PÁGINA) -->
+<main id="view-carrito" class="main-container hidden" style="background-color: #f4f6f9; color: #1e293b; padding: 40px 20px; min-height: 100vh;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto;" id="carrito-layout-wrapper">
             
             <!-- LISTADO DE PIEZAS RESERVADAS -->
-            <section class="form-section">
-                <h2 style="color: var(--color-cian); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <section class="form-section" style="background: #ffffff; border: 2px solid var(--color-violeta, #7d26cd); border-radius: 12px; padding: 30px; box-shadow: 0 10px 25px -5px rgba(125, 38, 205, 0.04);">
+                <h2 class="carrito-encabezado-titulo" style="color: var(--color-violeta, #7d26cd); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; font-size: 22px; font-weight: 700;">
                     <span>Tu Orden de Compra</span>
-                    <span style="font-size: 14px; color: #aaa;"></span>
+                    <span style="font-size: 14px; color: #64748b;"></span>
                 </h2>
                 <div id="seccion-carrito-items">
                     <!-- Los productos del carrito se inyectan acá con JavaScript -->
+                    <p style="color: #64748b; text-align: center; padding: 40px 0; font-size: 15px; font-weight: 500; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px;">Tu carrito de Zen & Zen está vacío</p>
                 </div>
-                <button class="btn-seguir-buscando" onclick="mostrarSeccion('tienda')">
-                    <svg class="icono-flecha" viewBox="0 0 24 24">
+                <button class="btn-seguir-buscando" onclick="mostrarSeccion('tienda')" style="display: inline-flex; align-items: center; gap: 8px; background: #ffffff; border: 2px solid var(--color-violeta, #7d26cd); color: var(--color-violeta, #7d26cd); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; margin-top: 20px; box-shadow: 0 2px 4px rgba(125, 38, 205, 0.05);">
+                    <svg class="icono-flecha" viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: var(--color-violeta, #7d26cd);">
                         <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
                     </svg>
                     Seguir Buscando
                 </button>
             </section>
 
-            <!-- RESUMEN DE PAGO Y ENVÍO -->
-            <section class="form-section" style="border-color: var(--color-violeta); height: fit-content;">
-                <h3 style="color: #fff; margin-bottom: 15px; border-bottom: 1px solid #2a3447; padding-bottom: 10px;">Resumen del Pedido</h3>
+            <!-- RESUMEN DE PAGO Y ENVÍO (UNIFICADO PREMIUM) -->
+            <section class="form-section resumen-tarjeta-premium" style="background: #ffffff; border: 2px solid var(--color-violeta, #7d26cd); border-radius: 12px; padding: 30px; box-shadow: 0 10px 25px -5px rgba(125, 38, 205, 0.04); height: fit-content; display: flex; flex-direction: column; gap: 24px;">
+                <h3 class="resumen-titulo-texto" style="color: #0f172a; margin-bottom: 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; font-size: 20px; font-weight: 700;">Resumen del Pedido</h3>
                 
-                <div id="precio" style="margin-bottom: 20px;">
-                    
-                    <h3 style="display:flex; justify-content:space-between; border-top:1px solid #2a3447; padding-top:15px; color: var(--color-oro);">Total: <span id="resumen-total">$0</span></h3>
+                <div id="precio" style="margin-bottom: 0;">
+                    <h3 class="total-fila-principal" style="display:flex; justify-content:space-between; color: #0f172a; font-size: 18px; font-weight: 700; margin: 0;">Total: <span id="resumen-total" class="oro-resaltado-numero" style="color: var(--color-oro, #f39c12); font-weight: bold;">$0</span></h3>
                 </div>
-                <!-- SECCIÓN DE ENTREGA AUTOMÁTICA -->
-                <div class="shipping-section" style="margin-bottom: 15px; padding-top: 10px; border-top: 1px solid #2a3447;">
-                    <h4 style="font-size: 14px; color: var(--color-cian); margin-bottom: 10px; text-transform: uppercase;">Entrega</h4>
+
+                <!-- SECCIÓN DE ENTREGA (IGUAL A MÉTODO DE PAGO - SIN CAJA) -->
+                <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                    <label class="entrega-tag-subtitulo" style="font-size: 12px; color: var(--color-violeta, #7d26cd); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; display: block; margin: 0;">Entrega:</label>
                     
-                    <!-- El selector ahora es simple: Retiro o Envío -->
-                <select id="metodo-entrega-select" onchange="calcularTotalPedido()" style="width: 100%; padding: 10px; border: 1px solid #2a3447; background: #0b0e14; color: white; border-radius: 6px; cursor: pointer; font-size: 13px;">
-                    <!-- PUNTOS DE ENCUENTRO EN GARÍN -->
-                    <option value="retiro_puente">🏃‍♂️ Punto de Retiro (A coordinar)</option>
-                    <option value="moto">🛵 Envio a domicilio: Motomensajeria (Buenos Aires Zona Norte)</option>
-                    <!-- ENVÍO POR CORREO -->
-                    <option value="envio">🚚Envío a Domicilio: Correo Argentino (Calculado por CP)</option>
-                </select>
-
-
-                    <!-- Cartel dinámico que le avisa al usuario a dónde se enviará -->
-                    <p id="shipping-info-text" style="font-size: 11px; color: #aaa; margin-top: 8px; display: none;"></p>
-
-                    <!-- Desglose de totales (Se mantiene) -->
-                    <div class="cart-totals-summary" style="margin-top: 15px; font-size: 14px; display: flex; flex-direction: column; gap: 6px;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>Subtotal:</span>
-                            <span id="cart-subtotal">$0</span>
+                    <div style="position: relative; width: 100%;">
+                        <select id="metodo-entrega-select" onchange="calcularTotalPedido()" style="width: 100%; padding: 12px 40px 12px 15px; border: 2px solid #cbd5e1; background: #ffffff; color: #1e293b; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; outline: none; -webkit-appearance: none; -moz-appearance: none; appearance: none; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                            <option value="retiro_puente">🏃‍♂️ Punto de Retiro (A coordinar)</option>
+                            <option value="moto">🛵 Envio a domicilio: Motomensajeria (Buenos Aires Zona Norte)</option>
+                            <option value="envio">🚚 Envío a Domicilio: Correo Argentino (Calculado por CP)</option>
+                        </select>
+                        <div class="select-chevron-container" style="position: absolute; top: 50%; right: 14px; transform: translateY(-50%); pointer-events: none; display: flex; align-items: center;">
+                            <svg class="select-arrow-vector" xmlns="http://w3.org" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#444444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin='round'>
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
                         </div>
-                        <div style="display: flex; justify-content: space-between; color: #aaa;">
-                            <span>Costo de Envío:</span>
-                            <span id="cart-shipping-cost">$0</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; color: var(--color-oro); border-top: 1px dashed #2a3447; padding-top: 6px; margin-top: 4px;">
-                            <span>Total Final:</span>
-                            <span id="cart-total-final">$0</span>
-                        </div>
+                    </div>
+                    <p id="shipping-info-text" style="font-size: 12px; color: #e11d48; margin-top: 4px; display: none; font-weight: 500;"></p>
+                </div>
+
+                <!-- TOTALES SIN FONDO (PLANO SOBRE EL BLANCO) -->
+                <div class="cart-totals-summary" style="display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0;">
+                    <div style="display: flex; justify-content: space-between; color: #1e293b; font-size: 14px; font-weight: 500;" class="linea-desglose">
+                        <span>Subtotal:</span>
+                        <span id="cart-subtotal" style="font-weight: 600; color: #1e293b;">$0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: #64748b; font-size: 14px;" class="linea-desglose secundario">
+                        <span>Costo de Envío:</span>
+                        <span id="cart-shipping-cost" style="font-weight: 500; color: #64748b;">$0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; color: #0f172a; border-top: 2px dashed #e2e8f0; padding-top: 14px; margin-top: 4px;" class="linea-desglose final">
+                        <span>Total Final:</span>
+                        <span id="cart-total-final" class="oro-resaltado-numero" style="color: var(--color-oro, #f39c12); font-size: 22px; font-weight: bold;">$0</span>
                     </div>
                 </div>
 
                 <!-- SELECTOR DE MÉTODO DE PAGO -->
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="color: var(--color-cian);">Método de Pago:</label>
-                    <select id="checkout-metodo-pago">
-                        <option value="Transferencia Bancaria">Transferencia Bancaria</option>
-                        <option value="Efectivo / Rapipago">Efectivo (contra entrega)</option>
-                    </select>
+                <div class="form-group" style="margin: 0; display: flex; flex-direction: column; gap: 10px; padding-top: 15px; border-top: 2px solid #f1f5f9;">
+                    <label class="entrega-tag-subtitulo" style="font-size: 12px; color: var(--color-violeta, #7d26cd); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; display: block; margin: 0;">Método de Pago:</label>
+                    
+                    <div style="position: relative; width: 100%;">
+                        <select id="checkout-metodo-pago" style="width: 100%; padding: 12px 40px 12px 15px; border: 2px solid #cbd5e1; background: #ffffff; color: #1e293b; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; outline: none; -webkit-appearance: none; -moz-appearance: none; appearance: none; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                            <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                            <option value="Efectivo / Rapipago">Efectivo (contra entrega)</option>
+                        </select>
+                        <div class="select-chevron-container" style="position: absolute; top: 50%; right: 14px; transform: translateY(-50%); pointer-events: none; display: flex; align-items: center;">
+                            <svg class="select-arrow-vector" xmlns="http://w3.org" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#444444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin='round'>
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="caja-despacho-contenedor">
-                    <h4>📍 Datos de Despacho:</h4>
-                    <div id="resumen-datos-envio">
+                <!-- DATOS DE DESPACHO -->
+                <div class="caja-despacho-contenedor" style="background: #f8fafc; border: 2px dashed var(--color-violeta, #7d26cd); border-radius: 12px; padding: 16px; margin: 0;">
+                    <h4 class="despacho-titulo-premium" style="color: var(--color-violeta, #7d26cd); font-size: 14px; font-weight: 700; margin-bottom: 6px;">📍 Datos de Despacho:</h4>
+                    <div id="resumen-datos-envio" style="color: #64748b; font-size: 13px; line-height: 1.4;">
                         Iniciá sesión y completá tu perfil para adjuntar tu dirección automáticamente.
                     </div>
                 </div>
 
-
-                <button class="btn-submit" style="background: var(--color-cian); color: #111; font-size: 16px; padding: 15px;" onclick="finalizarOrdenWhatsApp()">
+                <!-- BOTÓN PRINCIPAL -->
+                <button class="btn-submit btn-whatsapp-premium" style="background: var(--color-cian, #00ced1); color: #0b0e14; font-size: 16px; font-weight: 700; padding: 15px; width: 100%; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(0, 206, 209, 0.2); margin-top: 5px;" onclick="finalizarOrdenWhatsApp()">
                  Enviar Pedido a WhatsApp
                 </button>
             </section>
 
         </div>
 </main>
+
 
     <!-- PANEL LATERAL DE CARRITO DESPLEGABLE -->
     <div id="sidebar-cart" class="cart-sidebar">
@@ -552,7 +556,7 @@
 
 
                 </div>
-
+                    <br>
                 <button type="submit" class="btn-submit" id="btn-auth-submit">Ingresar</button>
             </form>
         </div>
@@ -615,7 +619,14 @@
         <div class="detail-media-side">
             <div class="main-image-container">
                 <img id="detail-img" src="" alt="Foto principal">
-                
+                    <!-- 👁️ El lente de la lupa profesional -->
+    <div id="detail-zoom-lens" class="zoom-lens"></div>
+    
+    <button id="btn-detail-fav" class="btn-favorito">
+        <svg class="icono-corazon" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+    </button>      
                 <button id="btn-detail-fav" class="btn-favorito">
                     <svg class="icono-corazon" viewBox="0 0 24 24">
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -623,11 +634,22 @@
                 </button>        
             </div>
             <!-- Miniaturas interactivas -->
-            <div id="detail-thumbnails" class="detail-thumbnails"></div>
-            <div id="detail-video-container" style="display: none; margin-top: 25px;">
-                <h3></h3>
+           <!-- REEMPLAZA TU <div id="detail-thumbnails" class="detail-thumbnails"></div> POR ESTO: -->
+            <div class="thumbnails-slider-wrapper" style="position: relative; display: flex; align-items: center; margin-top: 15px; width: 100%;">
+                <!-- Flecha izquierda -->
+                <button class="thumb-nav-btn prev" onclick="event.preventDefault(); document.getElementById('detail-thumbnails').scrollBy({left: -100, behavior: 'smooth'});" style="position: absolute; left: -5px; z-index: 10; background: rgba(11,14,20,0.85); border: 1px solid var(--color-cian); color: var(--color-cian); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">❮</button>
+                
+                <!-- Contenedor original (Ahora blindado con scroll horizontal) -->
+                <div id="detail-thumbnails" class="detail-thumbnails" style="display: flex !important; gap: 10px !important; overflow-x: auto !important; scroll-behavior: smooth !important; width: 100% !important; padding: 5px 30px !important; flex-wrap: nowrap !important;"></div>
+                
+                <!-- Flecha derecha -->
+                <button class="thumb-nav-btn next" onclick="event.preventDefault(); document.getElementById('detail-thumbnails').scrollBy({left: 100, behavior: 'smooth'});" style="position: absolute; right: -5px; z-index: 10; background: rgba(11,14,20,0.85); border: 1px solid var(--color-cian); color: var(--color-cian); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">❯</button>
+            </div>
+                        <div id="detail-video-container" style="display: none; margin-top: 25px;">
+                <h3>
                 <div id="detail-video-content"></div>
             </div>
+
 
 
         </div> <!-- Aquí terminaba la columna izquierda -->
@@ -649,7 +671,9 @@
                 <h3>Ficha de Colección</h3>
                 <div class="ficha-row"><strong>Disponibilidad:</strong> <span id="detail-stock"></span></div>
             </div>
-
+            <div class="detail-actions" style="margin-top: 30px;">
+                <button id="btn-detail-add" class="btn-submit" style="width: 100%; padding: 15px; font-size: 1.1rem; font-weight: bold;">Añadir al carrito</button>
+            </div>
             <!-- DESCRIPCIÓN E HISTORIA -->
             <div class="detail-description-block">
                 <h3> Detalles</h3>
@@ -659,14 +683,27 @@
             <!-- CONTENEDOR DE VIDEO PREPARADO -->
  
             <!-- ACCIONES -->
-            <div class="detail-actions" style="margin-top: 30px;">
-                <button id="btn-detail-add" class="btn-submit" style="width: 100%; padding: 15px; font-size: 1.1rem; font-weight: bold;">Añadir al carrito</button>
-            </div>
+
         </div> <!-- Aquí termina la columna derecha -->
 
     </div> <!-- MUDAMOS ESTE CIERRE AQUÍ: Ahora sí envuelve ambas columnas -->
 </div>
 
+<!-- 🔐 MODAL PARA ESCRIBIR LA NUEVA CONTRASEÑA -->
+<div id="modal-restablecer-password" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="document.getElementById('modal-restablecer-password').classList.remove('open')">&times;</span>
+        <h2 style="font-size: 1.6rem; color: #fff; margin-bottom: 20px; text-align: center;">Nueva Contraseña</h2>
+        
+        <form id="form-nueva-password" onsubmit="procesarNuevaPassword(event)">
+            <div class="form-group">
+                <label for="new-password-input">Escribe tu nueva contraseña:</label>
+                <input type="password" id="new-password-input" placeholder="Mínimo 6 caracteres" required>
+            </div>
+            <button type="submit" class="btn-submit">Actualizar Contraseña</button>
+        </form>
+    </div>
+</div>
 
     <footer>
         <div class="footer-container">
@@ -688,6 +725,10 @@
         </div>
         <div class="footer-bottom">&copy; 2026 Zen & Zen - Todos los derechos reservados.</div>
     </footer>
-    
+    <!-- 🖼️ Ventana Modal de Pantalla Completa (Lightbox) -->
+<div id="lightbox-enlargement" class="lightbox-overlay" onclick="cerrarLightboxColeccion()">
+    <span class="lightbox-close">&times;</span>
+    <img id="lightbox-img" class="lightbox-content" src="" alt="Ampliación premium">
+</div>
 </body>
 </html>

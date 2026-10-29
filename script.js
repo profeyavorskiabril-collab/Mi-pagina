@@ -368,28 +368,41 @@ function mostrarSeccion(seccion) {
     document.getElementById('view-favoritos').classList.toggle('hidden', seccion !== 'favoritos');
     document.getElementById('view-detalle').classList.toggle('hidden', seccion !== 'detalle');
     document.getElementById('sobre-nosotros-section').classList.toggle('hidden', seccion !== 'nosotros');
-    // 🌟 NUEVO: Controlamos de forma limpia la pantalla de éxito al comprar
     document.getElementById('view-exito-compra').classList.toggle('hidden', seccion !== 'exito-compra');
-// Agrega esta línea adentro de tu función mostrarSeccion para controlar la visibilidad:
-document.getElementById('view-pedidos').classList.toggle('hidden', seccion !== 'pedidos');
+    document.getElementById('view-pedidos').classList.toggle('hidden', seccion !== 'pedidos');
 
-// 🎯 EL LUGAR CORRECTO: Llamamos al escudo inmediatamente si el usuario entró al carrito
-if (seccion === 'carrito') {
- 
-    actualizarCarritoUI();
-        document.body.classList.remove('light-mode');
-    
-} else {
-    // Si va a otra sección, revisamos el localStorage para devolverle el modo claro si correspondía
+    // 🎯 CONTROL INTEGRADO E INTELIGENTE PARA EL CARRITO
+    const carritoSeccion = document.getElementById('view-carrito');
     const modoGuardado = localStorage.getItem("zen_theme");
-    if (modoGuardado === "light" || modoGuardado === null) {
-        document.body.classList.add('light-mode');
+    const esClaro = modoGuardado === "light" || modoGuardado === null;
+
+    if (seccion === 'carrito') {
+        actualizarCarritoUI();
+        
+        // Sincronizamos las clases del contenedor según el tema activo sin romper el body
+        if (carritoSeccion) {
+            if (esClaro) {
+                carritoSeccion.classList.add("modo-claro-carrito");
+                carritoSeccion.classList.add("light-mode");
+            } else {
+                carritoSeccion.classList.remove("modo-claro-carrito");
+                carritoSeccion.classList.remove("light-mode");
+            }
+        }
+    } else {
+        // Para el resto de las secciones comunes
+        if (esClaro) {
+            document.body.classList.add('light-mode');
+        } else {
+            document.body.classList.remove('light-mode');
+        }
     }
-}
-  if (!window.evitarPushState) {
+
+    if (!window.evitarPushState) {
         history.pushState({ seccion: seccion }, "", "#" + seccion);
     }
 }
+
 
 // ==========================================================
 // 🛡️ ESCUDO NATIVO: ANULADOR DE MODO CLARO DENTRO DEL CARRITO
@@ -1508,111 +1521,77 @@ async function eliminarDeFavoritos(id) {
     // 5. Refrescamos la pantalla de favoritos inmediatamente para que la tarjeta desaparezca de la vista
     mostrarFavoritos();
 }
-// ==========================================================
-// 🌓 CONTROLADOR DE TEMA CON AISLAMIENTO DE RAÍZ EN EL CARRITO
+// ==========================================================      caja.style.setProperty('background-color', 'rgba(11, 14, 20, 0.85)', 'important');
 document.addEventListener("DOMContentLoaded", () => {
-
     const themeBtn = document.getElementById("theme-toggle-btn");
     if (!themeBtn) return;
 
-    // Función auxiliar para las cajas de despacho (Excluyendo el carrito)
+    // Función auxiliar para las cajas de despacho de la tienda
     const ajustarCajaDespachoDinamica = (isLight) => {
         const cajasNegras = document.querySelectorAll('[style*="background: rgba(11, 14, 20"], [style*="background-color: rgba(11, 14, 20"]');
         cajasNegras.forEach(caja => {
-            // 🛡️ Si la caja está dentro del carrito, NO LA TOCAMOS. Se queda oscura de fábrica.
-            if (caja.closest('#view-carrito')) return;
+            if (caja.closest('#view-carrito')) return; // El nuevo carrito se maneja nativamente por CSS
 
             if (isLight) {
                 caja.style.setProperty('background', '#f1f5f9', 'important');
                 caja.style.setProperty('background-color', '#f1f5f9', 'important');
                 caja.style.setProperty('color', '#1e293b', 'important');
                 caja.style.setProperty('border', '1px solid #cbd5e1', 'important');
-                document.getElementById('view-carrito').style = "background-color: red !important;"
             } else {
                 caja.style.setProperty('background', 'rgba(11, 14, 20, 0.85)', 'important');
-                caja.style.setProperty('background-color', 'rgba(11, 14, 20, 0.85)', 'important');
                 caja.style.setProperty('color', '#ffffff', 'important');
                 caja.style.setProperty('border', 'none', 'important');
             }
         });
     };
 
-    // 🎯 EL CANDADO DEFINITIVO: Le prohíbe al carrito el Modo Claro usando atributos nativos
-    const forzarCarritoSiempreOscuro = () => {
-        const carritoSeccion = document.getElementById('view-carrito');
-        if (carritoSeccion) {
-            carritoSeccion.classList.remove('light-mode'); // Rompe la herencia clara
-            carritoSeccion.setAttribute('data-theme', 'dark'); // Fuerza al navegador a leerlo como oscuro
-            carritoSeccion.style.setProperty('background', '#0b0e14', 'important'); // Le clava su fondo negro original
-            carritoSeccion.style.setProperty('background-color', '#0b0e14', 'important');
-            carritoSeccion.style.setProperty('color', '#ffffff', 'important');
-             carritoSeccion.style = "background-color: white;"
-        }
-    };
-
+    // Al cargar la página por primera vez
     const modoGuardado = localStorage.getItem("zen_theme");
-    
-    // 1. Configuración al cargar la tienda por primera vez
     if (modoGuardado === "light" || modoGuardado === null) {
         document.body.classList.add("light-mode");
-        setTimeout(() => {
-            ajustarCajaDespachoDinamica(true);
-            forzarCarritoSiempreOscuro(); // Escudo activo desde el primer segundo
-        }, 100);
+        setTimeout(() => ajustarCajaDespachoDinamica(true), 100);
     } else {
         document.body.classList.remove("light-mode");
-        setTimeout(() => forzarCarritoSiempreOscuro(), 100);
+        setTimeout(() => ajustarCajaDespachoDinamica(false), 100);
     }
 
-    // 2. Control interactivo al hacer clic en el botón 🌓
-    themeBtn.addEventListener("click", () => {
-        const esModoClaro = document.body.classList.toggle("light-mode");
-        const carritoSeccion = document.getElementById('view-carrito');
-        
-
-       
-        if (carritoSeccion) {
-            
-
-            forzarCarritoSiempreOscuro(); // Nos aseguramos de mantenerlo oscuro
-        
-        }
-        if (esModoClaro) {
-            localStorage.setItem("zen_theme", "light");
-            ajustarCajaDespachoDinamica(true);
-            forzarCarritoSiempreOscuro(); // Bloqueamos el modo claro en caliente
-            console.log("☀️ Modo Claro Activado en la tienda");
-            
-        } else {
-            localStorage.setItem("zen_theme", "dark");
-            
-            ajustarCajaDespachoDinamica(false);
-            forzarCarritoSiempreOscuro(); // Nos aseguramos de mantenerlo oscuro
-            console.log("🌙 Modo Oscuro Activado");
-            
-
-           
-        }
+   themeBtn.addEventListener("click", () => {
+    const esModoClaro = document.body.classList.toggle("light-mode");
+    const carritoSeccion = document.getElementById('view-carrito');
     
-        const carritoVisible = !document.getElementById('view-carrito').classList.contains('hidden');
-    if (carritoVisible) {
-        document.body.classList.remove('light-mode');
+    if (esModoClaro) {
+        localStorage.setItem("zen_theme", "light");
+        ajustarCajaDespachoDinamica(true);
+        console.log("☀️ Modo Claro Activado en la tienda");
+        
+        // 🎯 Activamos el entorno aislado exclusivo para el carrito
+        if (carritoSeccion) {
+            carritoSeccion.classList.add("modo-claro-carrito");
+        }
+    } else {
+        localStorage.setItem("zen_theme", "dark");
+        ajustarCajaDespachoDinamica(false);
+        console.log("🌙 Modo Oscuro Activado");
+        
+        // 🌙 Volvemos al modo oscuro original quitando la clase
+        if (carritoSeccion) {
+            carritoSeccion.classList.remove("modo-claro-carrito");
+        }
     }
-    });
+});
 
-    // 3. Parche de seguridad por si el carrito se vuelve a dibujar al agregar productos
+    // Parche por si se redibuja la sección al interactuar con el ícono
     const btnCarrito = document.querySelector('.cart-icon') || document.getElementById('user-status');
     if (btnCarrito) {
         btnCarrito.addEventListener('click', () => {
             setTimeout(() => {
-                forzarCarritoSiempreOscuro();
                 const actualmenteClaro = document.body.classList.contains("light-mode");
-                // 🛠️ CORREGIDO AQUÍ: Agregamos la "l" que faltaba en la variable para eliminar el error
                 ajustarCajaDespachoDinamica(actualmenteClaro);
             }, 150);
         });
     }
 });
+
 
 // Busca el botón en tu HTML y haz que navegue de forma nativa a tu nueva sección
 function mostrarInfo(){
@@ -1783,4 +1762,136 @@ async function traerHistorialPedidos() {
 function mostrarMisPedidos() {
     mostrarSeccion('pedidos'); // Prende la vista cambiándole las clases .hidden
     traerHistorialPedidos();   // Carga los datos de Supabase al instante
+}
+
+// ==========================================================================
+// 🕹️ PROCESADOR INTEGRADO DE ZOOM LUPA Y LIGHTBOX NATIVO
+// ==========================================================================
+
+function ejecutarZoomLupa(e) {
+    // Si estamos en celular, cancelamos la lupa
+    if (window.innerWidth <= 768) return;
+
+    const img = document.getElementById("detail-img");
+    const lens = document.getElementById("detail-zoom-lens");
+
+    if (!img || !lens || !img.src) return;
+
+    lens.style.visibility = "visible";
+
+    // Configuramos la imagen de fondo de la lupa con el mismo archivo de Supabase
+    lens.style.backgroundImage = `url('${img.src}')`;
+    
+    // Nivel de zoom (3x aumentado)
+    const factorZoom = 3;
+    lens.style.backgroundSize = `${img.width * factorZoom}px ${img.height * factorZoom}px`;
+
+    // Calculamos las coordenadas del mouse respecto a la imagen
+    const rect = img.getBoundingClientRect();
+    let x = e.clientX - rect.left;
+    let y = e.clientY - rect.top;
+
+    // Ajustamos los límites para que el lente no se salga de la foto
+    let posX = x - (lens.offsetWidth / 2);
+    let posY = y - (lens.offsetHeight / 2);
+
+    if (posX < 0) posX = 0;
+    if (posX > img.width - lens.offsetWidth) posX = img.width - lens.offsetWidth;
+    if (posY < 0) posY = 0;
+    if (posY > img.height - lens.offsetHeight) posY = img.height - lens.offsetHeight;
+
+    // Movemos físicamente la cajita de la lupa
+    lens.style.left = `${posX}px`;
+    lens.style.top = `${posY}px`;
+
+    // Desplazamos el fondo de la imagen de forma inversa para centrar el aumento
+    const cx = (posX + (lens.offsetWidth / 2)) * factorZoom - (lens.offsetWidth / 2);
+    const cy = (posY + (lens.offsetHeight / 2)) * factorZoom - (lens.offsetHeight / 2);
+    lens.style.backgroundPosition = `-${cx}px -${cy}px`;
+}
+
+function ocultarZoomLupa() {
+    const lens = document.getElementById("detail-zoom-lens");
+    if (lens) lens.style.visibility = "hidden";
+}
+
+// --- CONTROL DE PANTALLA COMPLETA ---
+function abrirLightboxColeccion() {
+    const srcImg = document.getElementById("detail-img")?.src;
+    const lightbox = document.getElementById("lightbox-enlargement");
+    const lightboxImg = document.getElementById("lightbox-img");
+
+    if (!srcImg || !lightbox || !lightboxImg) return;
+
+    lightboxImg.src = srcImg;
+    lightbox.style.display = "flex";
+}
+
+function cerrarLightboxColeccion() {
+    const lightbox = document.getElementById("lightbox-enlargement");
+    if (lightbox) lightbox.style.display = "none";
+}
+
+// Vinculamos de forma segura el evento de clic apenas se monte la vista detallada
+document.addEventListener("DOMContentLoaded", () => {
+    const imgPrincipal = document.getElementById("detail-img");
+    if (imgPrincipal) {
+        imgPrincipal.addEventListener("click", () => {
+            abrirLightboxColeccion();
+        });
+    }
+       verificarTokenRestablecimiento();
+});
+// ==========================================================
+// 🔐 DETECTOR AUTOMÁTICO Y ACTUALIZADOR DE CONTRASEÑA (SUPABASE)
+// ==========================================================
+
+// 1. Esta función revisa si el usuario viene haciendo clic desde el mail de recuperación
+function verificarTokenRestablecimiento() {
+    const hash = window.location.hash;
+    
+    // Si la URL contiene un token de tipo "recovery" que mandó Supabase
+    if (hash && hash.includes("type=recovery") && hash.includes("access_token=")) {
+        console.log("🔑 Detectado retorno de mail de recuperación seguro.");
+        
+        // Evitamos que el sistema de rutas SPA limpie la pantalla o salte a otra sección
+        window.evitarPushState = true;
+        
+        // Abrimos el cartel flotante para que ponga la nueva contraseña de inmediato
+        setTimeout(() => {
+            const modalReset = document.getElementById('modal-restablecer-password');
+            if (modalReset) modalReset.classList.add('open');
+        }, 800);
+    }
+}
+
+// 2. Esta función toma la nueva contraseña y la impacta directamente en Supabase
+async function procesarNuevaPassword(e) {
+    e.preventDefault();
+    
+    const nuevaPassword = document.getElementById('new-password-input').value;
+    
+    if (nuevaPassword.trim().length < 6) {
+        alert("La contraseña debe tener al menos 6 caracteres por seguridad.");
+        return;
+    }
+
+    try {
+        // Le enviamos la nueva contraseña de forma directa a la autenticación de Supabase
+        const { data, error } = await window.supabase.auth.updateUser({
+            password: nuevaPassword
+        });
+
+        if (error) throw error;
+
+        alert("¡Contraseña actualizada con éxito! Ya podés ingresar con tus nuevos datos.");
+        
+        // Cerramos el modal de cambio y limpiamos la URL para que no quede el token viejo expuesto
+        document.getElementById('modal-restablecer-password').classList.remove('open');
+        window.location.hash = "#inicio";
+        mostrarSeccion('inicio');
+        
+    } catch (err) {
+        alert("Error al actualizar en la nube: " + err.message);
+    }
 }
