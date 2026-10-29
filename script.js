@@ -1875,7 +1875,10 @@ function verificarTokenRestablecimiento() {
 }
 
 
-// 2. Esta función toma la nueva contraseña y la impacta directamente en Supabase
+// ==========================================================
+// 🔐 ACTUALIZADOR DE CONTRASEÑA EN LA NUBE (CORREGIDO)
+// ==========================================================
+// 🌟 Agregado 'async' al principio para solucionar el SyntaxError
 async function procesarNuevaPassword(e) {
     e.preventDefault();
     
@@ -1887,7 +1890,7 @@ async function procesarNuevaPassword(e) {
     }
 
     try {
-        // Le enviamos la nueva contraseña de forma directa a la autenticación de Supabase
+        // Ahora el await funciona de forma totalmente válida aquí adentro
         const { data, error } = await window.supabase.auth.updateUser({
             password: nuevaPassword
         });
