@@ -1834,66 +1834,7 @@ function cerrarLightboxColeccion() {
 
 // Vinculamos de forma segura el evento de clic apenas se monte la vista detallada
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("🚀 Iniciando arranque maestro de Zen & Zen de forma segura...");
-
-    // 1. Inicializar Supabase si hace falta
-    if (window.supabase && window.supabase.createClient && typeof window.supabase.from !== 'function') {
-        window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
     
-    // 2. Enlazamos los formularios primero para asegurar que los botones respondan siempre
-    const formPerfil = document.getElementById('perfil-form');
-    if (formPerfil) formPerfil.addEventListener('submit', guardarDatosPerfil);
-
-    const formAdmin = document.getElementById('product-form');
-    if (formAdmin) formAdmin.addEventListener('submit', agregarProductoAdmin);
-
-    // Enlazamos de forma segura el formulario de login
-    const formAuth = document.getElementById('auth-form');
-    if (formAuth) formAuth.addEventListener('submit', procesarIdentificacionUsuario);
-
-    // 3. BLINDAJE INTERNO: Activamos el buscador de forma segura dentro del flujo principal
-    const searchInput = document.getElementById('search-input');
-    if (searchInput) {
-        console.log("🔍 Buscador detectado y activado correctamente.");
-        searchInput.addEventListener('input', (e) => {
-            const texto = e.target.value.toLowerCase();
-            document.querySelectorAll('.product-card').forEach(tarjeta => {
-                const tituloEl = tarjeta.querySelector('.product-title');
-                if (tituloEl) {
-                    const titulo = tituloEl.textContent.toLowerCase();
-                    tarjeta.style.display = titulo.includes(texto) ? "flex" : "none";
-                }
-            });
-        });
-    }
-
-    // 4. Sincronizamos los favoritos del usuario desde la nube
-    if (typeof sincronizarFavoritosAlIngresar === 'function') {
-        await sincronizarFavoritosAlIngresar();
-    }
-
-    // 5. Cargamos los datos asincrónicos de los productos desde la nube
-    try {
-        await traerProductosDesdeNube();
-    } catch (e) {
-        console.warn("No se pudieron cargar los productos en el arranque:", e.message);
-    }
-    
-    // 6. Aplicamos la interfaz de usuario activa si inició sesión
-    if (usuarioActivo) {
-        try {
-            aplicarInterfazUsuario();
-        } catch (e) {
-            console.warn("No se pudo aplicar la interfaz de usuario:", e.message);
-        }
-    }
-
-    // 7. Renderizamos el carrito si tenía artículos guardados
-    if (carrito.length > 0 && typeof actualizarCarritoVisual === 'function') {
-        actualizarCarritoVisual();
-    }
-
     const imgPrincipal = document.getElementById("detail-img");
     if (imgPrincipal) {
         imgPrincipal.addEventListener("click", () => {
@@ -1907,23 +1848,32 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================================
 
 // 1. Esta función revisa si el usuario viene haciendo clic desde el mail de recuperación
+// ==========================================================
+// 🔐 DETECTOR AUTOMÁTICO SEGURO DE MAIL DE RECUPERACIÓN
+// ==========================================================
 function verificarTokenRestablecimiento() {
     const hash = window.location.hash;
     
-    // Si la URL contiene un token de tipo "recovery" que mandó Supabase
+    // Si la URL contiene las credenciales de recuperación que inyecta Supabase
     if (hash && hash.includes("type=recovery") && hash.includes("access_token=")) {
         console.log("🔑 Detectado retorno de mail de recuperación seguro.");
         
-        // Evitamos que el sistema de rutas SPA limpie la pantalla o salte a otra sección
+        // Activamos el escudo para congelar temporalmente el enrutador de la tienda
         window.evitarPushState = true;
         
-        // Abrimos el cartel flotante para que ponga la nueva contraseña de inmediato
+        // ⏳ ESCUDO DE TIEMPO: Le damos un respiro al navegador para asegurar que el modal exista
         setTimeout(() => {
             const modalReset = document.getElementById('modal-restablecer-password');
-            if (modalReset) modalReset.classList.add('open');
-        }, 800);
+            if (modalReset) {
+                modalReset.classList.add('open');
+                console.log("🎯 Modal de Nueva Contraseña desplegado con éxito.");
+            } else {
+                console.warn("⚠️ No se encontró el elemento #modal-restablecer-password en el HTML.");
+            }
+        }, 500); // 500 milisegundos de delay técnico de seguridad
     }
 }
+
 
 // 2. Esta función toma la nueva contraseña y la impacta directamente en Supabase
 async function procesarNuevaPassword(e) {
