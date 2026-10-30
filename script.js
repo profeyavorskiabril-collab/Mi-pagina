@@ -145,9 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.evitarPushState = true;
         
         // Ejecutamos el detector para levantar el modal flotante inmediatamente
-        if (typeof verificarTokenRestablecimiento === 'function') {
-            verificarTokenRestablecimiento();
-        }
+
         return; // Detenemos el inicio común para que no tape el modal
     }
 
