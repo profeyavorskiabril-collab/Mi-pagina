@@ -477,86 +477,67 @@ if (helperRow) {
 
 }
 
-// 🌟 FUNCIÓN DE ACCIÓN AUTOMÁTICA DEL LOGIN (Separada para evitar colisiones)
+
 async function procesarIdentificacionUsuario(e) {
     e.preventDefault();
-    
-    // Forzamos minúsculas y limpiamos espacios para evitar fallas de tipeo
+
     const email = document.getElementById('auth-email').value.trim().toLowerCase();
     const pass = document.getElementById('auth-pass').value;
 
-    if (tipoAuthActual === 'register') {
+    // INICIO DE SESIÓN CON SUPABASE AUTH
+    if (tipoAuthActual !== 'register') {
         try {
-            if (usuariosRegistrados.some(u => u.email === email)) { alert("Correo ya registrado."); return; }
-            
-            const nuevoUsuario = { email, pass, nombre: "", telefono: "", direccion: "", cp: "", rol: "cliente" };
-            usuariosRegistrados.push(nuevoUsuario);
-            localStorage.setItem('zen_usuarios', JSON.stringify(usuariosRegistrados));
-            
-            if (window.supabase && typeof window.supabase.from === 'function') {
-                const { error } = await window.supabase.from('usuarios').insert([{ email, password: pass, rol: "cliente" }]);
-                if (error) throw error;
-            }
-            alert("¡Cuenta creada! Ya podés ingresar.");
-            cambiarAuthTab('login');
-        } catch (err) { alert("Error al registrarse en la nube: " + err.message); }
-    } else {
-        // --- PROCESO DE INICIO DE SESIÓN CORREGIDO ---
-        let usuarioEncontrado = null;
+            const { data: authData, error: authError } =
+                await window.supabase.auth.signInWithPassword({
+                    email: email,
+                    password: pass
+                });
 
-        // 1. Intentamos validar y traer todos los datos reales desde Supabase
-        if (window.supabase && typeof window.supabase.from === 'function') {
-            try {
-                const { data, error } = await window.supabase
+            if (authError) throw authError;
+
+            // Recuperamos el perfil del usuario
+            const { data: perfil, error: perfilError } =
+                await window.supabase
                     .from('usuarios')
-                    .select('*') 
+                    .select('*')
                     .eq('email', email)
-                    .eq('password', pass)
-                    .maybeSingle(); 
-                
-                if (data) {
-                    usuarioEncontrado = data; 
-                }
-            } catch (err) {
-                console.warn("Fallo consulta en la nube, intentando verificar LocalStorage...", err.message);
-            }
-        }
+                    .maybeSingle();
 
-        // 2. Si no hay internet o falló Supabase, usamos el respaldo de LocalStorage
-        if (!usuarioEncontrado) {
-            const existeLocal = usuariosRegistrados.find(u => u.email === email && (u.pass === pass || u.password === pass));
-            if (existeLocal) {
-                usuarioEncontrado = { 
-                    email: existeLocal.email, 
-                    rol: existeLocal.rol || "cliente",
-                    nombre: existeLocal.nombre || "",
-                    telefono: existeLocal.telefono || "",
-                    direccion: existeLocal.direccion || "",
-                    cp: existeLocal.cp || "",
-                    favoritos: existeLocal.favoritos || []
-                };
-            }
-        }
+            if (perfilError) throw perfilError;
 
-        // 3. Si encontramos las credenciales en cualquiera de los dos lados, iniciamos sesión de forma segura
-        if (usuarioEncontrado) {
+            usuarioActivo = perfil || {
+                email: email,
+                rol: 'cliente',
+                nombre: '',
+                telefono: '',
+                direccion: '',
+                cp: '',
+                favoritos: []
+            };
+
+            // Guardamos los datos de perfil, nunca la contraseña
             localStorage.removeItem('zen_sesion');
-            usuarioActivo = usuarioEncontrado; 
             localStorage.setItem('zen_sesion', JSON.stringify(usuarioActivo));
-            
+
             aplicarInterfazUsuario();
             cerrarModalAuth();
-            
-            // 🌟 NUEVO: Si el usuario tenía favoritos cargados en Supabase, los forzamos en pantalla de una
+
             if (typeof sincronizarFavoritosAlIngresar === 'function') {
                 sincronizarFavoritosAlIngresar();
             }
 
-            alert(`¡Ingreso exitoso! Bienvenido.`);
-        } else { 
-            alert("Datos incorrectos. Revisá tu correo y contraseña."); 
+            alert('¡Ingreso exitoso! Bienvenido.');
+
+        } catch (err) {
+            console.error('Error de inicio de sesión:', err);
+            alert('No se pudo iniciar sesión. Revisá tu correo y contraseña.');
         }
+
+        return;
     }
+
+    // El registro lo adaptaremos al nuevo sistema de autenticación
+    alert('Estamos actualizando el registro. Por ahora, ingresá con tu cuenta existente.');
 }
 
 function aplicarInterfazUsuario() {
