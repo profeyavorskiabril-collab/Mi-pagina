@@ -650,6 +650,9 @@ async function guardarDatosPerfil(e) {
 // ==========================================================
 // ✉️ ENVIADOR DE CORREO DE RECUPERACIÓN ADAPTADO PARA VERCEL
 // ==========================================================
+// ==========================================================
+// ✉️ ENVIADOR DE CORREO DE RECUPERACIÓN (BLINDAJE DE RUTA REAL)
+// ==========================================================
 async function manejarRecuperarContrasena() {
     const correoInput = document.getElementById('auth-email');
     let correo = correoInput ? correoInput.value.trim() : "";
@@ -660,10 +663,10 @@ async function manejarRecuperarContrasena() {
     if (!correo) return;
 
     try {
-        // 🔥 LA CLAVE DE VERCEL: Forzamos tu link nuevo exacto y limpio para Supabase
+        // 🎯 CONTROL DE RUTA EXACTA: Tu link real completo (Asegúrate de que no diga vercel.app a secas)
         const urlRetornoVercel = "https://vercel.app";
 
-        console.log("✈️ Solicitando correo de recuperación con retorno a:", urlRetornoVercel);
+        console.log("✈️ Solicitando correo de recuperación hacia:", urlRetornoVercel);
 
         const { data, error } = await window.supabase.auth.resetPasswordForEmail(correo, {
             redirectTo: urlRetornoVercel, 
