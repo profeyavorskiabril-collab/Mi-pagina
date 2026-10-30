@@ -26,13 +26,24 @@ export default async function handler(req, res) {
             }
         );
 
-        const usuarios = await consulta.json();
+const respuestaTexto = await consulta.text();
 
-        if (!consulta.ok || !usuarios.length) {
-            return res.status(404).json({
-                error: "No encontramos una cuenta con ese correo."
-            });
-        }
+console.log("Estado de consulta:", consulta.status);
+console.log("Respuesta de Supabase:", respuestaTexto);
+
+if (!consulta.ok) {
+    throw new Error(
+        `Error consultando usuarios (${consulta.status}): ${respuestaTexto}`
+    );
+}
+
+const usuarios = JSON.parse(respuestaTexto);
+
+if (!Array.isArray(usuarios) || usuarios.length === 0) {
+    return res.status(404).json({
+        error: "No encontramos una cuenta con ese correo."
+    });
+}
 
         // Crear la cuenta Auth si todavía no existe
         const temporal = crypto.randomUUID() + "Aa9!";
