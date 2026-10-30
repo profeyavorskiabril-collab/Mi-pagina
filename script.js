@@ -1982,3 +1982,55 @@ document.addEventListener("DOMContentLoaded", () => {
     }
        verificarTokenRestablecimiento();
 });
+
+// Detectar cuando el usuario llega desde el enlace de recuperación
+window.supabase.auth.onAuthStateChange((event, session) => {
+    if (event === "PASSWORD_RECOVERY" && session) {
+        document
+            .getElementById("modal-restablecer-password")
+            .classList.add("open");
+    }
+});
+
+
+// Guardar la nueva contraseña en Supabase
+async function procesarNuevaPassword(event) {
+    event.preventDefault();
+
+    const nueva = document.getElementById("new-password-input").value;
+    const confirmar = document.getElementById("confirm-password-input").value;
+
+    if (nueva.length < 8) {
+        alert("La contraseña debe tener al menos 8 caracteres.");
+        return;
+    }
+
+    if (nueva !== confirmar) {
+        alert("Las contraseñas no coinciden.");
+        return;
+    }
+
+    try {
+        const { error } = await window.supabase.auth.updateUser({
+            password: nueva
+        });
+
+        if (error) throw error;
+
+        await window.supabase.auth.signOut();
+
+        localStorage.removeItem("zen_sesion");
+
+        document
+            .getElementById("modal-restablecer-password")
+            .classList.remove("open");
+
+        document.getElementById("form-restablecer-password").reset();
+
+        alert("¡Contraseña actualizada! Ya podés iniciar sesión.");
+
+    } catch (error) {
+        console.error("Error al cambiar contraseña:", error);
+        alert("No se pudo actualizar la contraseña: " + error.message);
+    }
+}
