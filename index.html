@@ -689,21 +689,22 @@
     </div> <!-- MUDAMOS ESTE CIERRE AQUÍ: Ahora sí envuelve ambas columnas -->
 </div>
 
-<!-- 🔐 MODAL PARA ESCRIBIR LA NUEVA CONTRASEÑA -->
-<div id="modal-restablecer-password" class="modal">
+<!-- 🔐 MODAL DE VERIFICACIÓN DE SEGURIDAD (CÓDIGO OTP) -->
+<div id="modal-verificar-otp" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="document.getElementById('modal-restablecer-password').classList.remove('open')">&times;</span>
-        <h2 style="font-size: 1.6rem; color: #fff; margin-bottom: 20px; text-align: center;">Nueva Contraseña</h2>
+        <span class="close-modal" onclick="document.getElementById('modal-verificar-otp').classList.remove('open')">&times;</span>
+        <h2 style="font-size: 1.6rem; color: #fff; margin-bottom: 10px; text-align: center;">Verificación de Seguridad</h2>
+        <p style="color: #ccc; font-size: 0.9rem; text-align: center; margin-bottom: 20px;">Ingresa el código de 6 dígitos que enviamos a tu casilla de correo.</p>
         
-        <form id="form-nueva-password" onsubmit="procesarNuevaPassword(event)">
+        <form id="form-verificar-otp" onsubmit="procesarValidacionOTP(event)">
             <div class="form-group">
-                <label for="new-password-input">Escribe tu nueva contraseña:</label>
-                <input type="password" id="new-password-input" placeholder="Mínimo 6 caracteres" required>
+                <input type="text" id="otp-input" placeholder="Ej: 123456" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px; font-weight: bold;" required>
             </div>
-            <button type="submit" class="btn-submit">Actualizar Contraseña</button>
+            <button type="submit" class="btn-submit">Verificar Código</button>
         </form>
     </div>
 </div>
+
 
     <footer>
         <div class="footer-container">
