@@ -1581,9 +1581,11 @@ document.querySelector('.nav-menu').classList.remove('active');
 
                 // Dibuja tus tarjetas
 productosFavoritos.forEach(item => {
+     const imagenPrincipal = String(item.imagen || '').split(',')[0].trim();
+    console.log("IMAGEN EN FAVORITOS:", item.imagen);
             grid.innerHTML += `
                 <div class="product-card" onclick="verDetalleProducto('${item.id}')">
-                    <img src="${item.imagen}" alt="${item.titulo}" onerror="this.src='placeholder.jpg'">
+                   <img src="${imagenPrincipal}" alt="${item.titulo}" onerror="this.src='placeholder.jpg'">
                     <div class="product-info">
                         <h3 class="product-title">${item.titulo}</h3>
                         <p class="product-price">$${Number(item.precio).toLocaleString('es-AR')}</p>
