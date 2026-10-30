@@ -709,7 +709,7 @@ grid-template-columns: 1fr;
 /* ==========================================================
    📱 ADAPTACIÓN PARA CELULARES CHICOS (MENOS DE 600PX)
    ========================================================== */
-@media (max-width: 600px) {
+@media (max-width: 480px) {
     .profile-actions-container {
         flex-direction: column; /* Se apilan verticalmente de a uno por fila */
         gap: 12px;
