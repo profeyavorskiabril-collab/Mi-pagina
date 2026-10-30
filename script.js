@@ -747,12 +747,58 @@ async function procesarNuevaPassword(e) {
     }
 }
 
-// Función interna simulada para el despacho a tu Gmail (Puedes usar EmailJS gratuito en 2 minutos)
+// ==========================================================================
+// 🚀 MOTOR REAL DE ENVÍO DE CORREOS OTP VÍA RESEND (CÓDIGO DE AYER)
+// ==========================================================================
 async function enviarCorreoGmailOTP(destinatario, codigo) {
-    // Aquí es donde el script ejecuta la orden de envío hacia tu API o servicio de correos
-    console.log(`Despachando token ${codigo} hacia ${destinatario}`);
-    return true; 
+    try {
+        console.log(`✈️ Conectando con Resend para enviar el código a ${destinatario}...`);
+
+        // 🔥 PEGÁ ACÁ TU CLAVE DE RESEND (La que empieza con re_ que guardamos ayer)
+        const RESEND_API_KEY = "re_c2WMZrW2_2ZjBh7pnYyGeRmuYrbFLpsNu"; 
+
+        // Llamamos directamente a la API oficial de Resend desde tu código
+        const respuesta = await fetch("https://resend.com", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${RESEND_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                from: "Zen & Zen <onboarding@resend.dev>", // Usamos el remitente gratuito de Resend
+                to: destinatario,
+                subject: "🔒 Código de verificación de Seguridad - Zen & Zen",
+                html: `
+                    <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <h2 style="color: #0b0617; text-align: center;">Verificación de Identidad</h2>
+                        <p>Hola,</p>
+                        <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en la tienda <strong>Zen & Zen</strong>.</p>
+                        <p>Tu código de seguridad temporal de 6 dígitos es:</p>
+                        <div style="background-color: #f1f5f9; padding: 15px; text-align: center; font-size: 1.8rem; font-weight: bold; letter-spacing: 4px; color: #00ced1; border-radius: 4px; margin: 20px 0;">
+                            ${codigo}
+                        </div>
+                        <p>Ingresa este número en la pantalla de la tienda para poder escribir tu nueva contraseña de coleccionista.</p>
+                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 30px;">Si tú no solicitaste este cambio, puedes ignorar este mensaje de forma segura.</p>
+                    </div>
+                `
+            })
+        });
+
+        if (respuesta.ok) {
+            console.log("✅ Correo enviado con éxito a través del motor de Resend.");
+            return true;
+        } else {
+            const errorDatos = await respuesta.json();
+            throw new Error(errorDatos.message || "Error desconocido del servidor de Resend.");
+        }
+
+    } catch (error) {
+        console.error("❌ Error crítico en el motor de Resend:", error);
+        alert("No se pudo despachar el correo: " + error.message);
+        return false;
+    }
 }
+
 
 
 
