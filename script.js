@@ -1584,7 +1584,7 @@ productosFavoritos.forEach(item => {
      const imagenPrincipal = String(item.imagen || '').split(',')[0].trim();
     console.log("IMAGEN EN FAVORITOS:", item.imagen);
             grid.innerHTML += `
-                <div class="product-card" onclick="verDetalleProducto('${item.id}')">
+                <div class="product-card" onclick="event.stopPropagation(); verDetalleProducto('${item.id}')">
                    <img src="${imagenPrincipal}" alt="${item.titulo}" onerror="this.src='placeholder.jpg'">
                     <div class="product-info">
                         <h3 class="product-title">${item.titulo}</h3>
