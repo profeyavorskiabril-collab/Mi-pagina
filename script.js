@@ -134,8 +134,24 @@ window.addEventListener('popstate', function(evento) {
 });
 
 // Guardamos el estado inicial apenas el cliente entra a tu tienda por primera vez
+// ==========================================
+// 1. CONTROL DE SECCIONES Y DETECTOR MAESTRO
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Si entran sin hash, registramos que están en el inicio
+    // 🧠 REVISIÓN DE SEGURIDAD PRIMERO: Si viene del mail de recuperación, congelamos las rutas
+    const hash = window.location.hash;
+    if (hash && hash.includes("type=recovery") && hash.includes("access_token=")) {
+        console.log("🔑 Retorno seguro detectado. Congelando secciones para cambiar contraseña.");
+        window.evitarPushState = true;
+        
+        // Ejecutamos el detector para levantar el modal flotante inmediatamente
+        if (typeof verificarTokenRestablecimiento === 'function') {
+            verificarTokenRestablecimiento();
+        }
+        return; // Detenemos el inicio común para que no tape el modal
+    }
+
+    // Si es una entrada común sin token, registramos el inicio normalmente
     const seccionInicial = window.location.hash ? window.location.hash.substring(1) : 'inicio';
     history.replaceState({ seccion: seccionInicial }, "", "#" + seccionInicial);
 });
@@ -155,6 +171,7 @@ async function traerProductosDesdeNube() {
     }
     renderizarProductos();
 }
+
 function renderizarProductos() {
     const grid = document.getElementById('products-grid');
     if (!grid) return;
