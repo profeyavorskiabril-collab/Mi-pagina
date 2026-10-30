@@ -652,49 +652,43 @@ window.seguridadOTP_Generado = null;
 window.usuarioOTP_IdActual = null;
 
 // 1. FUNCIÓN MAESTRA: Verifica el usuario y despacha el correo seguro desde tu Gmail
+
 async function manejarRecuperarContrasena() {
-    const correoInput = document.getElementById('auth-email');
-    let correo = correoInput ? correoInput.value.trim() : "";
+    const correo = document.getElementById('auth-email')
+        .value.trim().toLowerCase();
 
     if (!correo) {
-        correo = prompt("Por favor, ingresa tu correo electrónico para restablecer la contraseña:");
+        alert("Ingresá tu correo electrónico.");
+        return;
     }
-    if (!correo) return;
 
     try {
-        console.log("🔍 Validando identidad en la base de datos...");
+        const respuesta = await fetch("/api/recuperar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: correo })
+        });
 
-        // Buscamos si existe en tu tabla personalizada (Ajusta 'usuarios' si se llama distinto)
-        const { data: usuario, error } = await window.supabase
-            .from('usuarios') 
-            .select('*')
-            .eq('email', correo)
-            .single();
+        const resultado = await respuesta.json();
 
-        if (error || !usuario) {
-            alert("❌ El correo ingresado no pertenece a ningún coleccionista registrado.");
-            return;
+        if (!respuesta.ok) {
+            throw new Error(resultado.error);
         }
 
-        // GENERACIÓN DEL TOKEN DE SEGURIDAD (6 Dígitos aleatorios)
-        const codigoOTP = Math.floor(100000 + Math.random() * 900000).toString();
-        window.seguridadOTP_Generado = codigoOTP;
-        window.usuarioOTP_IdActual = usuario.id;
+        const { error } = await window.supabase.auth.resetPasswordForEmail(
+            correo,
+            {
+                redirectTo: window.location.origin + "/?recuperar=1"
+            }
+        );
 
-        console.log("🔒 Código de seguridad temporal generado.");
+        if (error) throw error;
 
-        // DESPACHO AUTOMÁTICO DE MAIL VÍA EMAILJS O TU SERVICIO AJAX DE GMAIL
-        // (Aquí conectamos con el envío a tu cuenta de Gmail nueva)
-        const respuestaEnvio = await enviarCorreoGmailOTP(correo, codigoOTP);
+        alert("¡Solicitud enviada! Revisá tu correo.");
 
-        if (respuestaEnvio) {
-            alert("✉️ ¡Código de seguridad enviado! Revisa tu casilla de correo (Bandeja de entrada o Spam).");
-            // Abrimos el casillero del código y mantenemos cerrado el de la contraseña
-            document.getElementById('modal-verificar-otp').classList.add('open');
-        }
-
-    } catch (err) {
-        alert("Error en el sistema de seguridad: " + err.message);
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo enviar el correo: " + error.message);
     }
 }
 
