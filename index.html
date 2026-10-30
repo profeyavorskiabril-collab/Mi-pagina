@@ -689,6 +689,50 @@
     </div> <!-- MUDAMOS ESTE CIERRE AQUÍ: Ahora sí envuelve ambas columnas -->
 </div>
 
+<!-- MODAL PARA RESTABLECER CONTRASEÑA -->
+<div id="modal-restablecer-password" class="modal">
+    <div class="modal-content">
+        <span class="close-modal"
+              onclick="document.getElementById('modal-restablecer-password').classList.remove('open')">
+            &times;
+        </span>
+
+        <h2 style="color:#fff; text-align:center;">
+            Crear nueva contraseña
+        </h2>
+
+        <p style="color:#ccc; text-align:center;">
+            Ingresá tu nueva contraseña para recuperar el acceso a tu cuenta.
+        </p>
+
+        <form id="form-restablecer-password" onsubmit="procesarNuevaPassword(event)">
+            <div class="form-group">
+                <input
+                    type="password"
+                    id="new-password-input"
+                    placeholder="Nueva contraseña"
+                    minlength="8"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <input
+                    type="password"
+                    id="confirm-password-input"
+                    placeholder="Confirmar contraseña"
+                    minlength="8"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn-submit">
+                Guardar nueva contraseña
+            </button>
+        </form>
+    </div>
+</div>
+
 <!-- 🔐 MODAL DE VERIFICACIÓN DE SEGURIDAD (CÓDIGO OTP) -->
 <div id="modal-verificar-otp" class="modal">
     <div class="modal-content">
