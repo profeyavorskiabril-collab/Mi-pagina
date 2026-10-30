@@ -630,6 +630,9 @@ async function guardarDatosPerfil(e) {
     }
 }
 
+// ==========================================================
+// ✉️ ENVIADOR DE CORREO DE RECUPERACIÓN ADAPTADO PARA VERCEL
+// ==========================================================
 async function manejarRecuperarContrasena() {
     const correoInput = document.getElementById('auth-email');
     let correo = correoInput ? correoInput.value.trim() : "";
@@ -640,18 +643,20 @@ async function manejarRecuperarContrasena() {
     if (!correo) return;
 
     try {
-        // Obtenemos la dirección exacta y completa de tu GitHub Pages en tiempo real
-        const urlRetornoGitHub = window.location.origin + window.location.pathname;
+        // 🔥 LA CLAVE DE VERCEL: Forzamos tu link nuevo exacto y limpio para Supabase
+        const urlRetornoVercel = "https://vercel.app";
+
+        console.log("✈️ Solicitando correo de recuperación con retorno a:", urlRetornoVercel);
 
         const { data, error } = await window.supabase.auth.resetPasswordForEmail(correo, {
-            redirectTo: urlRetornoGitHub, 
+            redirectTo: urlRetornoVercel, 
         });
         
         if (error) throw error;
         alert("✉️ ¡Correo enviado a " + correo + "! Revisa tu bandeja de entrada o spam.");
         
     } catch (err) {
-        alert("Error: " + err.message);
+        alert("Error al solicitar en la nube: " + err.message);
     }
 }
 
