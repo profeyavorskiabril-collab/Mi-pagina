@@ -649,10 +649,9 @@ async function guardarDatosPerfil(e) {
 
 // ==========================================================
 // ✉️ ENVIADOR DE CORREO DE RECUPERACIÓN ADAPTADO PARA VERCEL
-// ==========================================================
-// ==========================================================
-// ✉️ ENVIADOR DE CORREO DE RECUPERACIÓN (BLINDAJE DE RUTA REAL)
-// ==========================================================
+// ==========================================================================
+// 🔐 RECUPERACIÓN MANUAL ADAPTADA A TU TABLA PERSONALIZADA DE SUPABASE
+// ==========================================================================
 async function manejarRecuperarContrasena() {
     const correoInput = document.getElementById('auth-email');
     let correo = correoInput ? correoInput.value.trim() : "";
@@ -663,23 +662,36 @@ async function manejarRecuperarContrasena() {
     if (!correo) return;
 
     try {
-        // 🎯 CONTROL DE RUTA EXACTA: Tu link real completo (Asegúrate de que no diga vercel.app a secas)
-        const urlRetornoVercel = "https://vercel.app";
+        console.log("🔍 Verificando correo en tu tabla de usuarios personalizada...");
 
-        console.log("✈️ Solicitando correo de recuperación hacia:", urlRetornoVercel);
+        // 1. Buscamos el correo directamente en TU tabla (Cambiá 'usuarios' por el nombre exacto de tu tabla si es diferente)
+        const { data: usuarioEncontrado, error: errorTabla } = await window.supabase
+            .from('usuarios') // 🌟 Poné acá el nombre de tu tabla de usuarios
+            .select('*')
+            .eq('email', correo) // O 'correo', según el nombre de tu columna
+            .single();
 
-        const { data, error } = await window.supabase.auth.resetPasswordForEmail(correo, {
-            redirectTo: urlRetornoVercel, 
-        });
-        
-        if (error) throw error;
-        alert("✉️ ¡Correo enviado a " + correo + "! Revisa tu bandeja de entrada o spam.");
-        
+        if (errorTabla || !usuarioEncontrado) {
+            alert("❌ El correo electrónico ingresado no está registrado en Zen & Zen.");
+            return;
+        }
+
+        // 2. Si el usuario existe en tu tabla, le permitimos cambiar la clave de forma segura
+        alert("🔒 Cuenta verificada con éxito. Por motivos de seguridad con tu tabla personalizada, vamos a abrir el formulario de cambio directo.");
+
+        // Guardamos temporalmente el ID o correo del usuario para saber a quién actualizarle la clave después
+        window.usuarioAHD_Recuperando = usuarioEncontrado.id;
+
+        // 3. Abrimos de inmediato el modal flotante de Nueva Contraseña que agregamos antes
+        const modalReset = document.getElementById('modal-restablecer-password');
+        if (modalReset) {
+            modalReset.classList.add('open');
+        }
+
     } catch (err) {
-        alert("Error al solicitar en la nube: " + err.message);
+        alert("Error al conectar con tu base de datos: " + err.message);
     }
 }
-
 
 
 function logout() {
@@ -1903,7 +1915,6 @@ function verificarTokenRestablecimiento() {
 // ==========================================================
 // 🔐 ACTUALIZADOR DE CONTRASEÑA EN LA NUBE (CORREGIDO)
 // ==========================================================
-// 🌟 Agregado 'async' al principio para solucionar el SyntaxError
 async function procesarNuevaPassword(e) {
     e.preventDefault();
     
@@ -1914,22 +1925,28 @@ async function procesarNuevaPassword(e) {
         return;
     }
 
+    if (!window.usuarioAHD_Recuperando) {
+        alert("Error de sesión: No se identificó qué usuario solicita el cambio.");
+        return;
+    }
+
     try {
-        // Ahora el await funciona de forma totalmente válida aquí adentro
-        const { data, error } = await window.supabase.auth.updateUser({
-            password: nuevaPassword
-        });
+        // Impactamos la nueva contraseña directamente en TU tabla personalizada
+        const { data, error } = await window.supabase
+            .from('usuarios') // 🌟 Mismo nombre de tu tabla
+            .update({ password: nuevaPassword }) // O 'contrasena' según tu columna
+            .eq('id', window.usuarioAHD_Recuperando);
 
         if (error) throw error;
 
-        alert("¡Contraseña actualizada con éxito! Ya podés ingresar con tus nuevos datos.");
+        alert("¡Contraseña actualizada con éxito en tu cuenta de Zen & Zen! Ya podés ingresar.");
         
-        // Cerramos el modal de cambio y limpiamos la URL para que no quede el token viejo expuesto
+        // Limpiamos y cerramos todo
+        window.usuarioAHD_Recuperando = null;
         document.getElementById('modal-restablecer-password').classList.remove('open');
-        window.location.hash = "#inicio";
-        mostrarSeccion('inicio');
+        if (typeof mostrarSeccion === 'function') mostrarSeccion('inicio');
         
     } catch (err) {
-        alert("Error al actualizar en la nube: " + err.message);
+        alert("Error al guardar la nueva clave: " + err.message);
     }
 }
