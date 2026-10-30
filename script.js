@@ -1440,54 +1440,69 @@ async function agregarProductoAdmin(e) {
 
 //FAVORITOS-------------------
 
-function alternarFavorito(elementoBoton, idProducto) {
-    elementoBoton.classList.toggle('activo');
-    const estaActivo = elementoBoton.classList.contains('activo');
+async function alternarFavorito(elementoBoton, idProducto) {
 
-    // 🌟 NUEVO: Aseguramos que la sesión tenga el array de favoritos listo
-    if (!usuarioActivo) {
-        console.warn("⚠️ Debes iniciar sesión para guardar favoritos.");
+    if (!usuarioActivo || !usuarioActivo.email) {
+        alert("Iniciá sesión para guardar favoritos.");
         return;
     }
+
     if (!usuarioActivo.favoritos) {
         usuarioActivo.favoritos = [];
     }
 
-    // 🌟 NUEVO: Forzamos el ID a String para que coincida con tu Supabase (["3","2"])
-    const idString = String(idProducto);
+    const idString = String(idProducto).trim();
+    const yaEsFavorito = usuarioActivo.favoritos.some(
+        id => String(id).trim() === idString
+    );
 
-    if (estaActivo) {
-        // Si no está en el array local, lo agregamos
-        if (!usuarioActivo.favoritos.includes(idString)) {
-            usuarioActivo.favoritos.push(idString);
-        }
+    const favoritosAnteriores = [...usuarioActivo.favoritos];
+
+    if (yaEsFavorito) {
+        usuarioActivo.favoritos = usuarioActivo.favoritos.filter(
+            id => String(id).trim() !== idString
+        );
     } else {
-        // Si lo desmarcó, lo quitamos del array local
-        usuarioActivo.favoritos = usuarioActivo.favoritos.filter(favId => String(favId) !== idString);
+        usuarioActivo.favoritos.push(idString);
     }
 
-    // 🌟 NUEVO: Guardamos el estado actual en el LocalStorage para no perderlo al recargar
-    localStorage.setItem('zen_sesion', JSON.stringify(usuarioActivo));
+    elementoBoton.classList.toggle(
+        'activo',
+        usuarioActivo.favoritos.some(id => String(id).trim() === idString)
+    );
 
-    // Tu fetch actual a la API queda exactamente igual
-    fetch('/api/favoritos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            idProducto: idProducto, 
-            accion: estaActivo ? 'agregar' : 'quitar' 
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log("Favoritos sincronizados en la Base de Datos");
-        // Opcional: Si el usuario está parado en la pantalla de favoritos y desmarca uno, 
-        // podés revivir la función para que desaparezca la tarjeta al instante:
-        if (document.getElementById('view-favoritos') && !document.getElementById('view-favoritos').classList.contains('hidden')) {
+    try {
+        const { error } = await window.supabase
+            .from('usuarios')
+            .update({ favoritos: usuarioActivo.favoritos })
+            .eq('email', usuarioActivo.email);
+
+        if (error) throw error;
+
+        localStorage.setItem('zen_sesion', JSON.stringify(usuarioActivo));
+
+        console.log("Favoritos guardados correctamente en Supabase.");
+
+        if (
+            document.getElementById('view-favoritos') &&
+            !document.getElementById('view-favoritos').classList.contains('hidden')
+        ) {
             mostrarFavoritos();
         }
-    });
+
+    } catch (error) {
+        usuarioActivo.favoritos = favoritosAnteriores;
+
+        elementoBoton.classList.toggle(
+            'activo',
+            favoritosAnteriores.some(id => String(id).trim() === idString)
+        );
+
+        console.error("Error guardando favoritos:", error);
+        alert("No se pudieron guardar los favoritos. Intentá nuevamente.");
+    }
 }
+
 
 // ==========================================================
 // DETECTOR AUTOMÁTICO DE INICIO DE SESIÓN PARA FAVORITOS
