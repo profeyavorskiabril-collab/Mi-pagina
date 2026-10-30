@@ -1953,16 +1953,18 @@ function cerrarLightboxColeccion() {
 }
 
 // Vinculamos de forma segura el evento de clic apenas se monte la vista detallada
+
 document.addEventListener("DOMContentLoaded", () => {
     
     const imgPrincipal = document.getElementById("detail-img");
+
     if (imgPrincipal) {
         imgPrincipal.addEventListener("click", () => {
             abrirLightboxColeccion();
         });
     }
-       verificarTokenRestablecimiento();
 });
+
 
 // Detectar cuando el usuario llega desde el enlace de recuperación
 window.supabase.auth.onAuthStateChange((event, session) => {
