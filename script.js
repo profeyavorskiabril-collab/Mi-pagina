@@ -755,7 +755,7 @@ async function enviarCorreoGmailOTP(destinatario, codigo) {
         console.log(`✈️ Conectando con Resend para enviar el código a ${destinatario}...`);
 
         // 🔥 PEGÁ ACÁ TU CLAVE DE RESEND (La que empieza con re_ que guardamos ayer)
-        const RESEND_API_KEY = "re_c2WMZrW2_2ZjBh7pnYyGeRmuYrbFLpsNu"; 
+        const RESEND_API_KEY = "re_BGSgE4GZ_APikkbhMWJ2y5kr5vobohpj2"; 
 
         // Llamamos directamente a la API oficial de Resend desde tu código
         const respuesta = await fetch("https://resend.com", {
