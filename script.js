@@ -485,56 +485,93 @@ async function procesarIdentificacionUsuario(e) {
     const pass = document.getElementById('auth-pass').value;
 
     // INICIO DE SESIÓN CON SUPABASE AUTH
-    if (tipoAuthActual !== 'register') {
-        try {
-            const { data: authData, error: authError } =
-                await window.supabase.auth.signInWithPassword({
+   
+// INICIO DE SESIÓN CON SUPABASE AUTH
+if (tipoAuthActual !== 'register') {
+    try {
+
+        // 1. Intentar ingresar normalmente.
+        let ingreso = await window.supabase.auth.signInWithPassword({
+            email: email,
+            password: pass
+        });
+
+        // 2. Si no existe en Auth, intentar migrar la cuenta antigua.
+        if (ingreso.error) {
+
+            const respuestaMigracion = await fetch('/api/migrar-cuenta', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
                     email: email,
                     password: pass
-                });
+                })
+            });
 
-            if (authError) throw authError;
+            const resultadoMigracion = await respuestaMigracion.json();
 
-            // Recuperamos el perfil del usuario
-            const { data: perfil, error: perfilError } =
-                await window.supabase
-                    .from('usuarios')
-                    .select('*')
-                    .eq('email', email)
-                    .maybeSingle();
-
-            if (perfilError) throw perfilError;
-
-            usuarioActivo = perfil || {
-                email: email,
-                rol: 'cliente',
-                nombre: '',
-                telefono: '',
-                direccion: '',
-                cp: '',
-                favoritos: []
-            };
-
-            // Guardamos los datos de perfil, nunca la contraseña
-            localStorage.removeItem('zen_sesion');
-            localStorage.setItem('zen_sesion', JSON.stringify(usuarioActivo));
-
-            aplicarInterfazUsuario();
-            cerrarModalAuth();
-
-            if (typeof sincronizarFavoritosAlIngresar === 'function') {
-                sincronizarFavoritosAlIngresar();
+            if (!respuestaMigracion.ok) {
+                throw new Error(
+                    resultadoMigracion.error ||
+                    'No se pudo ingresar a la cuenta.'
+                );
             }
 
-            alert('¡Ingreso exitoso! Bienvenido.');
+            // 3. Volver a intentar el ingreso con la cuenta migrada.
+            ingreso = await window.supabase.auth.signInWithPassword({
+                email: email,
+                password: pass
+            });
 
-        } catch (err) {
-            console.error('Error de inicio de sesión:', err);
-            alert('No se pudo iniciar sesión. Revisá tu correo y contraseña.');
+            if (ingreso.error) throw ingreso.error;
         }
 
-        return;
+        // 4. Recuperar el perfil existente.
+        const { data: perfil, error: perfilError } =
+            await window.supabase
+                .from('usuarios')
+                .select('*')
+                .eq('email', email)
+                .maybeSingle();
+
+        if (perfilError) throw perfilError;
+
+        usuarioActivo = perfil || {
+            email: email,
+            rol: 'cliente',
+            nombre: '',
+            telefono: '',
+            direccion: '',
+            cp: '',
+            favoritos: []
+        };
+
+        localStorage.removeItem('zen_sesion');
+        localStorage.setItem(
+            'zen_sesion',
+            JSON.stringify(usuarioActivo)
+        );
+
+        aplicarInterfazUsuario();
+        cerrarModalAuth();
+
+        if (typeof sincronizarFavoritosAlIngresar === 'function') {
+            sincronizarFavoritosAlIngresar();
+        }
+
+        alert('¡Ingreso exitoso! Bienvenido.');
+
+    } catch (err) {
+        console.error('Error de inicio de sesión:', err);
+        alert(err.message || 'No se pudo iniciar sesión. Revisá tu correo y contraseña.');
     }
+
+    return;
+}
+
+    
 
     // El registro lo adaptaremos al nuevo sistema de autenticación
     alert('Estamos actualizando el registro. Por ahora, ingresá con tu cuenta existente.');
@@ -1728,7 +1765,20 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+function toggleProfileMenu(event) {
+    event.stopPropagation();
 
+    const menu = document.querySelector('.profile-dropdown');
+    menu.classList.toggle('active');
+}
+
+document.addEventListener('click', function(event) {
+    const profile = document.querySelector('.profile-desktop');
+
+    if (profile && !profile.contains(event.target)) {
+        profile.querySelector('.profile-dropdown').classList.remove('active');
+    }
+});
 
 // Busca el botón en tu HTML y haz que navegue de forma nativa a tu nueva sección
 function mostrarInfo(){
