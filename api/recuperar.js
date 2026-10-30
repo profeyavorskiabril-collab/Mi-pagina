@@ -16,15 +16,16 @@ export default async function handler(req, res) {
 
     try {
         // Comprobar que el correo existe en la tabla original
-        const consulta = await fetch(
-           `${URL}/rest/v1/usuarios?email=ilike.${encodeURIComponent(normalizedEmail)}&select=id&limit=1`,
-            {
-                headers: {
-                    apikey: KEY,
-                    Authorization: `Bearer ${KEY}`
-                }
-            }
-        );
+const consulta = await fetch(
+    `${URL}/rest/v1/usuarios?email=ilike.${encodeURIComponent(normalizedEmail)}&select=id&limit=1`,
+    {
+        headers: {
+            apikey: KEY,
+            Authorization: `Bearer ${KEY}`,
+            "Accept-Profile": "public"
+        }
+    }
+);
 
 const respuestaTexto = await consulta.text();
 
