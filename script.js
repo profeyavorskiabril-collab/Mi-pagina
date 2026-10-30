@@ -758,7 +758,7 @@ async function enviarCorreoGmailOTP(destinatario, codigo) {
         const RESEND_API_KEY = "re_BGSgE4GZ_APikkbhMWJ2y5kr5vobohpj2"; 
 
         // Llamamos directamente a la API oficial de Resend desde tu código
-        const respuesta = await fetch("https://resend.com", {
+        const respuesta = await fetch("https://vercel.app", {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${RESEND_API_KEY}`,
