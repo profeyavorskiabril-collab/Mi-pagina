@@ -44,9 +44,16 @@ export default async function handler(req, res) {
             }
         );
 
-        if (!consulta.ok) {
-            throw new Error("No se pudieron comprobar las credenciales.");
-        }
+if (!consulta.ok) {
+    const detalle = await consulta.text();
+
+    console.error("ERROR CONSULTANDO USUARIOS:", {
+        estado: consulta.status,
+        detalle: detalle
+    });
+
+    throw new Error("Error consultando usuarios: " + consulta.status);
+}
 
         const usuarios = await consulta.json();
 
