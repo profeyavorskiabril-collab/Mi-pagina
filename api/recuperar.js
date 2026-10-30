@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     try {
         // Comprobar que el correo existe en la tabla original
         const consulta = await fetch(
-            `${URL}/rest/v1/usuarios?email=eq.${encodeURIComponent(normalizedEmail)}&select=id&limit=1`,
+           `${URL}/rest/v1/usuarios?email=ilike.${encodeURIComponent(normalizedEmail)}&select=id&limit=1`,
             {
                 headers: {
                     apikey: KEY,
