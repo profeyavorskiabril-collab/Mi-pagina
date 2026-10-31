@@ -2034,22 +2034,22 @@ async function traerHistorialPedidos() {
                     <!-- 🎯 CLASE AGREGADA: 'total-precio-oro' para blindar tu color dorado -->
                     <span class="total-precio-oro" style="color: var(--color-oro, #ffd700) !important; font-size:1.1rem;">$${Number(pedido.total).toLocaleString('es-AR')}</span>
                 </div>
-<button
-    onclick="consultarPedidoWhatsApp('${pedido.id}')"
-    style="
-        background: transparent;
-        color: #25D366;
-        border: 1px solid #25D366;
-        padding: 7px 13px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 0.8rem;
-        font-weight: 500;
-        width: fit-content;
-        align-self: flex-end;
-    ">
-    Consultar por WhatsApp
-</button>
+                <button
+                    onclick="consultarPedidoWhatsApp('${pedido.id}')"
+                    style="
+                        background: transparent;
+                        color: #25D366;
+                        border: 1px solid #25D366;
+                        padding: 7px 13px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 0.8rem;
+                        font-weight: 500;
+                        width: fit-content;
+                        align-self: flex-end;
+                    ">
+                    Consultar por WhatsApp
+                </button>
             `;
             container.appendChild(tarjeta);
         });
@@ -2064,10 +2064,10 @@ async function traerHistorialPedidos() {
 function consultarPedidoWhatsApp(idPedido) {
     const numero = "5491125417546";
 
-    const mensaje = `Hola! Quisiera consultar por mi pedido #${idPedido} de Zen & Zen.`;
+    const mensaje = `Hola! Quisiera consultar por mi pedido #${idPedido} de Zen & Zen, gracias!`;
 
-    const enlace = "https://web.whatsapp.com/send?phone=" +
-        numero + "&text=" + encodeURIComponent(mensaje);
+    const enlace = "https://wa.me/" + numero +
+        "?text=" + encodeURIComponent(mensaje);
 
     window.open(enlace, "_blank");
 }
