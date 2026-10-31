@@ -1395,7 +1395,8 @@ async function finalizarOrdenWhatsApp() {
             mensaje += `💰 *Subtotal:* ${subtotalTexto}\n`;
             mensaje += `🚚 *Costo Envío:* ${envioTexto}\n`;
             mensaje += `💵 *TOTAL NETO:* *${totalFinalTexto}*\n`;
-
+console.log("MENSAJE ANTES DE WHATSAPP:", mensaje);
+console.log("CODIFICACIÓN:", [...mensaje].map(c => c.codePointAt(0).toString(16)));
             // 5. Redirección oficial y limpieza absoluta del Carrito Local
             const linkFinal = "https://wa.me/" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
             window.open(linkFinal, '_blank');
