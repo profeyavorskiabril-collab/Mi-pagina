@@ -2034,11 +2034,22 @@ async function traerHistorialPedidos() {
                     <!-- 🎯 CLASE AGREGADA: 'total-precio-oro' para blindar tu color dorado -->
                     <span class="total-precio-oro" style="color: var(--color-oro, #ffd700) !important; font-size:1.1rem;">$${Number(pedido.total).toLocaleString('es-AR')}</span>
                 </div>
-                <button
-                    onclick="consultarPedidoWhatsApp('${pedido.id}')"
-                    style="background:#25D366; color:white; border:none; padding:10px 15px; border-radius:6px; cursor:pointer; font-weight:bold; width:100%;">
-                    Consultar por WhatsApp
-                </button>
+<button
+    onclick="consultarPedidoWhatsApp('${pedido.id}')"
+    style="
+        background: transparent;
+        color: #25D366;
+        border: 1px solid #25D366;
+        padding: 7px 13px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 500;
+        width: fit-content;
+        align-self: flex-end;
+    ">
+    Consultar por WhatsApp
+</button>
             `;
             container.appendChild(tarjeta);
         });
