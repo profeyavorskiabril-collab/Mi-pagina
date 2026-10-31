@@ -38,9 +38,11 @@ export default async function handler(req, res) {
             `${URL}/rest/v1/usuarios?${parametros.toString()}`,
             {
                 headers: {
-                    apikey: KEY,
-                    Authorization: `Bearer ${KEY}`
-                }
+headers: {
+    apikey: KEY,
+    Authorization: `Bearer ${KEY}`,
+    "Accept-Profile": "public"
+}
             }
         );
 
