@@ -510,7 +510,18 @@ if (tipoAuthActual !== 'register') {
                 })
             });
 
-            const resultadoMigracion = await respuestaMigracion.json();
+           const textoMigracion = await respuestaMigracion.text();
+
+let resultadoMigracion;
+
+try {
+    resultadoMigracion = JSON.parse(textoMigracion);
+} catch (error) {
+    console.error("RESPUESTA REAL DE MIGRACIÓN:", textoMigracion);
+    throw new Error(
+        "El servidor devolvió un error. Revisá la consola y los Logs de Vercel."
+    );
+}
 
             if (!respuestaMigracion.ok) {
                 throw new Error(
