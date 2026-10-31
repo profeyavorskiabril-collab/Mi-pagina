@@ -585,7 +585,75 @@ try {
     
 
     // El registro lo adaptaremos al nuevo sistema de autenticación
-    alert('Estamos actualizando el registro. Por ahora, ingresá con tu cuenta existente.');
+   
+    // REGISTRO DE NUEVO USUARIO
+    try {
+        const respuesta = await fetch('/api/registrar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                password: pass
+            })
+        });
+
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(resultado.error || 'No se pudo crear la cuenta.');
+        }
+
+        // Iniciar sesión automáticamente después del registro.
+        const { data: authData, error: authError } =
+            await window.supabase.auth.signInWithPassword({
+                email: email,
+                password: pass
+            });
+
+        if (authError) throw authError;
+
+        // Recuperar el perfil recién creado.
+        const { data: perfil, error: perfilError } =
+            await window.supabase
+                .from('usuarios')
+                .select('*')
+                .eq('email', email)
+                .maybeSingle();
+
+        if (perfilError) throw perfilError;
+
+        usuarioActivo = perfil || {
+            email: email,
+            rol: 'cliente',
+            nombre: '',
+            telefono: '',
+            direccion: '',
+            cp: '',
+            favoritos: []
+        };
+
+        localStorage.removeItem('zen_sesion');
+        localStorage.setItem(
+            'zen_sesion',
+            JSON.stringify(usuarioActivo)
+        );
+
+        aplicarInterfazUsuario();
+        cerrarModalAuth();
+
+        if (typeof sincronizarFavoritosAlIngresar === 'function') {
+            sincronizarFavoritosAlIngresar();
+        }
+
+        alert('¡Tu cuenta fue creada correctamente! Bienvenido.');
+
+    } catch (err) {
+        console.error('Error de registro:', err);
+        alert(err.message || 'No se pudo completar el registro.');
+    }
+
 }
 
 function aplicarInterfazUsuario() {
