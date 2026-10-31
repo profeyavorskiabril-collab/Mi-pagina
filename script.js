@@ -893,17 +893,34 @@ async function enviarCorreoGmailOTP(destinatario, codigo) {
 
 
 
-function logout() {
-     usuarioActivo = null;
+
+async function logout() {
+    // Cerrar sesión en Supabase Auth
+    const { error } = await window.supabase.auth.signOut();
+
+    if (error) {
+        console.error("Error cerrando sesión:", error);
+    }
+
+    usuarioActivo = null;
+
     localStorage.removeItem('zen_sesion');
 
-    // 2. Vaciamos el carrito por seguridad
+    // Vaciar carrito
     carrito = [];
     localStorage.removeItem('zen_carrito');
+
+    // Limpiar correo y contraseña del formulario
+    const email = document.getElementById('auth-email');
+    const password = document.getElementById('auth-pass');
+
+    if (email) email.value = '';
+    if (password) password.value = '';
 
     alert("Sesión cerrada correctamente.");
     mostrarSeccion('inicio');
 }
+
 // ==========================================
 // 4. DETALLES, CARRITO Y PASARELA WHATSAPP
 // ==========================================

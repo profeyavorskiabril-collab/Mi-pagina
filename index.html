@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -17,7 +18,7 @@
     <link rel="icon" type="image/png" href="icon.png">
      
 <!-- En el <head> para el CSS -->
-<link rel="stylesheet" href="style.css?v=1.0.4">  
+<link rel="stylesheet" href="style.css?v=1.0.5">  
 
 
     <!-- CONEXIÓN REAL A SUPABASE DESDE EL NAVEGADOR -->
@@ -26,7 +27,7 @@
 
 
 <!-- Al final del body para el JS -->
-<script src="script.js?v=1.0.5"></script>
+<script src="script.js?v=1.0.6"></script>
 
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -68,14 +69,30 @@
             <div class="auth-cart-zone">
                 
                 <!-- Bloque izquierdo de la fila inferior: Hamburguesa + Perfil -->
-                <div class="profile-menu-wrapper">
-                    <!-- ☰ El botón hamburguesa ahora vive acá de forma nativa -->
-                    <button class="menu-hamburger" onclick="document.querySelector('.nav-menu').classList.toggle('active')">
-                        ☰ 
-                    </button>
-                    <!--  <span id="user-status" onclick="abrirModalAuth()">Iniciar Sesión</span>-->
-                </div>
-                
+<div class="profile-menu-wrapper">
+
+    <!-- PERFIL PARA COMPUTADORA -->
+    <div class="profile-desktop">
+        <button class="profile-button" onclick="toggleProfileMenu(event)">
+            MI PERFIL <span>▾</span>
+        </button>
+
+        <div class="profile-dropdown">
+            <a href="#" onclick="event.preventDefault(); abrirModalAuth()">
+                Mi cuenta
+            </a>
+            <a href="#" onclick="event.preventDefault(); mostrarMisPedidos()">
+                Mis pedidos
+            </a>
+        </div>
+    </div>
+
+    <!-- MENÚ PARA CELULAR -->
+    <button class="menu-hamburger" onclick="document.querySelector('.nav-menu').classList.toggle('active')">
+        ☰
+    </button>
+
+</div>
                 <!-- Bloque derecho de la fila inferior: El Carrito -->
                 <div class="cart-icon" onclick="mostrarSeccion('carrito')">
                    <!-- Icono de Carrito de Compra Sólido / Relleno -->
@@ -109,8 +126,13 @@
                 <li><a href="#" class="scroll-link" onclick="event.preventDefault(); mostrarInfo()">INFORMACION</a></li>
                 
                 <!-- 5. MI PERFIL -->
-                <li><a href="#" onclick="event.preventDefault(); abrirModalAuth()">MI PERFIL</a></li>
-                <li><a href="#" onclick="event.preventDefault(); mostrarMisPedidos()">Mis Pedidos</a></li>
+<li class="mobile-profile-item">
+    <a href="#" onclick="event.preventDefault(); abrirModalAuth()">MI PERFIL</a>
+</li>
+
+<li class="mobile-profile-item">
+    <a href="#" onclick="event.preventDefault(); mostrarMisPedidos()">Mis Pedidos</a>
+</li>
             </ul>
 
         </nav>
@@ -622,12 +644,12 @@
                     <!-- 👁️ El lente de la lupa profesional -->
     <div id="detail-zoom-lens" class="zoom-lens"></div>
     
-    
-                <button id="btn-detail-fav" class="btn-favorito">
-                    <svg class="icono-corazon" viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
-                </button>        
+    <button id="btn-detail-fav" class="btn-favorito">
+        <svg class="icono-corazon" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+    </button>      
+                
             </div>
             <!-- Miniaturas interactivas -->
            <!-- REEMPLAZA TU <div id="detail-thumbnails" class="detail-thumbnails"></div> POR ESTO: -->
@@ -700,7 +722,8 @@
         <p style="color:#ccc; text-align:center;">
             Ingresá tu nueva contraseña para recuperar el acceso a tu cuenta.
         </p>
-
+        <br>
+        <br>
         <form id="form-restablecer-password" onsubmit="procesarNuevaPassword(event)">
             <div class="form-group">
                 <input
