@@ -1395,12 +1395,11 @@ async function finalizarOrdenWhatsApp() {
             mensaje += `💰 *Subtotal:* ${subtotalTexto}\n`;
             mensaje += `🚚 *Costo Envío:* ${envioTexto}\n`;
             mensaje += `💵 *TOTAL NETO:* *${totalFinalTexto}*\n`;
-console.log("MENSAJE ANTES DE WHATSAPP:", mensaje);
-console.log("CODIFICACIÓN:", [...mensaje].map(c => c.codePointAt(0).toString(16)));
+
             // 5. Redirección oficial y limpieza absoluta del Carrito Local
-            const linkFinal = "https://wa.me/" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
-            window.open(linkFinal, '_blank');
-            console.log("ENLACE WHATSAPP:", linkFinal);
+            const linkFinal = "https://api.whatsapp.com/send?phone=" + miNumeroReal + "&text=" + encodeURIComponent(mensaje);
+
+window.open(linkFinal, '_blank');
             carrito = []; 
             localStorage.removeItem('zen_carrito'); 
             if (typeof actualizarCarritoUI === 'function') actualizarCarritoUI(); 
