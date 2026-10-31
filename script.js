@@ -1400,7 +1400,7 @@ console.log("CODIFICACIÓN:", [...mensaje].map(c => c.codePointAt(0).toString(16
             // 5. Redirección oficial y limpieza absoluta del Carrito Local
             const linkFinal = "https://wa.me/" + miNumeroReal + "?text=" + encodeURIComponent(mensaje);
             window.open(linkFinal, '_blank');
-            
+            console.log("ENLACE WHATSAPP:", linkFinal);
             carrito = []; 
             localStorage.removeItem('zen_carrito'); 
             if (typeof actualizarCarritoUI === 'function') actualizarCarritoUI(); 
