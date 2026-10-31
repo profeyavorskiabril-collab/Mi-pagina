@@ -1344,7 +1344,12 @@ async function finalizarOrdenWhatsApp() {
                 }));
 
                 // Limpiamos los símbolos de moneda para enviar el total como número puro
-                const totalNumerico = parseFloat(totalFinalTexto.replace(/[^0-9.-]+/g, "")) || 0;
+                const totalNumerico = parseFloat(
+                    totalFinalTexto
+                        .replace(/[^\d,.-]/g, "")
+                        .replace(/\./g, "")
+                        .replace(",", ".")
+                ) || 0;
 
                 // 2. Preparamos el objeto estructurado para Supabase
                 const nuevoPedido = {
@@ -1399,7 +1404,7 @@ async function finalizarOrdenWhatsApp() {
             // 5. Redirección oficial y limpieza absoluta del Carrito Local
             const linkFinal = "https://api.whatsapp.com/send?phone=" + miNumeroReal + "&text=" + encodeURIComponent(mensaje);
 
-window.open(linkFinal, '_blank');
+            window.open(linkFinal, '_blank');
             carrito = []; 
             localStorage.removeItem('zen_carrito'); 
             if (typeof actualizarCarritoUI === 'function') actualizarCarritoUI(); 
@@ -2029,6 +2034,11 @@ async function traerHistorialPedidos() {
                     <!-- 🎯 CLASE AGREGADA: 'total-precio-oro' para blindar tu color dorado -->
                     <span class="total-precio-oro" style="color: var(--color-oro, #ffd700) !important; font-size:1.1rem;">$${Number(pedido.total).toLocaleString('es-AR')}</span>
                 </div>
+                <button
+                    onclick="consultarPedidoWhatsApp('${pedido.id}')"
+                    style="background:#25D366; color:white; border:none; padding:10px 15px; border-radius:6px; cursor:pointer; font-weight:bold; width:100%;">
+                    Consultar por WhatsApp
+                </button>
             `;
             container.appendChild(tarjeta);
         });
@@ -2040,7 +2050,16 @@ async function traerHistorialPedidos() {
     }
 }
 
+function consultarPedidoWhatsApp(idPedido) {
+    const numero = "5491125417546";
 
+    const mensaje = `Hola! Quisiera consultar por mi pedido #${idPedido} de Zen & Zen.`;
+
+    const enlace = "https://web.whatsapp.com/send?phone=" +
+        numero + "&text=" + encodeURIComponent(mensaje);
+
+    window.open(enlace, "_blank");
+}
 // Función puente para el menú de navegación
 function mostrarMisPedidos() {
     mostrarSeccion('pedidos'); // Prende la vista cambiándole las clases .hidden
