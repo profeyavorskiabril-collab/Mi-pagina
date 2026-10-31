@@ -7,7 +7,6 @@ module.exports = async function handler(req, res) {
     }
 
     const { email, password } = req.body || {};
-
     const normalizedEmail = String(email || "").trim().toLowerCase();
 
     if (!normalizedEmail || typeof password !== "string" || !password) {
@@ -26,7 +25,7 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        // 1. Comprobar las credenciales antiguas en el servidor.
+        // 1. Comprobar las credenciales antiguas.
         const parametros = new URLSearchParams({
             email: `eq.${normalizedEmail}`,
             password: `eq.${password}`,
@@ -38,24 +37,23 @@ module.exports = async function handler(req, res) {
             `${URL}/rest/v1/usuarios?${parametros.toString()}`,
             {
                 headers: {
-headers: {
-    apikey: KEY,
-    Authorization: `Bearer ${KEY}`,
-    "Accept-Profile": "public"
-}
+                    apikey: KEY,
+                    Authorization: `Bearer ${KEY}`,
+                    "Accept-Profile": "public"
+                }
             }
         );
 
-if (!consulta.ok) {
-    const detalle = await consulta.text();
+        if (!consulta.ok) {
+            const detalle = await consulta.text();
 
-    console.error("ERROR CONSULTANDO USUARIOS:", {
-        estado: consulta.status,
-        detalle: detalle
-    });
+            console.error("ERROR CONSULTANDO USUARIOS:", {
+                estado: consulta.status,
+                detalle: detalle
+            });
 
-    throw new Error("Error consultando usuarios: " + consulta.status);
-}
+            throw new Error("Error consultando usuarios: " + consulta.status);
+        }
 
         const usuarios = await consulta.json();
 
@@ -65,7 +63,7 @@ if (!consulta.ok) {
             });
         }
 
-        // 2. Crear la cuenta en Supabase Auth con la misma contraseña.
+        // 2. Crear la cuenta en Supabase Auth.
         const creacion = await fetch(`${URL}/auth/v1/admin/users`, {
             method: "POST",
             headers: {
@@ -92,6 +90,8 @@ if (!consulta.ok) {
                 });
             }
 
+            console.error("ERROR CREANDO USUARIO AUTH:", resultado);
+
             throw new Error(
                 resultado.message || resultado.msg || "No se pudo crear la cuenta."
             );
@@ -106,7 +106,7 @@ if (!consulta.ok) {
         console.error("Error migrando cuenta:", error);
 
         return res.status(500).json({
-            error: "No se pudo completar la migración."
+            error: error.message || "No se pudo completar la migración."
         });
     }
-}
+};
