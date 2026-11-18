@@ -1212,8 +1212,9 @@ function calcularTotalPedido() {
             // 2. Evaluamos si eligió ENVÍO (Correo Argentino)
             if (selector.value === 'envio') {
                 if (infoTexto) infoTexto.style.display = "block";
-
-                if (cp >= 1000 && cp <= 1499) {
+                infoTexto.style.color= "grey";
+                    mensajeEnvio = 'Podras elegir el envio a domicilio o sucursal';
+            /*    if (cp >= 1000 && cp <= 1499) {
                     costoEnvio = 3200; // Capital Federal (CABA)
                     mensajeEnvio = `📍 Envío Local detectado (CABA - CP: ${cp}).`;
                 } else if (cp >= 1600 && cp <= 1999) {
@@ -1228,7 +1229,7 @@ function calcularTotalPedido() {
                 } else {
                     costoEnvio = 5000; // Tarifa plana de respaldo
                     mensajeEnvio = `📍 Envío calculated para CP: ${cp}.`;
-                }
+                }*/
             } 
             // 3. Evaluamos si eligió MOTO
             else if (selector.value === 'moto') {
@@ -1246,7 +1247,7 @@ function calcularTotalPedido() {
         costoEnvio = 0;
         if (infoTexto) infoTexto.style.display = "none";
     }
-
+   
     // 3. Monto final
     let totalFinal = subtotal + costoEnvio;
 
