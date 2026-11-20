@@ -3952,3 +3952,6 @@ body.light-mode .thumbnails-slider-wrapper, .detail-info-side {
         box-sizing: border-box;
     }
 }
+#detail-desc {
+    white-space: pre-line;
+}
