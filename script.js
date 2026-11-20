@@ -949,7 +949,7 @@ function abrirDetalleProducto(id) {
     document.getElementById('detail-condition').textContent = p.condicion;
     document.getElementById('detail-escala').textContent = `Escala ${p.escala || '1:64'}`;
     document.getElementById('detail-price').textContent = `$${p.precio}`;
-    document.getElementById('detail-desc').textContent = p.descripcion || "Sin descripción adicional.";
+   document.getElementById('detail-desc').innerText = p.descripcion || "Sin descripción adicional.";
     
     const stockSpan = document.getElementById('detail-stock');
     if (stockSpan) {
