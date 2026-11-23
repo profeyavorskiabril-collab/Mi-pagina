@@ -263,69 +263,73 @@ function renderizarProductos() {
 // Creamos una variable global en la memoria de la página para frenar el desvío
 window.bloquearSaltoFavoritos = false;
 
-function toggleFavoritoDesdeGrid(productoId) {
-    if (typeof usuarioActivo === 'undefined' || !usuarioActivo) {
+async function toggleFavoritoDesdeGrid(productoId) {
+
+    if (!usuarioActivo) {
         if (typeof abrirModalAuth === 'function') abrirModalAuth();
         return;
     }
 
-    const favoritosUsuario = usuarioActivo.favoritos.map(id => String(id).trim());
-    const idBuscado = String(productoId).trim();
-    
-    // 🎯 ACTIVAMOS EL ESCUDO: Avisamos que estamos operando desde la grilla principal
-    window.bloquearSaltoFavoritos = true;
-
-    // Interceptamos y modificamos temporalmente tu función nativa de navegación
-    const funcionNavegarOriginal = window.mostrarSeccion || window.cambiarSeccion || window.navegar;
-    
-    const interceptorNavegacion = function(seccion) {
-        // SI EL SISTEMA INTENTA MANDARTE A FAVORITOS, LO DETENEMOS AQUÍ
-        if (seccion === 'favoritos' && window.bloquearSaltoFavoritos) {
-            console.log("🛡️ Escudo Zen: Salto automático a favoritos bloqueado con éxito.");
-            return; // Bloquea la ejecución y te deja en la misma pantalla
-        }
-        // Si es cualquier otra sección, la deja pasar normalmente
-        if (typeof funcionNavegarOriginal === 'function') {
-            funcionNavegarOriginal(seccion);
-        }
-    };
-
-    // Aplicamos el interceptor en todas las variantes de nombres de navegación que maneje tu tienda
-    if (window.mostrarSeccion) window.mostrarSeccion = interceptorNavegacion;
-    if (window.cambiarSeccion) window.cambiarSeccion = interceptorNavegacion;
-    if (window.navegar) window.navegar = interceptorNavegacion;
-
-    // Procesamos la baja o el alta en tus favoritos de Supabase de forma normal
-    if (favoritosUsuario.includes(idBuscado)) {
-        usuarioActivo.favoritos = usuarioActivo.favoritos.filter(id => String(id).trim() !== idBuscado);
-        if (typeof eliminarDeFavoritos === 'function') {
-            eliminarDeFavoritos(productoId);
-        } else if (typeof quitarFavorito === 'function') {
-            quitarFavorito(productoId);
-        }
-    } else {
-        if (typeof agregarAFavoritos === 'function') agregarAFavoritos(productoId);
-        else if (typeof agregarFavorito === 'function') agregarFavorito(productoId);
-        else {
-            usuarioActivo.favoritos.push(productoId);
-            if (typeof actualizarFavoritosUI === 'function') actualizarFavoritosUI();
-        }
+    if (!Array.isArray(usuarioActivo.favoritos)) {
+        usuarioActivo.favoritos = [];
     }
 
-    // Volvemos a dibujar tus productos en caliente para actualizar los corazones vectoriales
-    if (typeof renderizarProductos === 'function') renderizarProductos(); 
-    else if (typeof renderProducts === 'function') renderProducts();
+    const idBuscado = String(productoId).trim();
 
-    // ⏳ APAGAMOS EL ESCUDO: Le damos 400ms para que pasen todos los procesos asíncronos de Supabase
-    setTimeout(() => {
-        window.bloquearSaltoFavoritos = false;
-        // Restauramos tu función de navegación original para que el menú de arriba siga funcionando perfecto
-        if (window.mostrarSeccion) window.mostrarSeccion = funcionNavegarOriginal;
-        if (window.cambiarSeccion) window.cambiarSeccion = funcionNavegarOriginal;
-        if (window.navegar) window.navegar = funcionNavegarOriginal;
-    }, 400);
+    const favoritosAnteriores = [...usuarioActivo.favoritos];
+
+    const yaEsFavorito = usuarioActivo.favoritos.some(
+        id => String(id).trim() === idBuscado
+    );
+
+    // Agregar o quitar el favorito
+    if (yaEsFavorito) {
+        usuarioActivo.favoritos = usuarioActivo.favoritos.filter(
+            id => String(id).trim() !== idBuscado
+        );
+    } else {
+        usuarioActivo.favoritos.push(idBuscado);
+    }
+
+    // Actualizar visualmente los corazones
+    if (typeof renderizarProductos === 'function') {
+        renderizarProductos();
+    }
+
+    try {
+
+        // Guardar directamente en la tabla usuarios
+        const { error } = await window.supabase
+            .from('usuarios')
+            .update({
+                favoritos: usuarioActivo.favoritos
+            })
+            .eq('email', usuarioActivo.email);
+
+        if (error) throw error;
+
+        // Actualizar la sesión local únicamente si se guardó correctamente
+        localStorage.setItem(
+            'zen_sesion',
+            JSON.stringify(usuarioActivo)
+        );
+
+        console.log("⭐ Favoritos guardados correctamente.");
+
+    } catch (error) {
+
+        // Revertir el cambio si Supabase falla
+        usuarioActivo.favoritos = favoritosAnteriores;
+
+        if (typeof renderizarProductos === 'function') {
+            renderizarProductos();
+        }
+
+        console.error("Error guardando favoritos:", error);
+
+        alert("No se pudieron guardar los favoritos. Intentá nuevamente.");
+    }
 }
-
 
 
 function cambiarOrdenamiento() {
