@@ -176,12 +176,16 @@ function renderizarProductos() {
     grid.innerHTML = '';
 
     const filtrados = productos.filter(p => {
-        if (parseInt(p.stock) === -1) return false;
+       //elimina el producto if (parseInt(p.stock) === -1) return false;
         const cumpleCat = (categoriaActual === 'Todos' || p.categoria === categoriaActual);
         const cumpleSub = (subcategoriaActual === 'Todos' || p.subcategoria.toLowerCase() === subcategoriaActual.toLowerCase());
         return cumpleCat && cumpleSub;
     });
-
+filtrados.sort((a, b) => {
+    if (parseInt(a.stock) === -1) return 1;
+    if (parseInt(b.stock) === -1) return -1;
+    return 0;
+});
     const spinnerTienda = document.getElementById('tienda-cargando');
 
     if (filtrados.length === 0) {
@@ -215,9 +219,13 @@ function renderizarProductos() {
         card.classList.add('product-card');
         card.onclick = () => abrirDetalleProducto(p.id);
         
-        if (parseInt(p.stock) === 0) {
-            card.innerHTML += `<div class="reservado-badge">🔒 Reservado</div>`;
-        }
+let cartelStock = '';
+
+if (parseInt(p.stock) === 0) {
+    cartelStock = `<div class="reservado-badge">🔒 RESERVADO</div>`;
+} else if (parseInt(p.stock) === -1) {
+    cartelStock = `<div class="agotado-badge">⊘ AGOTADO</div>`;
+}
 
         // Lógica inteligente de verificación de favoritos
         let esFavorito = false;
@@ -231,6 +239,7 @@ function renderizarProductos() {
         // INYECTAMOS TU ESTRUCTURA PREMIUM UTILIZANDO 'imagenPortada'
         card.innerHTML += `
             <div class="product-card-media-wrapper">
+             ${cartelStock}
                 <img src="${imagenPortada}" loading="lazy">
                 
                 <!-- Botón de Favorito con tu estilo .btn-favorito -->
@@ -1045,7 +1054,7 @@ function abrirDetalleProducto(id) {
     // ==========================================================
     const btnCompra = document.getElementById('btn-detail-add');
     if (btnCompra) {
-        if (parseInt(p.stock) === 0) {
+        if (parseInt(p.stock) <= 0) {
             btnCompra.textContent = "Artículo Reservado 🚫"; 
             btnCompra.disabled = true; 
             btnCompra.style.background = "#555";
@@ -1742,7 +1751,7 @@ productosFavoritos.forEach(item => {
      const imagenPrincipal = String(item.imagen || '').split(',')[0].trim();
     console.log("IMAGEN EN FAVORITOS:", item.imagen);
             grid.innerHTML += `
-                <div class="product-card" onclick="event.stopPropagation(); verDetalleProducto('${item.id}')">
+                <div class="product-card" onclick="abrirDetalleProducto('${item.id}')">
                    <img src="${imagenPrincipal}" alt="${item.titulo}" onerror="this.src='placeholder.jpg'">
                     <div class="product-info">
                         <h3 class="product-title">${item.titulo}</h3>

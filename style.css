@@ -3955,3 +3955,56 @@ body.light-mode .thumbnails-slider-wrapper, .detail-info-side {
 #detail-desc {
     white-space: pre-line;
 }
+
+/* ==========================================
+   ETIQUETAS DE STOCK: RESERVADO Y AGOTADO
+   ========================================== */
+
+/* ==========================================
+   ETIQUETAS DE STOCK - ZEN & ZEN
+   ========================================== */
+
+.reservado-badge,
+.agotado-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 5;
+
+    padding: 7px 12px;
+
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+
+    border-radius: 4px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    pointer-events: none;
+}
+
+/* RESERVADO */
+.reservado-badge {
+    background: rgba(20, 20, 20, 0.85);
+    color: #d6b878;
+    border: 1px solid rgba(214, 184, 120, 0.55);
+    width: fit-content !important;
+    max-width: max-content !important;
+    display: inline-block !important;
+    flex: none !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+}
+
+/* AGOTADO */
+.agotado-badge {
+    background: rgba(20, 20, 20, 0.85);
+    color: #D2691E;
+    border: 1px solid rgba(180, 180, 180, 0.35);
+}
+
+/* Contenedor de imagen */
+.product-card-media-wrapper {
+    position: relative;
+}
